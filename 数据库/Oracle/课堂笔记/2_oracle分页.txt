@@ -1,0 +1,6 @@
+ select *
+ from 	(select rownum r,e1.*
+	 from (select * from emp order by sal) e1
+ 	 where rownum <=8
+	)
+ where r >=5;

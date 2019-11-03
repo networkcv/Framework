@@ -1,0 +1,516 @@
+sqlplus scott/tiger@192.168.242.128:1521/orcl
+查询语句优化：
+    1.能用列名就不要用*，因为数据库还要获取对应表的列名，才能进行查询操作
+    2.where语句的解析顺序是 右-->左，所以and的右边尽量写可能为假的值，这样and语句直接就不成立了，就不用继续向左解析了，同理，or有右边尽量写为真的语句
+    3.尽量使用where，而不是having，因为where是先过滤再分组，having是先分组再过滤
+    4.尽量使用多表查询，而不是子查询。尽可能减少对数据库的访问
+    5.尽量不要使用集合运算
+SQL中的null
+    1、包含null的表达式都为null
+    2、null永远！=null where comm is null;
+    3、如果集合中含有null，不能使用not in；但可以使用in
+    4. null的排序
+    5. 组函数(多行函数)会自动滤空；
+
+''单引号中只能是字符串或日期,并且对大小写敏感 ""双引号中为列名的别名
+show user       显示当前用户
+desc emp        显示表结构
+set timing on   打印执行语句消耗的时间
+host cls/clear      windows/linux清屏
+show/set linesize(120) pagesize(20)     显示/修改每行长度 每页显示行数
+col ename for a8/col sal for 9999       修改制定字段的显示格式
+c /form/from    将form修改为from  
+ed(edit)    通过文本编辑器来修改sql语句
+/   执行上一条sql语句
+nvl(a,b)  判空函数，如果a为空则返回b的值    
+nvl2(a,b,c) 当a!=null的时候，返回b；否则返回c
+distinct   去掉重复记录 作用于后面所有的列
+dual 伪表
+rownum 行号 伪列
+    1、rownum永远按照默认的顺序生成
+    2、rownum只能使用< <=；不能使用> >=
+concat(a,b) 字符串连接函数
+    select concat('Hello','  World') from dual;                                                                                                          
+    Hello  World 
+连接符 || 作用同concat()
+    select 'Hello'||'  World' 字符串 from dual;                                                                                                          
+    Hello  World   
+
+where查询对字符串大小写敏感、日期格式敏感
+    select * from v$nls_parameters;
+    alter session set NLS_DATE_FORMAT='yyyy-mm-dd';
+    alter session set NLS_DATE_FORMAT='DD-MON-RR';
+    select * from emp where hiredate = '17-11月-81';
+between 1.含有边界  2.小值在前 大值在后
+    select * from emp where sal between 800 and 1000;   
+in 在集合中（10，20） not in (10,20) 不在集合(10,20)中  not in 的集合中不能含有null
+    select * from emp where deptno in (10,20);
+like 模糊查询
+    select * from emp where ename like 'S%';        查询名字以S打头的员工
+    select * from emp where ename like '____'   查询名字是4个字的员工
+    select * from emp where ename like '%\_%' escape '\';   转意字符 查询名字中含有下划线的员工
+order by [列名|表达式|别名|序号(索引从1开始)]   作用于后面所有的列，先按照第一个列排序，再后面的列  但desc只作用于离他最近的列
+    select * from emp order by deptno desc,sal desc;
+    select * from emp order by comm desc nulls last;    null值最大,含空值的倒序显示必须加 nulls last  同样还有  nulls first
+
+单行函数
+
+    select lower('Hello World') 转小写,upper('Hello World') 转大写,initcap('hello world') 首字母大写 from dual;
+    转小写      转大写      首字母大写                                              
+    ----------- ----------- -----------                                             
+    hello world HELLO WORLD Hello World   
+
+    substr(a,b) 从a中，第b位开始取后边的字符   索引从1开始，包括b
+    substr(a,b,c) 从a中，第b位开始取，取c位字符
+
+    select length('Hello World') 字符,lengthb('Hello World') 字节 from dual;   一个汉字字符占用两个字节
+
+    instr(a,b)   在a中，查找b   查找到返回1，否则返回 0
+
+    lpad 左填充  rpad 右填充
+    select lpad(ename,7,'_') 左,rpad(ename,7,'_') 右 from emp;
+    左             右
+    -------------- ----------
+    _Tom_AB        Tom_AB_
+    __SMITH        SMITH__
+    __ALLEN        ALLEN__
+
+    trim 去掉前后指定的字符
+    select trim('H' from 'Hello WorldH') from dual;
+
+    replace
+    select replace('Hello World','l','*') from dual;
+
+    四舍五入
+    select round(45.926,2) 一,round(45.926,1) 二,round(45.926,0) 三,round(45.926,-1) 四,round(45.926,-2) 五  from dual;
+
+            一         二         三         四         五                          
+    ---------- ---------- ---------- ---------- ----------                          
+        45.93       45.9         46         50          0                          
+
+
+    select trunc(45.926,2) 一,trunc(45.926,1) 二,trunc(45.926,0) 三,trunc(45.926,-1) 四,trunc(45.926,-2) 五  from dual
+
+            一         二         三         四         五                          
+    ---------- ---------- ---------- ---------- ----------                          
+        45.92       45.9         45         40          0        
+
+    当前时间
+    select sysdate from dual;
+
+    select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual;
+
+    TO_CHAR(SYSDATE,'YY                                                             
+    -------------------                                                             
+    2016-09-29 11:58:32                                                             
+
+    select (sysdate-1) 昨天,sysdate 今天,(sysdate+1) 明天  from dual;
+    昨天           今天           明天
+    -------------- -------------- --------------
+    23-5月 -18     24-5月 -18     25-5月 -18  
+
+    months_between
+    select ename,hiredate,(sysdate-hiredate)/30 一,months_between(sysdate,hiredate) 二  from emp;
+    ENAME      HIREDATE               一         二
+    ---------- -------------- ---------- ----------
+    Tom_AB
+    SMITH      17-12月-80     455.756605 449.248327
+    ALLEN      20-2月 -81     453.589938 447.151553
+    WARD       22-2月 -81     453.523271 447.087037
+
+    10个月后
+    select to_char(add_months(sysdate,10),'yyyy-mm-dd') 十个月后 from dual
+    十个月后
+    ----------
+    2019-03-24                                                              
+
+    last_day    当月的最后一天
+    select last_day(sysdate) from dual;
+    LAST_DAY(SYSDA
+    --------------
+    31-5月 -18                                                                  
+
+    next_day
+    下一个星期四
+    select next_day(sysdate,'星期四') from dual;
+    NEXT_DAY(SYSDA
+    --------------
+    31-5月 -18                                                                    
+
+    select next_day(sysdate,'礼拜五') from dual;
+    select next_day(sysdate,'礼拜五') from dual
+                            *
+    第 1 行出现错误: 
+    ORA-01846: 周中的日无效 
+
+    2018-05-24 16:52:07今天是星期四
+    select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss今天是day') from dual;
+    第 1 行出现错误: 
+    ORA-01821: 日期格式无法识别 
+
+    select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss"今天是"day') from dual;
+    TO_CHAR(SYSDATE,'YYYY-MM-DDHH24:MI
+    ----------------------------------
+    2018-05-24 16:53:36今天是星期四
+
+
+    查询员工的薪水：两位小数、千位符、本地货币代码
+    select to_char(sal,'L9,999.99') from emp;
+
+    TO_CHAR(SAL,'L9,999                                                             
+    -------------------                                                             
+            ￥800.00                                                             
+            ￥1,600.00                                                             
+            ￥1,250.00                                                             
+
+    --nullif(a,b) 当a=b的时候，返回null；否则返回a
+
+    coalesce 从左到右 找到第一个不为null的值
+    select comm,sal,coalesce(comm,sal) "第一个不为null的值"  from emp;
+
+        COMM        SAL 第一个不为null的值                                        
+    ---------- ---------- ------------------                                        
+                    800                800                                        
+        300       1600                300                                        
+        500       1250                500                                        
+                    2975               2975                                        
+
+    decode=case语句
+
+    select ename,job,sal 涨前,
+                case job when 'PRESIDENT' then sal+1000
+                        when 'MANAGER' then sal+800
+                        else sal+400
+            end 涨后
+        from emp;
+
+    select ename,job,sal 涨前,
+                decode(job,'PRESIDENT',sal+1000,
+                        'MANAGER',sal+800,
+                                    sal+400) 涨后
+        from emp;
+
+    ENAME      JOB             涨前       涨后                                                                                                                                                              
+    ---------- --------- ---------- ----------                                                                                                                                                              
+    SMITH      CLERK            800       1200                                                                                                                                                              
+    ALLEN      SALESMAN        1600       2000                                                                                                                                                              
+    WARD       SALESMAN        1250       1650                                                                                                                                                              
+    JONES      MANAGER         2975       3775                                                                                                                                                              
+    MARTIN     SALESMAN        1250       1650                                                                                                                                                              
+
+    用decode判断年份
+    select count(*) Total,
+        sum(decode(to_char(hiredate,'yyyy'),'1980',1,0)) "1980",
+        sum(decode(to_char(hiredate,'yyyy'),'1981',1,0)) "1981",
+        sum(decode(to_char(hiredate,'yyyy'),'1982',1,0)) "1982",
+        sum(decode(to_char(hiredate,'yyyy'),'1987',1,0)) "1987"
+    from emp;
+
+     TOTAL       1980       1981       1982       1987                                                                                                                                                  
+    ------ ---------- ---------- ---------- ----------                                                                                                                                                  
+        14          1         10          1          2    
+
+多行函数    在多行函数中凡是没有被函数包含的列名最后都要在group by中出现
+
+    --where和having的区别：where不能使用多行函数,having可以
+                        having在分组后，where在分组前过滤
+
+    /*
+    group by 的增强
+    select deptno,job,sum(sal) from emp group by deptno,job
+    +
+    select deptno,sum(sal) from emp group by deptno
+    +
+    select sum(sal) from emp
+    
+    ====
+    select deptno,job,sum(sal) from emp group by rollup(deptno,job)
+    
+    抽象
+    group by rollup(a,b)
+    =
+    group by a,b
+    +
+    group by a
+    +
+    没有group by
+    */
+
+
+    rollup()
+    select deptno,job,sum(sal) from emp group by rollup(deptno,job);
+
+        DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+    ---------- --------- ----------                                                                                                                                                                         
+            10 CLERK           1300                                                                                                                                                                         
+            10 MANAGER         2450                                                                                                                                                                         
+            10 PRESIDENT       5000                                                                                                                                                                         
+            10                 8750                                                                                                                                                                         
+            20 CLERK           1900                                                                                                                                                                         
+            20 ANALYST         6000                                                                                                                                                                         
+            20 MANAGER         2975                                                                                                                                                                         
+            20                10875                                                                                                                                                                         
+            30 CLERK            950                                                                                                                                                                         
+            30 MANAGER         2850                                                                                                                                                                         
+            30 SALESMAN        5600                                                                                                                                                                         
+
+    break on deptno skip 2 / break on null
+    select deptno,job,sum(sal) from emp group by rollup(deptno,job);                          
+        DEPTNO JOB         SUM(SAL)
+    ---------- --------- ----------
+            10                 3000
+            CLERK           1300
+            MANAGER         2450
+            PRESIDENT       5000
+                            11750
+
+
+            20 CLERK           1900
+            ANALYST         6000
+            MANAGER         2975
+                            10875
+
+
+            30 CLERK            950
+            MANAGER         2850
+            SALESMAN        5600
+                            9400
+
+
+                            32025 
+    
+    wm_concat(varchar2) 行转列  
+        col NAMESLIST for a60   设置列宽
+        SQL> select deptno,wm_concat(ename) nameslist from emp group by deptno;
+
+        DEPTNO NAMESLIST                                                                                                                                                                                    
+        ------ ---------------------------------------                                                                                                                              
+        10 CLARK,KING,MILLER                                                                                                                                                                            
+        20 SMITH,FORD,ADAMS,SCOTT,JONES                                                                                                                                                                 
+        30 ALLEN,BLAKE,MARTIN,TURNER,JAMES,WARD    
+
+多表查询
+    等值连接
+        select e.empno,e.ename,e.sal,d.dname
+          from emp e,dept d
+          where e.deptno=d.deptno;
+    不等值连接
+          select e.empno,e.ename,e.sal,s.grade
+            from emp e,salgrade s
+            where e.sal between s.losal  and s.hisal;
+                        
+        外连接：
+            按部门统计员工信息：部门号 部门名称  人数
+            select d.deptno 部门号,d.dname 部门名称,count(e.empno) 人数
+              from emp e,dept d
+              where e.deptno=d.deptno
+              group by d.deptno,d.dname;
+
+            希望把某些不成立的记录（40号部门），任然包含在最后的结果中 ---> 外连接
+
+            左外连接: 当where e.deptno=d.deptno不成立的时候，等号左边的表任然被包含在最后的结果中
+                    写法:where e.deptno=d.deptno(+)
+            右外连接: 当where e.deptno=d.deptno不成立的时候，等号右边的表任然被包含在最后的结果中
+                    写法:where e.deptno(+)=d.deptno
+        
+                    select d.deptno 部门号,d.dname 部门名称,count(e.empno) 人数
+                    from emp e,dept d
+                    where e.deptno(+)=d.deptno
+                    group by d.deptno,d.dname;
+
+                部门号 部门名称             人数                                            
+            ---------- -------------- ----------                                            
+                    10 ACCOUNTING              3                                            
+                    40 OPERATIONS              0                                            
+                    20 RESEARCH                5                                            
+                    30 SALES                   6                        
+
+        自连接: 通过表的别名，将同一张表视为多张表  自连接不适合操作大表
+            select e.ename 员工姓名,b.ename 老板姓名
+              from emp e,emp b
+              where e.mgr=b.empno;        
+
+            员工姓名   老板姓名                                                                                                                                                                                     
+            ---------- ----------                                                                                                                                                                                   
+            FORD       JONES                                                                                                                                                                                        
+            SCOTT      JONES                                                                                                                                                                                        
+            JAMES      BLAKE                                                                                                                                                                                        
+            TURNER     BLAKE                                                                                                                                                                                        
+                                                                                                                                                                                      
+        层次查询   层次查询相比自连接，适合操作大表，但是显示效果不直观     level   伪列
+            select level,empno,ename,mgr
+            from emp
+            connect by prior empno=mgr
+            start with mgr is null
+            order by 1;
+
+                LEVEL      EMPNO ENAME             MGR                                                                                                                                                             
+            ---------- ---------- ---------- ----------                                                                                                                                                             
+                    1       7839 KING                                                                                                                                                                              
+                    2       7566 JONES            7839                                                                                                                                                             
+                    2       7698 BLAKE            7839                                                                                                                                                             
+                    2       7782 CLARK            7839                                                                                                                                                             
+                    3       7902 FORD             7566                                                                                                                                                             
+        
+子查询
+    1、可以加括号
+    2、可以在主查询的select where having from 后面使用子查询
+    3、不可以在group by使用子查询
+    4、from后面的子查询 可以看作一个集合
+    5、主查询和子查询可以不是同一张表；只要子查询返回的结果 主查询可以使用 即可
+    6、一般不在子查询中排序；但在top-n分析问题中 必须对子查询排序
+    7、一般先执行子查询，再执行主查询；但相关子查询例外（相关子查询是 将主查询中的值 作为参数传递给子查询）
+    8、单行子查询只能使用单行操作符；多行子查询只能使用多行操作符;单行子查询返回一个数据，多行子查询返回集合
+    9、子查询中的null
+
+    2、可以在主查询的select where having from 后面使用子查询
+        create table test1 as (select * from emp);      复制一张表
+        select * from test1;
+
+        EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO
+        ------ ---------- --------- ---------- -------------- ---------- ---------- ----------
+        7369 SMITH      CLERK           7902 17-12月-80           1500                    20
+        7499 ALLEN      SALESMAN        7698 20-2月 -81           1125        300         30
+        7521 WARD       SALESMAN        7698 22-2月 -81            750        500         30
+        7566 JONES      MANAGER         7839 02-4月 -81           1500                    20
+
+        create table test as (select * from emp where 1=2);   只复制一张表的结构
+        desc test
+
+        名称                       是否为空? 类型
+        ---------------------------------------------------------------------------------------------------
+        EMPNO                      NUMBER(4)
+        ENAME                      VARCHAR2(10)
+        JOB                        VARCHAR2(9)
+
+    5、主查询和子查询可以不是同一张表；只有子查询返回的结果 主查询可以使用 即可
+        查询部门名称是SALES的员工
+        select * from emp where deptno=(select deptno from dept where dname='SALES');
+
+        EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+        ----- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+        7499 ALLEN      SALESMAN        7698 20-2月 -81           1600        300         30                                                                                                              
+        7521 WARD       SALESMAN        7698 22-2月 -81           1250        500         30  
+
+        6、一般不在子查询中排序；但在top-n分析问题中 必须对子查询排序
+        select * from (select ename,sal from emp order by sal desc)  where rownum<5
+
+        ENAME             SAL
+        ---------- ----------
+        CLARK            2250
+        KING             2250
+        MILLER           2250
+        SMITH            1500
+
+    8.多行子查询的操作符
+        in 在集合中
+            查询部门名称是SALES和ACCOUNTING的员工
+            select * from emp where deptno in (select deptno from dept where dname='SALES' or dname='ACCOUNTING');
+
+            EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+            ----- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+            7499 ALLEN      SALESMAN        7698 20-2月 -81           1600        300         30                                                                                                              
+            7521 WARD       SALESMAN        7698 22-2月 -81           1250        500         30                                                                                                              
+            7654 MARTIN     SALESMAN        7698 28-9月 -81           1250       1400         30 
+
+        any 和集合中的任意一个值比较
+            查询工资比30号部门任意一个员工高的员工信息
+            select * from emp where sal > any (select sal from emp where deptno=30);
+
+            EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+            ---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+            7839 KING       PRESIDENT            17-11月-81           5000                    10                                                                                                              
+            7902 FORD       ANALYST         7566 03-12月-81           3000                    20                                                                                                              
+            7788 SCOTT      ANALYST         7566 19-4月 -87           3000                    20                                                                                                              
+            7566 JONES      MANAGER         7839 02-4月 -81           2975                    20 
+
+        all 和集合中的所有值比较
+            查询工资比30号部门所有员工高的员工信息
+            select * from emp where sal > all (select sal from emp where deptno=30);
+
+            EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+            -- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+            7566 JONES      MANAGER         7839 02-4月 -81           2975                    20                                                                                                              
+            7788 SCOTT      ANALYST         7566 19-4月 -87           3000                    20                                                                                                              
+            7839 KING       PRESIDENT            17-11月-81           5000                    10                                                                                                              
+            7902 FORD       ANALYST         7566 03-12月-81           3000                    20  
+
+    9、子查询中的null
+
+        查询是老板的员工信息
+            select * from emp where empno in (select mgr from emp)
+            EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+            - ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+            7902 FORD       ANALYST         7566 03-12月-81           3000                    20                                                                                                              
+            7698 BLAKE      MANAGER         7839 01-5月 -81           2850                    30                                                                                                              
+            7839 KING       PRESIDENT            17-11月-81           5000                    10 
+
+        查询不是老板的员工信息
+            select * from emp where empno not in (select mgr from emp);
+
+            未选定行
+
+            select * from emp where empno not in (select mgr from emp where mgr is not null);
+            
+            EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+            -- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+            7844 TURNER     SALESMAN        7698 08-9月 -81           1500          0         30                                                                                                              
+            7521 WARD       SALESMAN        7698 22-2月 -81           1250        500         30
+集合运算
+    注意事项
+        1、参与运算的各个集合必须列数相同 且类型一致
+        2、采用第一个集合作为最后的表头
+        3、order by永远在最后
+        4、括号
+
+处理数据
+    SQL的类型
+    1、DML（Data Manipulation Language 数据操作语言） select insert update delete
+    2、DDL(Data Definition Language 数据定义语言)    create table,alter table,truncate table,drop table 
+                                                    create/drop view,sequnece,index,synonym(同义词)
+    3、DCL(Data Control Language 数据控制语言): grant(授权) revoke(撤销权限)
+
+    地址符 &    地址符可以代替数据，列名，表名
+        insert into emp(empno,ename) values(&empno,&ename);
+
+        select empno,ename,sal,&t from emp;
+
+        select * from &t;
+
+    海量插入数据：
+        1、数据泵（PLSQL程序） dbms_datapump(程序包)
+        2、SQL*Loader
+        3、外部表
+
+    delete和truncate的区别  尽量使用delete
+        1、delete逐条删除；truncate先摧毁表 再重建
+        2、（*）delete是DML  truncate是DDL
+                (可以回滚)         （不可以回滚）
+        3、delete不会释放空间 truncate会
+        4、delete会产生碎片 truncate不会
+        5、delete可以闪回(flashback)  truncate不可以
+        --flashback其实是一种恢复
+
+    Oracle中的事务
+        set transaction read only;      设置事务只读
+        1、起始标志: 事务中的第一条DML语句
+        2、结束标志：提交： 显式  commit  隐式： 正常退出 DDL DCL
+                    回滚： 显式 rollback   隐式： 非正常退出 掉电  宕机
+    保存点
+        insert into testsavepoint values(1,'Maee');
+        savepoint a;    创建保存点
+        insert into testsavepoint values(2,'Maee');
+        savepoint b;
+        rollback to savepoint a;       回退到保存点
+        如果回退到保存点a的话，保存点b自动删除，事务结束后自动删除保存点
+
+Oracle分页
+    select *
+    from 	(select rownum r,e1.*
+        from (select * from emp order by sal) e1
+        where rownum <=8
+        )
+    where r >=5;
+
+   
+    

@@ -1,0 +1,193 @@
+2017/7/12 星期三
+@@读取配置文件的方法
+ 1.实例化properties,Reader rd=new FileReader("配置文件"),prop.load(rd);
+	 
+ 2.实例化properties,当前类.class.getClassLoader().getResourceAsStream("配置文件");prop.load(rd);
+	 
+@@获取连接对象的方法
+ 1.Class.forName()加载驱动，DriverManager.getConnection(url,username,password)获取
+
+ 2.BasicDataSource实例化，用实例对象的set方法设置参数，使用getConnection()方法获取
+
+ 3. prop(属性)加载配置文件的属性对象 prop.load(rd);
+ dataSource=BasicDataSourceFactory.createDataSource(Properties prop);
+
+ 4.读取配置文件db.properties,实例化properties,Reader rd=new FileReader("配置文件"),prop.load(rd);
+	prop.getProperty("driver")获取配置文件信息，再使用1方法获取
+
+ 5.C3P0方法，导入jar包 创建  c3p0-config.xml  配置文件
+	ComboPooledDataSource cpds = new ComboPooledDataSource(); 获取数据源
+	cpds.getConnection()获取
+@@执行SQL语句方法
+  1.statement方法
+	注册驱动，获取连接对象，通过连接对象调方法，可被注入攻击
+  2.preparedStatement方法
+	注册驱动，获取连接对象，通过连接对象调方法，执行前创建SQL语句，防注入
+  3.QueryRunner方法
+	使用JDBCUtils工具类 QueryRunner qr=new QueryRunner(dataSource);
+	qr. query(...) update(...)
+@@传统方法：
+DriverManager.registerDriver(new Driver())传一个数据库的驱动
+Driverd的静态代码块里边有创建的对象，所以此时不用重复创建，只需要用类加载器加载即可
+Class.forName("com.mysql.jdbc.Driver;");
+String url="jdbc:mysql://localhost:3306/mybase";	String user="root";	String password="123";
+Connection con=DriverManager.getConnection(url,user,password)获取连接对象
+
+//Statement stat=con.createStatement();获取执行对象(可被注入攻击)
+PreparedStatement ps=con.preparStatement(sql);获取执行对象(可以防止注入攻击，不过要先定义sql语句)
+此时的sql语句格式String sql="SELECT * FROM sort WHERE sid=?;";
+然后用ps.setObject(1, 4);来对？进行赋值 最小为1
+
+stat的执行更新方法executeUpdate(String sql)和执行查询方法executeQuery(String sql)返回查询结果集
+ps的执行更新方法executeUpdate()和执行查询方法executeQuery()返回查询结果集
+execute(String sql)方法返回boolean值，true则需要用rs.getResultSet(),false则用rs.getUpdateCount()
+用Result rs接收查询结果
+while(rs.next()){
+	System.out.println(rs.getObject("sid")+"-"+rs.getString("sname"));
+}
+打印结果
+
+@@连接池方法：
+先导入driver.jar（mysql驱动包）,JDBCUtils.jar（JDBC工具包）,dbcp.jar（数据源包）,pool.jar（池包）四个包
+使用DataSource接口的实现类BasicDataSource（基本数据源）创建对象 BasicDataSource dataSource = new BasicDataSource();
+用dataSource对象的setXXX方法设置Diver,URl,user,password四个属性//此处还可以设置其他的四个属性，比如最大连接数
+dataSource使用getConnection()无参的构造方法获取连接对象
+用JDBCUtils jar包下的org.apache.commons.dbutils.QueryRunner类的带数据源的构造方法QueryRunner(DataSource ds)创建对象qr
+qr的查询方法query(String sql,ResultSetHandler<T> rsh,Object.. params)和更新方法update(String sql,Object.. params)
+List<User> list=qr.query(sql, new BeanListHandler<User>(User.class),params);
+因为之前传入了数据源所以这里不用传入连接对象connection。
+
+ResultSetHandler<T> rshs 是一个接口，用于定义select操作后，怎样封装结果集.
+	ArrayHandler	将结果集中的第一条记录封装到一个Object[]数组中，数组中的每一个元素就是这条记录中的每一个字段的值
+	ArrayListHandler	将结果集中的每一条记录都封装到一个Object[]数组中，将这些数组在封装到List集合中。
+	BeanHandler	将结果集中第一条记录封装到一个指定的javaBean中。
+	BeanListHandler	将结果集中每一条记录封装到指定的javaBean中，将这些javaBean在封装到List集合中
+	ColumnListHandler	将结果集中指定的列的字段值，封装到一个List集合中
+	ScalarHandler	它是用于单个数据。例如select count(*) from 表操作。 返回的是个Long型的
+	MapHandler	将结果集第一行封装到Map集合中,Key 列名, Value 该列数据
+	MapListHandler	将结果集每一行封装到Map集合中,Key 列名, Value 该列数据,Map集合存储到List集合
+
+JavaBean就是一个类，在开发中常用封装数据。具有如下特性
+1.需要实现接口：java.io.Serializable ，通常实现接口这步骤省略了，不会影响程序。
+2.提供私有字段：private 类型 字段名;
+3.提供getter/setter方法：
+4.提供无参构造
+
+@@自定义连接池
+实现DataSource这个接口,重写接口中的getConnection()方法,增加返回方法backConnection(Connection con)其他方法不用管
+在静态代码块用DbUtils.getConnection()创建5个对象，并储存到LinkedList对象pool中
+在getConnection方法中用 remove()返回一个Connection对象
+backConnection方法中用add()将使用后的连接对象重新添加到连接池中
+
+public class MyDataSource implements DataSource {
+	private static LinkedList<Connection> pool = new LinkedList<Connection>();
+	static {
+		for (int i = 0; i < 5; i++) {
+			pool.add(DbUtils.getConnection());}}
+	public static Connection getMyConnection() throws SQLException {
+		if (pool.size() == 0) {
+			for (int i = 0; i < 5; i++) {
+				pool.add(DbUtils.getConnection());
+			}
+		}
+		Connection con =pool.remove();
+		return con;}
+	//连接对象返回连接池方法
+	public static void backConnection(Connection con){
+		pool.add(con);}
+
+@@增强Connection和DataSource(装饰者模式)
+创建一个Connection接口的实现类，准备重写close()方法和createStatement()和preparedStatement()
+定义一个传参构造方法，传入正常的连接对象和连接池pool,在类中定义两个相同的变量用来接收
+重写需要的方法，其他方法使用正常对象本来的方法如preparedStatement()
+在连接池中先创建正常的连接对象，再通过增强连接池的带参构造方法获得增强连接对象，然后使用pool添加方法add()
+
+public class MyConnection implements Connection {
+	Connection con = null;
+	LinkedList<Connection> pool = null;
+
+	MyConnection(Connection con, LinkedList<Connection> pool) {
+		this.con = con;
+		this.pool = pool;
+	}
+
+	public void close() throws SQLException {
+		pool.add(con);
+	}
+
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+ 
+		return con.prepareStatement(sql);
+	}
+
+
+@@DbUtils类
+此类是一个工具类,定义了关闭资源与事务处理的方法
+closeQuietly()方法内部对异常进行了处理，所以直接使用可以不再抛异常
+DbUtils.close(rs);
+DbUtils.close(stat);
+DbUtils.close(con);
+DbUtils.closeQuietly(rs);
+DbUtils.closeQuietly(stat);
+DbUtils.closeQuietly(con);
+DbUtils.closeQuietly(con, stat, rs);
+
+@@properties配置文件
+2.1使用properties配置文件
+开发中获得连接的4个参数（驱动、URL、用户名、密码）通常都存在配置文件中，方便后期维护，程序如果需要更换数据库，只需要修改配置文件即可。
+通常情况下，我们习惯使用properties文件，此文件我们将做如下要求：
+1.文件位置：任意，建议src下
+2.文件名称：任意，扩展名为properties
+3.文件内容：一行一组数据，格式是“key=value”.
+a)key命名自定义，如果是多个单词，习惯使用点分隔。例如：jdbc.driver
+b)value值不支持中文，如果需要使用非英文字符，将进行unicode转换。
+2.2创建配置文件
+在项目跟目录下，创建文件，输入“db.properties”文件名。
+文件中的内容
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/mydb
+user=root
+password=root
+
+2.3加载配置文件：Properties对象
+对应properties文件处理，开发中也使用Properties对象进行。我们将采用加载properties文件获得流，然后使用Properties对象进行处理。
+JDBCUtils.java中编写代码
+public class JDBCUtils {
+
+	private static String driver;
+	private static String url;
+	private static String user;
+	private static String password;
+	// 静态代码块
+	static {
+		try {
+			// 1 使用Properties处理流
+			// 使用load()方法加载指定的流
+			Properties props = new Properties();
+			Reader is = new FileReader("db.properties");
+			props.load(is);
+			// 2 使用getProperty(key)，通过key获得需要的值，
+			driver = props.getProperty("driver");
+			url = props.getProperty("url");
+			user = props.getProperty("user");
+			password = props.getProperty("password");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * 获得连接
+	 */
+	public static Connection getConnection() {
+		try {
+			// 1 注册驱动
+			Class.forName(driver);
+			// 2 获得连接
+			Connection conn = DriverManager.getConnection(url, user, password);
+			return conn;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+}

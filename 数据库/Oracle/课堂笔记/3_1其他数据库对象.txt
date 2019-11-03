@@ -1,0 +1,313 @@
+SQL> --视图
+SQL> create view empinfoview
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annsal,d.dname
+  4  from emp e,dept d
+  5  where e.deptno=d.deptno;
+create view empinfoview
+            *
+第 1 行出现错误: 
+ORA-01031: 权限不足 
+
+
+SQL> /
+
+视图已创建。
+
+SQL> desc empinfoview
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ EMPNO                                     NOT NULL NUMBER(4)
+ ENAME                                              VARCHAR2(10)
+ SAL                                                NUMBER(7,2)
+ ANNSAL                                             NUMBER
+ DNAME                                              VARCHAR2(14)
+
+SQL> select * from empinfoview;
+
+     EMPNO ENAME             SAL     ANNSAL DNAME                               
+---------- ---------- ---------- ---------- --------------                      
+      7369 SMITH             800       9600 RESEARCH                            
+      7499 ALLEN            1600      19200 SALES                               
+      7521 WARD             1250      15000 SALES                               
+      7566 JONES            2975      35700 RESEARCH                            
+      7654 MARTIN           1250      15000 SALES                               
+      7698 BLAKE            2850      34200 SALES                               
+      7782 CLARK            2450      29400 ACCOUNTING                          
+      7788 SCOTT            3000      36000 RESEARCH                            
+      7839 KING             5000      60000 ACCOUNTING                          
+      7844 TURNER           1500      18000 SALES                               
+      7876 ADAMS            1100      13200 RESEARCH                            
+
+     EMPNO ENAME             SAL     ANNSAL DNAME                               
+---------- ---------- ---------- ---------- --------------                      
+      7900 JAMES             950      11400 SALES                               
+      7902 FORD             3000      36000 RESEARCH                            
+      7934 MILLER           1300      15600 ACCOUNTING                          
+
+已选择 14 行。
+
+SQL> create or replace view empinfoview
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annsal,d.dname
+  4  from emp e,dept d
+  5  where e.deptno=d.deptno
+  6  with read only;
+
+视图已创建。
+
+SQL> host cls
+
+SQL> --序列
+SQL> create sequence myseq;
+
+序列已创建。
+
+SQL> create table testseq
+  2  (tid number,tname varchar2(20));
+
+表已创建。
+
+SQL> select myseq.currval from dual;
+select myseq.currval from dual
+       *
+第 1 行出现错误: 
+ORA-08002: 序列 MYSEQ.CURRVAL 尚未在此会话中定义 
+
+
+SQL> select myseq.nextval from dual;
+
+   NEXTVAL                                                                      
+----------                                                                      
+         1                                                                      
+
+已选择 1 行。
+
+SQL> select myseq.currval from dual;
+
+   CURRVAL                                                                      
+----------                                                                      
+         1                                                                      
+
+已选择 1 行。
+
+SQL> insert into  testseq values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> commit;
+
+提交完成。
+
+SQL> select * from testseq;
+
+       TID TNAME                                                                
+---------- --------------------                                                 
+         2 aaa                                                                  
+         3 aaa                                                                  
+         4 aaa                                                                  
+         5 aaa                                                                  
+
+已选择 4 行。
+
+SQL> insert into  testseq values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> rollback;
+
+回退已完成。
+
+SQL> insert into  testseq values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> select * from testseq;
+
+       TID TNAME                                                                
+---------- --------------------                                                 
+         2 aaa                                                                  
+         3 aaa                                                                  
+         4 aaa                                                                  
+         5 aaa                                                                  
+         8 aaa                                                                  
+
+已选择 5 行。
+
+SQL> host cls
+
+SQL> --索引
+SQL> --SQL的执行计划
+SQL> explain plan for select * from emp where deptno=10;
+
+已解释。
+
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                               
+--------------------------------------------------------------------------------
+Plan hash value: 3956160932                                                     
+                                                                                
+--------------------------------------------------------------------------      
+| Id  | Operation         | Name | Rows  | Bytes | Cost (%CPU)| Time     |      
+--------------------------------------------------------------------------      
+|   0 | SELECT STATEMENT  |      |     3 |   261 |     3   (0)| 00:00:01 |      
+|*  1 |  TABLE ACCESS FULL| EMP  |     3 |   261 |     3   (0)| 00:00:01 |      
+--------------------------------------------------------------------------      
+                                                                                
+Predicate Information (identified by operation id):                             
+---------------------------------------------------                             
+
+PLAN_TABLE_OUTPUT                                                               
+--------------------------------------------------------------------------------
+                                                                                
+   1 - filter("DEPTNO"=10)                                                      
+                                                                                
+Note                                                                            
+-----                                                                           
+   - dynamic sampling used for this statement                                   
+
+已选择 17 行。
+
+SQL> host cls
+
+SQL> --创建目录（索引）
+SQL> create index myindex on emp(deptno);
+
+索引已创建。
+
+SQL> explain plan for select * from emp where deptno=10;
+
+已解释。
+
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                               
+--------------------------------------------------------------------------------
+Plan hash value: 2762842933                                                     
+                                                                                
+--------------------------------------------------------------------------------
+-------                                                                         
+                                                                                
+| Id  | Operation                   | Name    | Rows  | Bytes | Cost (%CPU)| Tim
+e     |                                                                         
+                                                                                
+--------------------------------------------------------------------------------
+-------                                                                         
+                                                                                
+
+PLAN_TABLE_OUTPUT                                                               
+--------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT            |         |     3 |   261 |     2   (0)| 00:
+00:01 |                                                                         
+                                                                                
+|   1 |  TABLE ACCESS BY INDEX ROWID| EMP     |     3 |   261 |     2   (0)| 00:
+00:01 |                                                                         
+                                                                                
+|*  2 |   INDEX RANGE SCAN          | MYINDEX |     3 |       |     1   (0)| 00:
+00:01 |                                                                         
+                                                                                
+--------------------------------------------------------------------------------
+-------                                                                         
+
+PLAN_TABLE_OUTPUT                                                               
+--------------------------------------------------------------------------------
+                                                                                
+                                                                                
+Predicate Information (identified by operation id):                             
+---------------------------------------------------                             
+                                                                                
+   2 - access("DEPTNO"=10)                                                      
+                                                                                
+Note                                                                            
+-----                                                                           
+   - dynamic sampling used for this statement                                   
+
+已选择 18 行。
+
+SQL> set linesize 200
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2762842933                                                                                                                                                                             
+                                                                                                                                                                                                        
+---------------------------------------------------------------------------------------                                                                                                                 
+| Id  | Operation                   | Name    | Rows  | Bytes | Cost (%CPU)| Time     |                                                                                                                 
+---------------------------------------------------------------------------------------                                                                                                                 
+|   0 | SELECT STATEMENT            |         |     3 |   261 |     2   (0)| 00:00:01 |                                                                                                                 
+|   1 |  TABLE ACCESS BY INDEX ROWID| EMP     |     3 |   261 |     2   (0)| 00:00:01 |                                                                                                                 
+|*  2 |   INDEX RANGE SCAN          | MYINDEX |     3 |       |     1   (0)| 00:00:01 |                                                                                                                 
+---------------------------------------------------------------------------------------                                                                                                                 
+                                                                                                                                                                                                        
+Predicate Information (identified by operation id):                                                                                                                                                     
+
+PLAN_TABLE_OUTPUT                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------                                                                                                                                                     
+                                                                                                                                                                                                        
+   2 - access("DEPTNO"=10)                                                                                                                                                                              
+                                                                                                                                                                                                        
+Note                                                                                                                                                                                                    
+-----                                                                                                                                                                                                   
+   - dynamic sampling used for this statement                                                                                                                                                           
+
+已选择 18 行。
+
+SQL> host cls
+
+SQL> --同义词(别名)
+SQL> show user
+USER 为 "SCOTT"
+SQL> select count(*) from hr.employees;
+select count(*) from hr.employees
+                        *
+第 1 行出现错误: 
+ORA-00942: 表或视图不存在 
+
+
+SQL> /
+
+  COUNT(*)                                                                                                                                                                                              
+----------                                                                                                                                                                                              
+       107                                                                                                                                                                                              
+
+已选择 1 行。
+
+SQL> --为hr.employees起别名  ---> 同义词
+SQL> create synonym hremp for hr.employees;
+create synonym hremp for hr.employees
+*
+第 1 行出现错误: 
+ORA-01031: 权限不足 
+
+
+SQL> /
+
+同义词已创建。
+
+SQL> select count(*) from hremp;
+
+  COUNT(*)                                                                                                                                                                                              
+----------                                                                                                                                                                                              
+       107                                                                                                                                                                                              
+
+已选择 1 行。
+
+SQL> spool off

@@ -1,0 +1,360 @@
+SQL> select count(*) Total,
+  2         sum(decode(to_char(hiredate,'yyyy'),'1980',1,0)) "1980",
+  3         sum(decode(to_char(hiredate,'yyyy'),'1981',1,0)) "1981",
+  4         sum(decode(to_char(hiredate,'yyyy'),'1982',1,0)) "1982",
+  5         sum(decode(to_char(hiredate,'yyyy'),'1987',1,0)) "1987"
+  6  from emp;
+
+     TOTAL       1980       1981       1982       1987                                                                                                                                                  
+---------- ---------- ---------- ---------- ----------                                                                                                                                                  
+        14          1         10          1          2                                                                                                                                                  
+
+已选择 1 行。
+
+SQL> host cls
+
+SQL> --创建表
+SQL> create table test1
+  2  (tid number,tname varchar2(20));
+
+表已创建。
+
+SQL> --rowid 行地址
+SQL> select rowid,empno,ename,sal from emp;
+
+ROWID                   EMPNO ENAME             SAL                                                                                                                                                     
+------------------ ---------- ---------- ----------                                                                                                                                                     
+AAAMfPAAEAAAAAgAAA       7369 SMITH             800                                                                                                                                                     
+AAAMfPAAEAAAAAgAAB       7499 ALLEN            1600                                                                                                                                                     
+AAAMfPAAEAAAAAgAAC       7521 WARD             1250                                                                                                                                                     
+AAAMfPAAEAAAAAgAAD       7566 JONES            2975                                                                                                                                                     
+AAAMfPAAEAAAAAgAAE       7654 MARTIN           1250                                                                                                                                                     
+AAAMfPAAEAAAAAgAAF       7698 BLAKE            2850                                                                                                                                                     
+AAAMfPAAEAAAAAgAAG       7782 CLARK            2450                                                                                                                                                     
+AAAMfPAAEAAAAAgAAH       7788 SCOTT            3000                                                                                                                                                     
+AAAMfPAAEAAAAAgAAI       7839 KING             5000                                                                                                                                                     
+AAAMfPAAEAAAAAgAAJ       7844 TURNER           1500                                                                                                                                                     
+AAAMfPAAEAAAAAgAAK       7876 ADAMS            1100                                                                                                                                                     
+
+ROWID                   EMPNO ENAME             SAL                                                                                                                                                     
+------------------ ---------- ---------- ----------                                                                                                                                                     
+AAAMfPAAEAAAAAgAAL       7900 JAMES             950                                                                                                                                                     
+AAAMfPAAEAAAAAgAAM       7902 FORD             3000                                                                                                                                                     
+AAAMfPAAEAAAAAgAAN       7934 MILLER           1300                                                                                                                                                     
+
+已选择 14 行。
+
+SQL> select * from emp where rowid='AAAMfPAAEAAAAAgAAJ';
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7844 TURNER     SALESMAN        7698 08-9月 -81           1500          0         30                                                                                                              
+
+已选择 1 行。
+
+SQL> --创建表：保存20号部门的员工
+SQL> create table emp20
+  2  as
+  3  select * from emp where deptno=20;
+
+表已创建。
+
+SQL> select * from emp20;
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7369 SMITH      CLERK           7902 17-12月-80            800                    20                                                                                                              
+      7566 JONES      MANAGER         7839 02-4月 -81           2975                    20                                                                                                              
+      7788 SCOTT      ANALYST         7566 19-4月 -87           3000                    20                                                                                                              
+      7876 ADAMS      CLERK           7788 23-5月 -87           1100                    20                                                                                                              
+      7902 FORD       ANALYST         7566 03-12月-81           3000                    20                                                                                                              
+
+已选择 5 行。
+
+SQL> --创建表：员工号 姓名  月薪 年薪 部门名称
+SQL> create table empinfo
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annsal,d.dname
+  4  from emp e,dept d
+  5  where e.deptno=d.deptno;
+
+表已创建。
+
+SQL> select * from empinfo;
+
+     EMPNO ENAME             SAL     ANNSAL DNAME                                                                                                                                                       
+---------- ---------- ---------- ---------- --------------                                                                                                                                              
+      7369 SMITH             800       9600 RESEARCH                                                                                                                                                    
+      7499 ALLEN            1600      19200 SALES                                                                                                                                                       
+      7521 WARD             1250      15000 SALES                                                                                                                                                       
+      7566 JONES            2975      35700 RESEARCH                                                                                                                                                    
+      7654 MARTIN           1250      15000 SALES                                                                                                                                                       
+      7698 BLAKE            2850      34200 SALES                                                                                                                                                       
+      7782 CLARK            2450      29400 ACCOUNTING                                                                                                                                                  
+      7788 SCOTT            3000      36000 RESEARCH                                                                                                                                                    
+      7839 KING             5000      60000 ACCOUNTING                                                                                                                                                  
+      7844 TURNER           1500      18000 SALES                                                                                                                                                       
+      7876 ADAMS            1100      13200 RESEARCH                                                                                                                                                    
+
+     EMPNO ENAME             SAL     ANNSAL DNAME                                                                                                                                                       
+---------- ---------- ---------- ---------- --------------                                                                                                                                              
+      7900 JAMES             950      11400 SALES                                                                                                                                                       
+      7902 FORD             3000      36000 RESEARCH                                                                                                                                                    
+      7934 MILLER           1300      15600 ACCOUNTING                                                                                                                                                  
+
+已选择 14 行。
+
+SQL> host cls
+
+SQL> --修改表：增加新列，修改列，删除列，重命名列，重命名表
+SQL> set linesize 80
+SQL> desc test1
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ TID                                                NUMBER
+ TNAME                                              VARCHAR2(20)
+
+SQL> --增加新列
+SQL> alter table test1 add photo blob;
+
+表已更改。
+
+SQL> desc test1
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ TID                                                NUMBER
+ TNAME                                              VARCHAR2(20)
+ PHOTO                                              BLOB
+
+SQL> --修改列
+SQL> alter table test1 modify tname varchar2(40);
+
+表已更改。
+
+SQL>  desc test1
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ TID                                                NUMBER
+ TNAME                                              VARCHAR2(40)
+ PHOTO                                              BLOB
+
+SQL> --删除列
+SQL> alter table test1 drop column photo;
+
+表已更改。
+
+SQL>  desc test1
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ TID                                                NUMBER
+ TNAME                                              VARCHAR2(40)
+
+SQL> --重命名列
+SQL> alter table test1 rename column tname to username;
+
+表已更改。
+
+SQL> desc test1
+ 名称                                      是否为空? 类型
+ ----------------------------------------- -------- ----------------------------
+ TID                                                NUMBER
+ USERNAME                                           VARCHAR2(40)
+
+SQL> --重命名表
+SQL> rename test1 to test2;
+
+表已重命名。
+
+SQL> host cls
+
+SQL> --删除表
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                               
+------------------------------ ------- ----------                               
+DEPT                           TABLE                                            
+EMP                            TABLE                                            
+BONUS                          TABLE                                            
+SALGRADE                       TABLE                                            
+TEMPTEST1                      TABLE                                            
+EMP10                          TABLE                                            
+TESTSAVEPOINT                  TABLE                                            
+TESTDELETE                     TABLE                                            
+EMP20                          TABLE                                            
+EMPINFO                        TABLE                                            
+TEST2                          TABLE                                            
+
+已选择 11 行。
+
+SQL> drop table TESTDELETE;
+
+表已删除。
+
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                               
+------------------------------ ------- ----------                               
+DEPT                           TABLE                                            
+EMP                            TABLE                                            
+BONUS                          TABLE                                            
+SALGRADE                       TABLE                                            
+TEMPTEST1                      TABLE                                            
+EMP10                          TABLE                                            
+TESTSAVEPOINT                  TABLE                                            
+BIN$z6+GnIyhQtaIrbPpN1H99A==$0 TABLE                                            
+EMP20                          TABLE                                            
+EMPINFO                        TABLE                                            
+TEST2                          TABLE                                            
+
+已选择 11 行。
+
+SQL> --查看回收站
+SQL> show recyclebin;
+ORIGINAL NAME    RECYCLEBIN NAME                OBJECT TYPE  DROP TIME          
+---------------- ------------------------------ ------------ -------------------
+TESTDELETE       BIN$z6+GnIyhQtaIrbPpN1H99A==$0 TABLE        2016-10-06:15:24:14
+SQL> --清空回收站
+SQL> purge recyclebin;
+
+回收站已清空。
+
+SQL> host cls
+
+SQL> select * from TESTSAVEPOINT;
+
+       TID TNAME                                                                
+---------- --------------------                                                 
+         1 Tom                                                                  
+         2 Mary                                                                 
+
+已选择 2 行。
+
+SQL> drop table TESTSAVEPOINT;
+
+表已删除。
+
+SQL> show recyclebin;
+ORIGINAL NAME    RECYCLEBIN NAME                OBJECT TYPE  DROP TIME          
+---------------- ------------------------------ ------------ -------------------
+TESTSAVEPOINT    BIN$384BF4yOT+aAlXzC7eLPIA==$0 TABLE        2016-10-06:15:28:07
+SQL> select * from TESTSAVEPOINT;
+select * from TESTSAVEPOINT
+              *
+第 1 行出现错误: 
+ORA-00942: 表或视图不存在 
+
+
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                               
+------------------------------ ------- ----------                               
+DEPT                           TABLE                                            
+EMP                            TABLE                                            
+BONUS                          TABLE                                            
+SALGRADE                       TABLE                                            
+TEMPTEST1                      TABLE                                            
+EMP10                          TABLE                                            
+BIN$384BF4yOT+aAlXzC7eLPIA==$0 TABLE                                            
+EMP20                          TABLE                                            
+EMPINFO                        TABLE                                            
+TEST2                          TABLE                                            
+
+已选择 10 行。
+
+SQL> select * from BIN$384BF4yOT+aAlXzC7eLPIA==$0;
+select * from BIN$384BF4yOT+aAlXzC7eLPIA==$0
+                           *
+第 1 行出现错误: 
+ORA-00933: SQL 命令未正确结束 
+
+
+SQL> select * from "BIN$384BF4yOT+aAlXzC7eLPIA==$0";
+
+       TID TNAME                                                                
+---------- --------------------                                                 
+         1 Tom                                                                  
+         2 Mary                                                                 
+
+已选择 2 行。
+
+SQL> --注意：管理员没有回收站
+SQL> show user
+USER 为 "SCOTT"
+SQL> show recyclebin;
+ORIGINAL NAME    RECYCLEBIN NAME                OBJECT TYPE  DROP TIME          
+---------------- ------------------------------ ------------ -------------------
+TESTSAVEPOINT    BIN$384BF4yOT+aAlXzC7eLPIA==$0 TABLE        2016-10-06:15:28:07
+SQL> --闪回删除 ---> 回收站
+SQL> flashback table TESTSAVEPOINT to before drop;
+
+闪回完成。
+
+SQL> show recyclebin;
+SQL> select * from TESTSAVEPOINT;
+
+       TID TNAME                                                                
+---------- --------------------                                                 
+         1 Tom                                                                  
+         2 Mary                                                                 
+
+已选择 2 行。
+
+SQL> create table test3
+  2  (tid number,
+  3   tname varchar2(20),
+  4   gender varchar2(2) check (gender in ('男','女')),
+  5   sal  number check (sal > 0)
+  6  );
+
+表已创建。
+
+SQL> insert into test3 values(1,'Tom','男',2000);
+
+已创建 1 行。
+
+SQL> insert into test3 values(2,'Mike','啊',2000);
+insert into test3 values(2,'Mike','啊',2000)
+*
+第 1 行出现错误: 
+ORA-02290: 违反检查约束条件 (SCOTT.SYS_C005393) 
+
+
+SQL> create table student
+  2  (
+  3   sid number constraint student_pk primary key,
+  4   sname varchar2(20) constraint student_name_notnull not null,
+  5   gender varchar2(2) constraint student_gender check (gender in ('男','女')),
+  6   email varchar2(40) constraint student_email_unique unique
+  7                      constraint student_email_notnull not null,
+  8   deptno number constraint student_fk reference dept(deptno) on delete set null
+  9  );
+ deptno number constraint student_fk reference dept(deptno) on delete set null
+               *
+第 8 行出现错误: 
+ORA-02253: 此处不允许约束条件说明 
+
+
+SQL> create table student
+  2  (
+  3   sid number constraint student_pk primary key,
+  4   sname varchar2(20) constraint student_name_notnull not null,
+  5   gender varchar2(2) constraint student_gender check (gender in ('男','女')),
+  6   email varchar2(40) constraint student_email_unique unique
+  7                      constraint student_email_notnull not null,
+  8   deptno number constraint student_fk references dept(deptno) on delete set null
+  9  );
+
+表已创建。
+
+SQL> insert into student values(1,'Tom','男','tom@126.com',10);
+
+已创建 1 行。
+
+SQL> insert into student values(2,'Mike','男','tom@126.com',10);
+insert into student values(2,'Mike','男','tom@126.com',10)
+*
+第 1 行出现错误: 
+ORA-00001: 违反唯一约束条件 (SCOTT.STUDENT_EMAIL_UNIQUE) 
+
+
+SQL> spool off

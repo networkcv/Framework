@@ -1,0 +1,492 @@
+SQL> --字符函数
+SQL> select lower('Hello World') 转小写,upper('Hello World') 转大写,initcap('hello world') 首字母大写
+  2  from dual;
+
+转小写      转大写      首字母大写                                              
+----------- ----------- -----------                                             
+hello world HELLO WORLD Hello World                                             
+
+SQL> --substr(a,b) 从a中，第b位开始取
+SQL> select substr('Hello World',4) 子串 from dual;
+
+子串                                                                            
+--------                                                                        
+lo World                                                                        
+
+SQL> --substr(a,b,c) 从a中，第b位开始取，取c位
+SQL> select substr('Hello World',4,3) 子串 from dual;
+
+子                                                                              
+---                                                                             
+lo                                                                              
+
+SQL> --length 字符数 lengthb 字节数
+SQL> select length('Hello World') 字符,lengthb('Hello World') 字节 from dual;
+
+      字符       字节                                                           
+---------- ----------                                                           
+        11         11                                                           
+
+SQL> ed
+已写入 file afiedt.buf
+
+  1* select length('北京') 字符,lengthb('北京') 字节 from dual
+SQL> /
+
+      字符       字节                                                           
+---------- ----------                                                           
+         2          4                                                           
+
+SQL> --instr(a,b)
+SQL> --在a中，查找b
+SQL> select instr('Hello World','ll') 位置 from dual;
+
+      位置                                                                      
+----------                                                                      
+         3                                                                      
+
+SQL> --lpad 左填充  rpad 右填充
+SQL> -- abcd  ---> 10位
+SQL> select lpad('abcd',10,'*') 左,rpad('abcd',10,'*') 右 from dual;
+
+左         右                                                                   
+---------- ----------                                                           
+******abcd abcd******                                                           
+
+SQL> --trim 去掉前后指定的字符
+SQL> select trim('H' from 'Hello WorldH') from dual;
+
+TRIM('H'FR                                                                      
+----------                                                                      
+ello World                                                                      
+
+SQL> --replace
+SQL> select replace('Hello World','l','*') from dual;
+
+REPLACE('HE                                                                     
+-----------                                                                     
+He**o Wor*d                                                                     
+
+SQL> host cls
+
+SQL> --四舍五入
+SQL> select round(45.926,2) 一,round(45.926,1) 二,round(45.926,0) 三,round(45.926,-1) 四,round(45.926,-2) 五
+  2  from dual;
+
+        一         二         三         四         五                          
+---------- ---------- ---------- ---------- ----------                          
+     45.93       45.9         46         50          0                          
+
+SQL> --截断
+SQL> ed
+已写入 file afiedt.buf
+
+  1  select trunc(45.926,2) 一,trunc(45.926,1) 二,trunc(45.926,0) 三,trunc(45.926,-1) 四,trunc(45.926,-2) 五
+  2* from dual
+SQL> /
+
+        一         二         三         四         五                          
+---------- ---------- ---------- ---------- ----------                          
+     45.92       45.9         45         40          0                          
+
+SQL> host cls
+
+SQL> --当前时间
+SQL> select sysdate from dual;
+
+SYSDATE                                                                         
+--------------                                                                  
+29-9月 -16                                                                      
+
+SQL> select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual;
+
+TO_CHAR(SYSDATE,'YY                                                             
+-------------------                                                             
+2016-09-29 11:58:32                                                             
+
+SQL> --昨天 今天  明天
+SQL> select (sysdate-1) 昨天,sysdate 今天,(sysdate+1) 明天
+  2  from dual;
+
+昨天           今天           明天                                              
+-------------- -------------- --------------                                    
+28-9月 -16     29-9月 -16     30-9月 -16                                        
+
+SQL> --计算员工的工龄：天 星期  月 年
+SQL> select ename,hiredate,(sysdate-hiredate) 天,(sysdate-hiredate)/7 星期,
+  2                        (sysdate-hiredate)/30 月,(sysdate-hiredate)/365 年
+  3  from emp;
+
+ENAME      HIREDATE               天       星期         月         年           
+---------- -------------- ---------- ---------- ---------- ----------           
+SMITH      17-12月-80     13070.5013 1867.21448 435.683378 35.8095927           
+ALLEN      20-2月 -81     13005.5013 1857.92876 433.516711 35.6315105           
+WARD       22-2月 -81     13003.5013 1857.64305 433.450044  35.626031           
+JONES      02-4月 -81     12964.5013 1852.07162 432.150044 35.5191817           
+MARTIN     28-9月 -81     12785.5013 1826.50019 426.183378 35.0287708           
+BLAKE      01-5月 -81     12935.5013 1847.92876 431.183378 35.4397297           
+CLARK      09-6月 -81     12896.5013 1842.35733 429.883378 35.3328804           
+SCOTT      19-4月 -87     10756.5013 1536.64305 358.550044 29.4698667           
+KING       17-11月-81     12735.5013 1819.35733 424.516711 34.8917845           
+TURNER     08-9月 -81     12805.5013 1829.35733 426.850044 35.0835653           
+ADAMS      23-5月 -87     10722.5013  1531.7859 357.416711  29.376716           
+
+ENAME      HIREDATE               天       星期         月         年           
+---------- -------------- ---------- ---------- ---------- ----------           
+JAMES      03-12月-81     12719.5013 1817.07162 423.983378 34.8479489           
+FORD       03-12月-81     12719.5013 1817.07162 423.983378 34.8479489           
+MILLER     23-1月 -82     12668.5013  1809.7859 422.283378 34.7082228           
+
+已选择 14 行。
+
+SQL> select sysdate+hiredate from emp;
+select sysdate+hiredate from emp
+              *
+第 1 行出现错误: 
+ORA-00975: 不允许日期 + 日期 
+
+
+SQL> --months_between
+SQL> select ename,hiredate,(sysdate-hiredate)/30 一,months_between(sysdate,hiredate) 二
+  2  from emp;
+
+ENAME      HIREDATE               一         二                                 
+---------- -------------- ---------- ----------                                 
+SMITH      17-12月-80     435.683431  429.40332                                 
+ALLEN      20-2月 -81     433.516764 427.306546                                 
+WARD       22-2月 -81     433.450097  427.24203                                 
+JONES      02-4月 -81     432.150097 425.887191                                 
+MARTIN     28-9月 -81     426.183431 420.048481                                 
+BLAKE      01-5月 -81     431.183431 424.919449                                 
+CLARK      09-6月 -81     429.883431 423.661384                                 
+SCOTT      19-4月 -87     358.550097 353.338804                                 
+KING       17-11月-81     424.516764  418.40332                                 
+TURNER     08-9月 -81     426.850097 420.693642                                 
+ADAMS      23-5月 -87     357.416764 352.209772                                 
+
+ENAME      HIREDATE               一         二                                 
+---------- -------------- ---------- ----------                                 
+JAMES      03-12月-81     423.983431 417.854933                                 
+FORD       03-12月-81     423.983431 417.854933                                 
+MILLER     23-1月 -82     422.283431 416.209772                                 
+
+已选择 14 行。
+
+SQL> --53个月后
+SQL> select add_months(sysdate,53) from dual;
+
+ADD_MONTHS(SYS                                                                  
+--------------                                                                  
+28-2月 -21                                                                      
+
+SQL> --last_day
+SQL> select last_day(sysdate) from dual;
+
+LAST_DAY(SYSDA                                                                  
+--------------                                                                  
+30-9月 -16                                                                      
+
+SQL> host cls
+
+SQL> --next_day
+SQL> --下一个星期四
+SQL> select next_day(sysdate,'星期四') from dual;
+
+NEXT_DAY(SYSDA                                                                  
+--------------                                                                  
+06-10月-16                                                                      
+
+SQL> --下一个星期五
+SQL> select next_day(sysdate,'星期五') from dual;
+
+NEXT_DAY(SYSDA                                                                  
+--------------                                                                  
+30-9月 -16                                                                      
+
+SQL> select next_day(sysdate,'礼拜五') from dual;
+select next_day(sysdate,'礼拜五') from dual
+                        *
+第 1 行出现错误: 
+ORA-01846: 周中的日无效 
+
+
+SQL> /*
+SQL> next_day函数的应用：每个星期一自动备份表中的数据
+SQL> 1、分布式数据库
+SQL> 2、触发器 快照
+SQL> */
+SQL> select round(sysdate,'month'),round(sysdate,'year') from dual;
+
+ROUND(SYSDATE, ROUND(SYSDATE,                                                   
+-------------- --------------                                                   
+01-10月-16     01-1月 -17                                                       
+
+SQL> host cls
+
+SQL> --2016-09-29 12:18:12今天是星期四
+SQL> select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss今天是day') from dual;
+select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss今天是day') from dual
+                       *
+第 1 行出现错误: 
+ORA-01821: 日期格式无法识别 
+
+
+SQL> select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss"今天是"day') from dual;
+
+TO_CHAR(SYSDATE,'YYYY-MM-DDHH24:MI                                              
+----------------------------------                                              
+2016-09-29 12:20:13今天是星期四                                                 
+
+SQL> --查询员工的薪水：两位小数、千位符、本地货币代码
+SQL> select to_char(sal,'L9,999.99') from emp;
+
+TO_CHAR(SAL,'L9,999                                                             
+-------------------                                                             
+           ￥800.00                                                             
+         ￥1,600.00                                                             
+         ￥1,250.00                                                             
+         ￥2,975.00                                                             
+         ￥1,250.00                                                             
+         ￥2,850.00                                                             
+         ￥2,450.00                                                             
+         ￥3,000.00                                                             
+         ￥5,000.00                                                             
+         ￥1,500.00                                                             
+         ￥1,100.00                                                             
+
+TO_CHAR(SAL,'L9,999                                                             
+-------------------                                                             
+           ￥950.00                                                             
+         ￥3,000.00                                                             
+         ￥1,300.00                                                             
+
+已选择 14 行。
+
+SQL> host cls
+
+SQL> --nvl2(a,b,c) 当a=null的时候，返回c；否则返回b
+SQL> selec sal*12+nvl2(comm,comm,0) from emp;
+SP2-0734: 未知的命令开头 "selec sal*..." - 忽略了剩余的行。
+SQL> select sal*12+nvl2(comm,comm,0) from emp;
+
+SAL*12+NVL2(COMM,COMM,0)                                                        
+------------------------                                                        
+                    9600                                                        
+                   19500                                                        
+                   15500                                                        
+                   35700                                                        
+                   16400                                                        
+                   34200                                                        
+                   29400                                                        
+                   36000                                                        
+                   60000                                                        
+                   18000                                                        
+                   13200                                                        
+
+SAL*12+NVL2(COMM,COMM,0)                                                        
+------------------------                                                        
+                   11400                                                        
+                   36000                                                        
+                   15600                                                        
+
+已选择 14 行。
+
+SQL> --nullif(a,b) 当a=b的时候，返回null；否则返回a
+SQL> select nullif('abc','abc') 值 from dual;
+
+值                                                                              
+---                                                                             
+                                                                                
+
+SQL> select nullif('abc','abcd') 值 from dual;
+
+值                                                                              
+---                                                                             
+abc                                                                             
+
+SQL> --coalesce 从左到右 找到第一个不为null的值
+SQL> select comm,sal,coalesce(comm,sal) "第一个不为null的值"
+  2  from emp;
+
+      COMM        SAL 第一个不为null的值                                        
+---------- ---------- ------------------                                        
+                  800                800                                        
+       300       1600                300                                        
+       500       1250                500                                        
+                 2975               2975                                        
+      1400       1250               1400                                        
+                 2850               2850                                        
+                 2450               2450                                        
+                 3000               3000                                        
+                 5000               5000                                        
+         0       1500                  0                                        
+                 1100               1100                                        
+
+      COMM        SAL 第一个不为null的值                                        
+---------- ---------- ------------------                                        
+                  950                950                                        
+                 3000               3000                                        
+                 1300               1300                                        
+
+已选择 14 行。
+
+SQL> host cls
+
+SQL> --给员工涨工资，总裁1000 经理800 其他400
+SQL> select * from emp;
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM 
+---------- ---------- --------- ---------- -------------- ---------- ---------- 
+    DEPTNO                                                                      
+----------                                                                      
+      7369 SMITH      CLERK           7902 17-12月-80            800            
+        20                                                                      
+                                                                                
+      7499 ALLEN      SALESMAN        7698 20-2月 -81           1600        300 
+        30                                                                      
+                                                                                
+      7521 WARD       SALESMAN        7698 22-2月 -81           1250        500 
+        30                                                                      
+                                                                                
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM 
+---------- ---------- --------- ---------- -------------- ---------- ---------- 
+    DEPTNO                                                                      
+----------                                                                      
+      7566 JONES      MANAGER         7839 02-4月 -81           2975            
+        20                                                                      
+                                                                                
+      7654 MARTIN     SALESMAN        7698 28-9月 -81           1250       1400 
+        30                                                                      
+                                                                                
+      7698 BLAKE      MANAGER         7839 01-5月 -81           2850            
+        30                                                                      
+                                                                                
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM 
+---------- ---------- --------- ---------- -------------- ---------- ---------- 
+    DEPTNO                                                                      
+----------                                                                      
+      7782 CLARK      MANAGER         7839 09-6月 -81           2450            
+        10                                                                      
+                                                                                
+      7788 SCOTT      ANALYST         7566 19-4月 -87           3000            
+        20                                                                      
+                                                                                
+      7839 KING       PRESIDENT            17-11月-81           5000            
+        10                                                                      
+                                                                                
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM 
+---------- ---------- --------- ---------- -------------- ---------- ---------- 
+    DEPTNO                                                                      
+----------                                                                      
+      7844 TURNER     SALESMAN        7698 08-9月 -81           1500          0 
+        30                                                                      
+                                                                                
+      7876 ADAMS      CLERK           7788 23-5月 -87           1100            
+        20                                                                      
+                                                                                
+      7900 JAMES      CLERK           7698 03-12月-81            950            
+        30                                                                      
+                                                                                
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM 
+---------- ---------- --------- ---------- -------------- ---------- ---------- 
+    DEPTNO                                                                      
+----------                                                                      
+      7902 FORD       ANALYST         7566 03-12月-81           3000            
+        20                                                                      
+                                                                                
+      7934 MILLER     CLERK           7782 23-1月 -82           1300            
+        10                                                                      
+                                                                                
+
+已选择 14 行。
+
+SQL> host cls
+
+SQL> --给员工涨工资，总裁1000 经理800 其他400
+SQL> set linesize 200
+SQL> select * from emp;
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7369 SMITH      CLERK           7902 17-12月-80            800                    20                                                                                                              
+      7499 ALLEN      SALESMAN        7698 20-2月 -81           1600        300         30                                                                                                              
+      7521 WARD       SALESMAN        7698 22-2月 -81           1250        500         30                                                                                                              
+      7566 JONES      MANAGER         7839 02-4月 -81           2975                    20                                                                                                              
+      7654 MARTIN     SALESMAN        7698 28-9月 -81           1250       1400         30                                                                                                              
+      7698 BLAKE      MANAGER         7839 01-5月 -81           2850                    30                                                                                                              
+      7782 CLARK      MANAGER         7839 09-6月 -81           2450                    10                                                                                                              
+      7788 SCOTT      ANALYST         7566 19-4月 -87           3000                    20                                                                                                              
+      7839 KING       PRESIDENT            17-11月-81           5000                    10                                                                                                              
+      7844 TURNER     SALESMAN        7698 08-9月 -81           1500          0         30                                                                                                              
+      7876 ADAMS      CLERK           7788 23-5月 -87           1100                    20                                                                                                              
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7900 JAMES      CLERK           7698 03-12月-81            950                    30                                                                                                              
+      7902 FORD       ANALYST         7566 03-12月-81           3000                    20                                                                                                              
+      7934 MILLER     CLERK           7782 23-1月 -82           1300                    10                                                                                                              
+
+已选择 14 行。
+
+SQL> select ename,job,sal 涨前,
+  2         case job when 'PRESIDENT' then sal+1000
+  3                  when 'MANAGER' then sal+800
+  4                  else sal+400
+  5          end 涨后
+  6  from emp;
+
+ENAME      JOB             涨前       涨后                                                                                                                                                              
+---------- --------- ---------- ----------                                                                                                                                                              
+SMITH      CLERK            800       1200                                                                                                                                                              
+ALLEN      SALESMAN        1600       2000                                                                                                                                                              
+WARD       SALESMAN        1250       1650                                                                                                                                                              
+JONES      MANAGER         2975       3775                                                                                                                                                              
+MARTIN     SALESMAN        1250       1650                                                                                                                                                              
+BLAKE      MANAGER         2850       3650                                                                                                                                                              
+CLARK      MANAGER         2450       3250                                                                                                                                                              
+SCOTT      ANALYST         3000       3400                                                                                                                                                              
+KING       PRESIDENT       5000       6000                                                                                                                                                              
+TURNER     SALESMAN        1500       1900                                                                                                                                                              
+ADAMS      CLERK           1100       1500                                                                                                                                                              
+
+ENAME      JOB             涨前       涨后                                                                                                                                                              
+---------- --------- ---------- ----------                                                                                                                                                              
+JAMES      CLERK            950       1350                                                                                                                                                              
+FORD       ANALYST         3000       3400                                                                                                                                                              
+MILLER     CLERK           1300       1700                                                                                                                                                              
+
+已选择 14 行。
+
+SQL> select ename,job,sal 涨前,
+  2         decode(job,'PRESIDENT',sal+1000,
+  3                    'MANAGER',sal+800,
+  4                              sal+400) 涨后
+  5  from emp;
+
+ENAME      JOB             涨前       涨后                                                                                                                                                              
+---------- --------- ---------- ----------                                                                                                                                                              
+SMITH      CLERK            800       1200                                                                                                                                                              
+ALLEN      SALESMAN        1600       2000                                                                                                                                                              
+WARD       SALESMAN        1250       1650                                                                                                                                                              
+JONES      MANAGER         2975       3775                                                                                                                                                              
+MARTIN     SALESMAN        1250       1650                                                                                                                                                              
+BLAKE      MANAGER         2850       3650                                                                                                                                                              
+CLARK      MANAGER         2450       3250                                                                                                                                                              
+SCOTT      ANALYST         3000       3400                                                                                                                                                              
+KING       PRESIDENT       5000       6000                                                                                                                                                              
+TURNER     SALESMAN        1500       1900                                                                                                                                                              
+ADAMS      CLERK           1100       1500                                                                                                                                                              
+
+ENAME      JOB             涨前       涨后                                                                                                                                                              
+---------- --------- ---------- ----------                                                                                                                                                              
+JAMES      CLERK            950       1350                                                                                                                                                              
+FORD       ANALYST         3000       3400                                                                                                                                                              
+MILLER     CLERK           1300       1700                                                                                                                                                              
+
+已选择 14 行。
+
+SQL> spool off

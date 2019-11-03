@@ -1,0 +1,239 @@
+SQL> --工资总额
+SQL> select sum(sal) from emp;
+
+  SUM(SAL)                                                                                                                                                                                              
+----------                                                                                                                                                                                              
+     29025                                                                                                                                                                                              
+
+SQL> --人数
+SQL> select count(*) from emp;
+
+  COUNT(*)                                                                                                                                                                                              
+----------                                                                                                                                                                                              
+        14                                                                                                                                                                                              
+
+SQL> --平均工资
+SQL> select sum(sal)/count(*) 一,avg(sal) 二 from emp;
+
+        一         二                                                                                                                                                                                   
+---------- ----------                                                                                                                                                                                   
+2073.21429 2073.21429                                                                                                                                                                                   
+
+SQL> --平均奖金
+SQL> select sum(comm)/count(*) 一,sum(comm)/count(comm) 二,avg(comm) 三
+  2  from emp;
+
+        一         二         三                                                                                                                                                                        
+---------- ---------- ----------                                                                                                                                                                        
+157.142857        550        550                                                                                                                                                                        
+
+SQL> select count(*), count(comm) from emp;
+
+  COUNT(*) COUNT(COMM)                                                                                                                                                                                  
+---------- -----------                                                                                                                                                                                  
+        14           4                                                                                                                                                                                  
+
+SQL> select * from emp;
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7369 SMITH      CLERK           7902 17-12月-80            800                    20                                                                                                              
+      7499 ALLEN      SALESMAN        7698 20-2月 -81           1600        300         30                                                                                                              
+      7521 WARD       SALESMAN        7698 22-2月 -81           1250        500         30                                                                                                              
+      7566 JONES      MANAGER         7839 02-4月 -81           2975                    20                                                                                                              
+      7654 MARTIN     SALESMAN        7698 28-9月 -81           1250       1400         30                                                                                                              
+      7698 BLAKE      MANAGER         7839 01-5月 -81           2850                    30                                                                                                              
+      7782 CLARK      MANAGER         7839 09-6月 -81           2450                    10                                                                                                              
+      7788 SCOTT      ANALYST         7566 19-4月 -87           3000                    20                                                                                                              
+      7839 KING       PRESIDENT            17-11月-81           5000                    10                                                                                                              
+      7844 TURNER     SALESMAN        7698 08-9月 -81           1500          0         30                                                                                                              
+      7876 ADAMS      CLERK           7788 23-5月 -87           1100                    20                                                                                                              
+
+     EMPNO ENAME      JOB              MGR HIREDATE              SAL       COMM     DEPTNO                                                                                                              
+---------- ---------- --------- ---------- -------------- ---------- ---------- ----------                                                                                                              
+      7900 JAMES      CLERK           7698 03-12月-81            950                    30                                                                                                              
+      7902 FORD       ANALYST         7566 03-12月-81           3000                    20                                                                                                              
+      7934 MILLER     CLERK           7782 23-1月 -82           1300                    10                                                                                                              
+
+已选择 14 行。
+
+SQL> --null值 5. 组函数会自动滤空；
+SQL> select count(*), count(nvl(comm,0)) from emp;
+
+  COUNT(*) COUNT(NVL(COMM,0))                                                                                                                                                                           
+---------- ------------------                                                                                                                                                                           
+        14                 14                                                                                                                                                                           
+
+SQL> --null值 5. 组函数会自动滤空；可以嵌套滤空函数来屏蔽他的滤空功能
+SQL> host cls
+
+SQL> --每个部门的平均工资
+SQL> select deptno,avg(sal)
+  2  from emp
+  3  group by deptno;
+
+    DEPTNO   AVG(SAL)                                                                                                                                                                                   
+---------- ----------                                                                                                                                                                                   
+        30 1566.66667                                                                                                                                                                                   
+        20       2175                                                                                                                                                                                   
+        10 2916.66667                                                                                                                                                                                   
+
+SQL> --多个列的分组
+SQL> select deptno,job,sum(sal)
+  2  from emp
+  3  group by deptno,job
+  4  order by 1;
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        10 CLERK           1300                                                                                                                                                                         
+        10 MANAGER         2450                                                                                                                                                                         
+        10 PRESIDENT       5000                                                                                                                                                                         
+        20 ANALYST         6000                                                                                                                                                                         
+        20 CLERK           1900                                                                                                                                                                         
+        20 MANAGER         2975                                                                                                                                                                         
+        30 CLERK            950                                                                                                                                                                         
+        30 MANAGER         2850                                                                                                                                                                         
+        30 SALESMAN        5600                                                                                                                                                                         
+
+已选择 9 行。
+
+SQL> --多个列的分组: 先按照第一个列分组，如果相同，再第二个列分组，以此类推
+SQL> --查询平均工资大于2000的部门
+SQL> select deptno,avg(sal)
+  2  from emp
+  3  group by deptno
+  4  having avg(sal) > 2000;
+
+    DEPTNO   AVG(SAL)                                                                                                                                                                                   
+---------- ----------                                                                                                                                                                                   
+        20       2175                                                                                                                                                                                   
+        10 2916.66667                                                                                                                                                                                   
+
+SQL> --where和having的区别：where不能使用多行函数
+SQL> --查询10号部门的平均工资
+SQL> select deptno,avg(sal)
+  2  from emp
+  3  group by deptno
+  4  having deptno=10;
+
+    DEPTNO   AVG(SAL)                                                                                                                                                                                   
+---------- ----------                                                                                                                                                                                   
+        10 2916.66667                                                                                                                                                                                   
+
+SQL> ed
+已写入 file afiedt.buf
+
+  1  select deptno,avg(sal)
+  2  from emp
+  3  where deptno=10
+  4* group by deptno
+SQL> /
+
+    DEPTNO   AVG(SAL)                                                                                                                                                                                   
+---------- ----------                                                                                                                                                                                   
+        10 2916.66667                                                                                                                                                                                   
+
+SQL> --SQL优化 3. 尽量使用where
+SQL> host cls
+
+SQL> /*
+SQL> group by 的增强
+SQL> select deptno,job,sum(sal) from emp group by deptno,job
+SQL> +
+SQL> select deptno,sum(sal) from emp group by deptno
+SQL> +
+SQL> select sum(sal) from emp
+SQL> 
+SQL> ====
+SQL> select deptno,job,sum(sal) from emp group by rollup(deptno,job)
+SQL> 
+SQL> 抽象
+SQL> group by rollup(a,b)
+SQL> =
+SQL> group by a,b
+SQL> +
+SQL> group by a
+SQL> +
+SQL> 没有group by
+SQL> */
+SQL> select deptno,job,sum(sal) from emp group by rollup(deptno,job);
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        10 CLERK           1300                                                                                                                                                                         
+        10 MANAGER         2450                                                                                                                                                                         
+        10 PRESIDENT       5000                                                                                                                                                                         
+        10                 8750                                                                                                                                                                         
+        20 CLERK           1900                                                                                                                                                                         
+        20 ANALYST         6000                                                                                                                                                                         
+        20 MANAGER         2975                                                                                                                                                                         
+        20                10875                                                                                                                                                                         
+        30 CLERK            950                                                                                                                                                                         
+        30 MANAGER         2850                                                                                                                                                                         
+        30 SALESMAN        5600                                                                                                                                                                         
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        30                 9400                                                                                                                                                                         
+                          29025                                                                                                                                                                         
+
+已选择 13 行。
+
+SQL> break on deptno skip 2
+SQL> select deptno,job,sum(sal) from emp group by rollup(deptno,job);
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        10 CLERK           1300                                                                                                                                                                         
+           MANAGER         2450                                                                                                                                                                         
+           PRESIDENT       5000                                                                                                                                                                         
+                           8750                                                                                                                                                                         
+                                                                                                                                                                                                        
+                                                                                                                                                                                                        
+        20 CLERK           1900                                                                                                                                                                         
+           ANALYST         6000                                                                                                                                                                         
+           MANAGER         2975                                                                                                                                                                         
+                          10875                                                                                                                                                                         
+                                                                                                                                                                                                        
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+                                                                                                                                                                                                        
+        30 CLERK            950                                                                                                                                                                         
+           MANAGER         2850                                                                                                                                                                         
+           SALESMAN        5600                                                                                                                                                                         
+                           9400                                                                                                                                                                         
+                                                                                                                                                                                                        
+                                                                                                                                                                                                        
+                          29025                                                                                                                                                                         
+                                                                                                                                                                                                        
+                                                                                                                                                                                                        
+
+已选择 13 行。
+
+SQL> break on null
+SQL> /
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        10 CLERK           1300                                                                                                                                                                         
+        10 MANAGER         2450                                                                                                                                                                         
+        10 PRESIDENT       5000                                                                                                                                                                         
+        10                 8750                                                                                                                                                                         
+        20 CLERK           1900                                                                                                                                                                         
+        20 ANALYST         6000                                                                                                                                                                         
+        20 MANAGER         2975                                                                                                                                                                         
+        20                10875                                                                                                                                                                         
+        30 CLERK            950                                                                                                                                                                         
+        30 MANAGER         2850                                                                                                                                                                         
+        30 SALESMAN        5600                                                                                                                                                                         
+
+    DEPTNO JOB         SUM(SAL)                                                                                                                                                                         
+---------- --------- ----------                                                                                                                                                                         
+        30                 9400                                                                                                                                                                         
+                          29025                                                                                                                                                                         
+
+已选择 13 行。
+
+SQL> spool off

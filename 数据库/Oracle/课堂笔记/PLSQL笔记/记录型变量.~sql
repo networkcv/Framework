@@ -1,0 +1,8 @@
+rem PL/SQL Developer Test Script
+
+set feedback off
+set autoprint off
+
+rem Execute PL/SQL Block
+--记录型变量: 查询并打印7839的姓名和薪水
+/

@@ -1,0 +1,16 @@
+每当成功插入新员工后，自动打印“成功插入新员工”
+
+create trigger firsttrigger
+after insert
+on emp
+declare
+begin
+  dbms_output.put_line('成功插入新员工');
+end;
+/
+
+强制审计
+标准审计（配置）
+基于值的审计
+细粒度审计
+管理员审计
