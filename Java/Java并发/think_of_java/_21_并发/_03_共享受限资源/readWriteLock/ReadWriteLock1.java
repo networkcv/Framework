@@ -1,4 +1,4 @@
-package 多线程;
+package think_of_java._21_并发._03_共享受限资源.readWriteLock;
 
 import org.junit.Test;
 

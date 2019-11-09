@@ -1,4 +1,4 @@
-package JDK并发包.reentrantLock;
+package think_of_java._21_并发._03_共享受限资源.reentrantLock;
 
 import org.junit.Test;
 
@@ -12,7 +12,6 @@ public class MyReentrantLock1_基本使用 extends Thread {
     public static int i = 0;
     public static Object lock = new Object();
     public static ReentrantLock reentrantLock = new ReentrantLock();
-
 
     //不加锁，两个线程并发累加，结果小于预期结果 线程不安全
     @Test

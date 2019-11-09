@@ -1,4 +1,4 @@
-package JDK并发包.reentrantLock;
+package think_of_java._21_并发._03_共享受限资源.reentrantLock;
 
 import org.junit.Test;
 

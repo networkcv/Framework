@@ -1,4 +1,4 @@
-package JDK并发包.condition;
+package think_of_java._21_并发._03_共享受限资源.condition;
 
 import org.junit.Test;
 

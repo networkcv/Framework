@@ -1,4 +1,4 @@
-package think_of_java;
+package think_of_java._21_并发._02_基本的线程机制;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
