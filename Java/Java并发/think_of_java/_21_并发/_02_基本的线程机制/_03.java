@@ -8,13 +8,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * create by lwj on 2019/11/8
+ * 常见线程池的使用
  */
 public class _03 implements Runnable {
 
     @Test
     public void test() {
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+        //固定容量的线程池
         ExecutorService newFixedThreadPool = Executors.newFixedThreadPool(5);
+        //单例线程池
         ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
         for (int i = 0; i < 3; i++) {
             cachedThreadPool.execute(new Thread(new _03(), "cachedThreadPool " + i));

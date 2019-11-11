@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * create by lwj on 2019/11/8
+ * 守护线程创建的线程也是守护线程
  */
 public class _08 {
     public static class DaemonThreadFactory implements ThreadFactory {

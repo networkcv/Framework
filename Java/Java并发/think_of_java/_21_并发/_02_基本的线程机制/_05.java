@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 
 /**
  * create by lwj on 2019/11/8
+ * 使用Callable接口，返回斐波数列的对应值
  */
 public class _05 implements Callable<Integer> {
     int n;

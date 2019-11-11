@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 
 /**
  * create by lwj on 2019/11/8
+ * 打印斐波数列
  */
 public class _04 implements Runnable {
 
