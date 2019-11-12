@@ -18,6 +18,8 @@ public class _05 implements Callable<Integer> {
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         ArrayList<Future<Integer>> futures = new ArrayList<>();
         for (int i = 1; i <= 4; i++) {
+            FutureTask<Integer> task = new FutureTask<>(new _05(i));
+//            futures.add((Future<Integer>) cachedThreadPool.submit(task));
             futures.add(cachedThreadPool.submit(new _05(i)));
         }
         cachedThreadPool.shutdown();
