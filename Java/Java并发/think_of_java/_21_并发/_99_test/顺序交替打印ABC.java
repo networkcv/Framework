@@ -10,60 +10,119 @@ import java.util.concurrent.TimeUnit;
  */
 public class 顺序交替打印ABC {
     @Test
-    public void test() throws InterruptedException {
-        Object lock1 = new Object();
-        Object lock2 = new Object();
-        Object lock3 = new Object();
-        new Thread(() -> {
-            synchronized (lock1) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < 10; i++) {
+    //交替打印AB Bywait()和notify()
+    public void test() {
+        Object lock = new Object();
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 20; i++) {
+                synchronized (lock) {
                     System.out.println("A");
-                    lock2.notify();
+                    lock.notify();
                     try {
-                        lock1.wait();
+                        lock.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
-        }).start();
-        TimeUnit.MILLISECONDS.sleep(100);
-        new Thread(() -> {
-            synchronized (lock2) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < 10; i++) {
-                    System.out.println("B");
+        });
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 20; i++) {
+                synchronized (lock) {
+                    System.out.println("BBBBBB");
+                    lock.notify();
                     try {
-                        lock2.wait();
+                        lock.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
-        }).start();
-        TimeUnit.MILLISECONDS.sleep(100);
-        new Thread(() -> {
-            synchronized (lock3) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(150);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < 10; i++) {
-                    System.out.println("C");
-                }
-            }
-        }).start();
+        });
+        t1.start();
+        t2.start();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    volatile int state = 0;
+    private Object lock = new Object();
+
+    @Test
+    //交替打印ABC volatile synchronized
+    public void test1() {
+        T1 t1 = new T1();
+        T2 t2 = new T2();
+        T3 t3 = new T3();
+        t1.start();
+        t2.start();
+        t3.start();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
+
+    private class T1 extends Thread {
+        int count = 0;
+
+        @Override
+        public void run() {
+            while (true) {
+                if (state == 0) {
+                    synchronized (lock) {
+                        System.out.print(" A");
+                        state = 1;
+                        if (count++ == 3)
+                            break;
+                    }
+
+                }
+            }
+        }
+    }
+
+    private class T2 extends Thread {
+        int count = 0;
+
+        @Override
+        public void run() {
+            while (true) {
+                if (state == 1) {
+                    synchronized (lock) {
+                        System.out.print(" B");
+                        state = 2;
+                        if (count++ == 3)
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    private class T3 extends Thread {
+        int count = 0;
+
+        @Override
+        public void run() {
+            while (true) {
+                if (state == 2) {
+                    synchronized (lock) {
+                        System.out.print(" C");
+                        state = 0;
+                        if (count++ == 3)
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
 
 }
