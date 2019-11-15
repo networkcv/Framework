@@ -78,4 +78,5 @@ public class MyReentrantLock2_可重入性 extends Thread {
         t2.join();
         System.out.println(i);
     }
+
 }
