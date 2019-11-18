@@ -2,6 +2,7 @@ package think_of_java._21_并发._99_test;
 
 import org.junit.Test;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -122,6 +123,13 @@ public class 顺序交替打印ABC {
                 }
             }
         }
+    }
+
+    @Test
+    public void test4() throws InterruptedException {
+        LinkedBlockingQueue linkedBlockingQueue = new LinkedBlockingQueue();
+        Object poll = linkedBlockingQueue.take();
+        System.out.println(poll);
     }
 
 
