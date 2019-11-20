@@ -1,4 +1,4 @@
-package nio;
+package Netty.NIOSocket.nio;
 
 import org.junit.Test;
 

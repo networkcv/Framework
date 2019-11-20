@@ -1,4 +1,4 @@
-package think_of_java._21_并发._03_共享受限资源;
+package Java.Java并发.think_of_java._21_并发._03_共享受限资源;
 
 import org.junit.Test;
 
