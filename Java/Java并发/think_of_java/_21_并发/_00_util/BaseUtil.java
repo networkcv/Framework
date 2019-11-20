@@ -1,4 +1,4 @@
-package think_of_java._21_并发._00_util;
+package Java.Java并发.think_of_java._21_并发._00_util;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,10 +18,12 @@ public class BaseUtil {
             cachedThreadPool.execute(runnable);
         }
         cachedThreadPool.shutdown();
-        while (cachedThreadPool.isTerminated()) {
-            System.out.println("task ojbk");
-            break;
-        }
+        while (true) {
+            if (cachedThreadPool.isTerminated()) {
+                System.out.println("task ok");
+                break;
+            }
 
+        }
     }
 }
