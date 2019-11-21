@@ -1,4 +1,4 @@
-package think_of_java._21_并发._99_test;
+package Java.think_of_java._21_并发._99_test;
 
 import org.junit.Test;
 
