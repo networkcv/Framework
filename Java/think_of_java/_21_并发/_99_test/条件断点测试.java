@@ -1,4 +1,4 @@
-package think_of_java._21_并发._99_test;
+package Java.think_of_java._21_并发._99_test;
 
 import java.util.ArrayList;
 
@@ -7,6 +7,7 @@ import java.util.ArrayList;
  */
 public class 条件断点测试 extends Thread {
     static ArrayList list = new ArrayList();
+
 
     @Override
     public void run() {
