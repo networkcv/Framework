@@ -1,4 +1,4 @@
-package Java.Java并发.think_of_java._21_并发._00_util;
+package Java.think_of_java._21_并发._00_util;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

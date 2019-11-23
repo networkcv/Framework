@@ -1,7 +1,7 @@
-package think_of_java._21_并发._03_共享受限资源.exercise;
+package Java.think_of_java._21_并发._03_共享受限资源.exercise;
 
+import Java.think_of_java._21_并发._00_util.BaseUtil;
 import org.junit.Test;
-import think_of_java._21_并发._00_util.BaseUtil;
 
 import java.util.Timer;
 import java.util.TimerTask;
