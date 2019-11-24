@@ -1,10 +1,11 @@
-----------
+<!-- ----------------------------------简介 -->
+---------------------------------线程安全性
 # 线程安全性
 # 原子性
 # 加锁机制
 # 用锁来保护状态
 # 活跃性与性能
-----------
+-------------------------------------------------------------------对象的共享
 # 可见性
 synchronized 同步代码块或者同步方法可以确保以原子的方式执行操作  
 synchronized不止用于实现原子性或者确定“临界区”，同时还可以确保内存可见性  
@@ -60,12 +61,72 @@ JDBC的Connection对象就使用的这种技术，Java语言及核心库提供�
 对象的所有域都是final类型  
 对象是正确创建的(在对象的创建期间，this引用没有逸出)
 
+如果不是final类型，那么要分析线程安全性将变成更复杂，如果将没被final修饰的目标，修改指向另一个域的引用，那么必须确保更新操作对于所有访问的线程都是可见的，还要确保目标值上不存在竟态条件。
+
 final
 
 # 安全发布
 https://blog.51cto.com/zero01/2300908
 
------ 对象的组合
+------------------------------------------------------------ 对象的组合
 
 # 设计线程安全的类
 
+# 实例封闭
+如果某个对象不是线程安全的，可以通过多种技术使其在多线程中安全的使用，可以通过单线程访问的方式，也可以通过一个锁来保护对象的所有访问。还可以将其封装到一个线程安全类中来保证其线程安全。    
+面向对象的三个特性，封装、继承、多态，其中封装可以简化线程安全类的实现过程，提供了一种实例封闭机制，也可以称为实例封闭。
+被封闭的对象一定不能超出它们既定的作用域，对象可以封闭在类的一个实例中（例如作为类的一个私有成员），或者封闭在某个作用域内（例如作为一个局部变量），再或者封闭在线程内（使用ThreadLocal，在某个线程中将对象中一个方法传递到另一个方法，而不是在多个线程之间共享该对象）
+```java
+public class PersonSet{
+    private final Set<Person> mySet = new HashSet<Person>();
+    public synchronized void addPerson(Person pi){
+        mySet.add(pi);
+    }
+    public synchronized boolean containsPerson(Person p){
+        return mySet.contains(p);
+    }
+}
+```
+实例封闭是构建线程安全类的一个最简单方式，它还使得在锁策略的选择上拥有更多的灵活性。  
+Java类库中的Collections.synchronizedList及类似方法，通过“装饰器”模式，将非线程安全的容器封装在一个同步的包装器对象中，这个包装器对象将容器实现的接口的方法实现为同步方法，将调用请求转发到底层的非线程安全的容器对象上，只要包装器对象拥有对底层容器对象的唯一引用。那么它就是线程安全的。  
+当然，如果将一个本该被封闭的对象发布或者逸出，那么也能破坏封闭性。当发布其他对象时，例如迭代器或内部的类实例，可能会间接的发布被封闭的对象，同样会使被封闭对象逸出。
+
+# 线程安全性的委托
+将线程不安全的类封装在线程安全的类中，以达到安全访问数据的目的。
+
+# 在现有的线程安全类中添加功能
+
+# 将同步策略文档化
+ 
+----------------------------基础构建模块
+
+# 同步容器类
+Vector HashTable  
+ConcurrentModificationException 
+
+# 并发容器
+JDK5.0增加ConcurrentHashMap代替同步且基于散列的Map，CopyOnWriteArrayList，用于在遍历操作为主要操作的情况下代替同步的List，在新的ConcurrentMap接口中增加了一些常见的复合操作：若没有则添加、替换、以及有条件删除   
+JDK5.0增加了两种新的容器类型：Queue和BlockQueue  
+Queue  
+- ConcurrentLinkedQueue
+- PriorityQueue 
+BlockQueue  
+增加了可阻塞的插入和获取等操作  
+JDK6引入了ConcurrentSkipListMap和ConcurrentSkipListSet
+
+## ConcurrentHashMap
+使用分段锁了保证并发，ConcurrentHashMap返回的迭代器具有弱一致性，而非“及时失败”，弱一致性的迭代器可以容忍并发的修改，当创建迭代器时会遍历已有的元素，并可以（但是不保证）在迭代器被构造后将修改操作反映给容器  
+对于一些需要在整个Map上进行计算的方法，例如size和isEmpty，由于size返回的结果在计算时可能已经过期了，它实际上只是一个估计值，因此允许size返回一个近似值而不是一个精确值，因为在并发的环境下用处很小，所以这些操作的需求被弱化了，以换取对其他更重要操作的性能优化，包括：get、put、containsKey、remove等  
+
+## 额外的原子Map操作
+V putIfAbsent(K key,V value)    仅当K没有相应的映射值时才插入
+boolean remove(K key,V value)   仅当K被映射到V才移除
+boolean replace(K key, V oldValue,V newValue)   仅当K被映射到oldValue时才替换newValue
+V replace(K key,V newValue) 仅当K被映射到某个值时才替换为newValue
+
+## CopyOnWriteArrayList
+替代同步List，提供更好的并发性能，并且迭代期间不需要对容器进行加锁或复制  
+73
+
+
+# 阻塞队列和生产者-消费者模式
