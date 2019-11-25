@@ -1,6 +1,6 @@
-package Java.think_of_java._21_并发._03_共享受限资源.exercise;
+package _21_并发._03_共享受限资源.exercise;
 
-import Java.think_of_java._21_并发._00_util.BaseUtil;
+import _21_并发._00_util.BaseUtil;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;

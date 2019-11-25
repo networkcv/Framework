@@ -1,4 +1,4 @@
-package think_of_java._21_并发._03_共享受限资源.exercise;
+package _21_并发._03_共享受限资源.exercise;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;

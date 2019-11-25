@@ -1,4 +1,4 @@
-package Java.java_concurrency_practice;
+package tmp;
 
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package Java.Java并发.think_of_java._21_并发._04_终结任务;
+package _21_并发._04_终结任务;
 
 import org.junit.Test;
 

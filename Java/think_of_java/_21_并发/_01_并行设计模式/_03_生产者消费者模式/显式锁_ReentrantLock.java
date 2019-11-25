@@ -1,4 +1,4 @@
-package think_of_java._21_并发._01_并行设计模式._03_生产者消费者模式;
+package _21_并发._01_并行设计模式._03_生产者消费者模式;
 
 import org.junit.Test;
 

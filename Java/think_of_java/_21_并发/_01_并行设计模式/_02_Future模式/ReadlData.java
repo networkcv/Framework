@@ -1,4 +1,4 @@
-package think_of_java._21_并发._01_并行设计模式._02_Future模式;
+package _21_并发._01_并行设计模式._02_Future模式;
 
 import java.util.concurrent.TimeUnit;
 

@@ -1,4 +1,4 @@
-package think_of_java._21_并发._04_终结任务.exercise;
+package _21_并发._04_终结任务.exercise;
 
 import java.util.concurrent.TimeUnit;
 

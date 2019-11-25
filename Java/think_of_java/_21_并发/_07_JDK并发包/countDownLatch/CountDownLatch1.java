@@ -1,4 +1,4 @@
-package think_of_java._21_并发._07_JDK并发包.countDownLatch;
+package _21_并发._07_JDK并发包.countDownLatch;
 
 import org.junit.Test;
 

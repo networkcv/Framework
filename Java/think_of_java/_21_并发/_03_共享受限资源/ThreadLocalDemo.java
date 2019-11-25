@@ -1,4 +1,4 @@
-package think_of_java._21_并发._03_共享受限资源;
+package _21_并发._03_共享受限资源;
 
 import java.util.ArrayList;
 import java.util.List;

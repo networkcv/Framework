@@ -1,4 +1,4 @@
-package think_of_java._21_并发._06_死锁;
+package _21_并发._06_死锁;
 
 import org.junit.Test;
 

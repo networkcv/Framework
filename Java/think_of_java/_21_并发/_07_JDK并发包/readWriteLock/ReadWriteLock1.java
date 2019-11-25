@@ -1,4 +1,4 @@
-package think_of_java._21_并发._07_JDK并发包.readWriteLock;
+package _21_并发._07_JDK并发包.readWriteLock;
 
 import org.junit.Test;
 

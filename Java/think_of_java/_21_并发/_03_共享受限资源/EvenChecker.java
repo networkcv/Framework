@@ -1,4 +1,4 @@
-package Java.think_of_java._21_并发._03_共享受限资源;
+package Java._21_并发._03_共享受限资源;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -8,11 +8,11 @@ import java.util.concurrent.Executors;
  */
 public class EvenChecker {
 
-    public static void test(Java.Java并发.think_of_java._21_并发._03_共享受限资源.IntGenerator intGenerator) {
+    public static void test(_21_并发._03_共享受限资源.IntGenerator intGenerator) {
         test(intGenerator, 10);
     }
 
-    public static void test(Java.Java并发.think_of_java._21_并发._03_共享受限资源.IntGenerator intGenerator, int count) {
+    public static void test(_21_并发._03_共享受限资源.IntGenerator intGenerator, int count) {
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         for (int i = 0; i < count; i++) {
             cachedThreadPool.execute(() -> {

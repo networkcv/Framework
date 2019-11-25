@@ -1,4 +1,4 @@
-package Java.Java并发.think_of_java._21_并发._02_基本的线程机制.exercise;
+package _21_并发._02_基本的线程机制.exercise;
 
 import java.util.concurrent.TimeUnit;
 

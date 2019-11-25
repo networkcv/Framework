@@ -1,4 +1,4 @@
-package think_of_java._21_并发._05_线程之间的协作.exercise;
+package _21_并发._05_线程之间的协作.exercise;
 
 import java.util.concurrent.TimeUnit;
 
