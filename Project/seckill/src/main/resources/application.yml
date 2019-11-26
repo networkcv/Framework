@@ -33,8 +33,8 @@ spring:
       pool-prepared-statements: false
       max-pool-prepared-statement-per-connection-size: 20
 ## 该配置节点为独立的节点，勿将这个配置放在spring的节点下，导致配置无法被识别
-#mybatis:
-#  mapper-locations: com/zyt/wx/mapper/*.xml  # 对应mapper映射xml文件的所在路径
-#  configuration:
-#    map-underscore-to-camel-case: true # 开启驼峰命名转换
-#  type-aliases-package: com.zyt.pojo # 对应实体类的路径
+mybatis:
+  mapper-locations: classpath:mapper/*.xml   # 对应mapper映射xml文件的所在路径
+  configuration:
+    map-underscore-to-camel-case: true # 开启驼峰命名转换
+  type-aliases-package: com.lwj.seckill.pojo # 对应实体类的路径
