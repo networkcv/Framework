@@ -9,6 +9,8 @@ import com.lwj.seckill.exception.SeckillCloseException;
 import com.lwj.seckill.pojo.Seckill;
 import com.lwj.seckill.service.SeckillService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,12 +37,12 @@ public class SeckillController {
 
     public String list(Model model) {
         List<Seckill> seckillList = seckillService.getSeckillList();
-        model.addAttribute("list",seckillList);
+        model.addAttribute("list", seckillList);
         return "list";
     }
 
     @RequestMapping(value = "/{seckillId}/detail", method = RequestMethod.GET)
-    public String deatil(@PathVariable("seckillId") Long seckillId, HttpServletRequest req, HttpServletResponse res,Model model) throws IOException, ServletException {
+    public String deatil(@PathVariable("seckillId") Long seckillId, HttpServletRequest req, HttpServletResponse res, Model model) throws IOException, ServletException {
         if (seckillId == null) {
             res.sendRedirect("/seckill/list");
         }
@@ -48,13 +50,13 @@ public class SeckillController {
         if (seckill == null) {
             req.getRequestDispatcher("/seckill/list").forward(req, res);
         }
-        model.addAttribute("seckill",seckill);
+        model.addAttribute("seckill", seckill);
         return "detail";
     }
 
-    @RequestMapping(value = "/{seckillId}/exposer", method = RequestMethod.POST)
+    @RequestMapping(value = "/{seckillId}/exposer")
     @ResponseBody
-    public SeckillResult<Exposer> exposer(Long seckillId) {
+    public SeckillResult<Exposer> exposer(@PathVariable(value = "seckillId") Long seckillId) {
         SeckillResult<Exposer> res;
         try {
             Exposer exposer = seckillService.exportSeckillUrl(seckillId);
@@ -68,8 +70,8 @@ public class SeckillController {
 
     @RequestMapping(value = "/{seckillId}/{md5}/execution", method = RequestMethod.POST)
     @ResponseBody
-    public SeckillResult<SeckillExecution> execute(Long seckillId, String md5,
-                                                   @CookieValue(value = "killPhone", required = false) Long userPhone) {
+    public SeckillResult<SeckillExecution> execute(@PathVariable("seckillId")Long seckillId, @PathVariable("md5")String md5,
+                                                   @CookieValue(value = "userPhone", required = false) Long userPhone) {
 
         if (userPhone == null) {
             return new SeckillResult<>(false, "未注册");
@@ -92,7 +94,7 @@ public class SeckillController {
         return res;
     }
 
-    @RequestMapping(value = "/time/new", method = RequestMethod.GET)
+    @RequestMapping(value = "/time/now", method = RequestMethod.GET)
     @ResponseBody
     public SeckillResult<Long> time() {
         Date date = new Date();
