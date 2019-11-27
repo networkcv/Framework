@@ -10,7 +10,6 @@
     </insert>
 
     <select id="queryByIdWithSeckill" resultType="SuccessKilled">
-1
         <!--根据seckillId查询SuccessKilled对象，并携带Seckill对象-->
         <!--如何告诉mybatis把结果映射到SuccessKill属性同时映射到Seckill属性-->
         <!--可以自由控制SQL语句-->

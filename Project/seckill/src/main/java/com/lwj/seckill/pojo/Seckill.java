@@ -14,5 +14,5 @@ public class Seckill {
     private int number;
     private Date startTime;
     private Date endTime;
-    private Date crateTime;
+    private Date createTime;
 }
