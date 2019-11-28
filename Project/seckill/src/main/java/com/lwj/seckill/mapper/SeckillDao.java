@@ -3,11 +3,10 @@ package com.lwj.seckill.mapper;
 import com.lwj.seckill.pojo.Seckill;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.context.annotation.Scope;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * create by lwj on 2019/11/26
@@ -23,4 +22,9 @@ public interface SeckillDao {
 
     @Select("select * from seckill limit 0,1")
     Seckill test();
+
+    /**
+     *  使用储存过程执行秒杀
+     */
+    void killByProcedure(Map<String,Object> paramMap);
 }

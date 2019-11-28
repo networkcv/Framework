@@ -9,8 +9,6 @@ import com.lwj.seckill.exception.SeckillCloseException;
 import com.lwj.seckill.pojo.Seckill;
 import com.lwj.seckill.service.SeckillService;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,7 +68,7 @@ public class SeckillController {
 
     @RequestMapping(value = "/{seckillId}/{md5}/execution", method = RequestMethod.POST)
     @ResponseBody
-    public SeckillResult<SeckillExecution> execute(@PathVariable("seckillId")Long seckillId, @PathVariable("md5")String md5,
+    public SeckillResult<SeckillExecution> execute(@PathVariable("seckillId") Long seckillId, @PathVariable("md5") String md5,
                                                    @CookieValue(value = "userPhone", required = false) Long userPhone) {
 
         if (userPhone == null) {
@@ -78,7 +76,10 @@ public class SeckillController {
         }
         SeckillResult<SeckillExecution> res;
         try {
-            SeckillExecution seckillExecution = seckillService.executeSeckill(seckillId, userPhone, md5);
+            //通过调用存储过程直接在数据库执行秒杀事务
+            SeckillExecution seckillExecution = seckillService.executeSeckillProcedure(seckillId, userPhone, md5);
+            //由spring控制事务来执行秒杀操作
+//            SeckillExecution seckillExecution = seckillService.executeSeckill(seckillId, userPhone, md5);
             res = new SeckillResult(true, seckillExecution);
         } catch (RepeatKillException e) {
             SeckillExecution seckillExecution = new SeckillExecution(seckillId, SeckillStatEnum.REPEAT_KILL);

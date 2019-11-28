@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
@@ -18,11 +19,22 @@ import java.util.List;
 class SeckillDaoTest {
     @Autowired
     private SeckillDao seckillDao;
+    @Autowired
+    private RedisTemplate<String,Object> template;
 
     @Test
     void test(){
-        Seckill test = seckillDao.test();
-        System.out.println(test);
+        System.out.println(template);
+    }
+
+    @Test
+    void redisSetTest(){
+        template.opsForValue().set("key","test");
+    }
+
+    @Test
+    void redisGetTest(){
+        System.out.println(template.opsForValue().get("key").toString());
     }
 
     @Test

@@ -42,6 +42,18 @@ spring:
     mode: HTML5
     servlet:
       content-type: text/html
+  #redis配置
+  redis:
+    host: 192.168.3.193
+    port: 6379
+    timeout: 20000
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
 
 ## 该配置节点为独立的节点，勿将这个配置放在spring的节点下，导致配置无法被识别
 mybatis:

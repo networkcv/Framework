@@ -13,7 +13,7 @@ public enum SeckillStatEnum {
 
     INNER_ERROR(-2, "系统异常"),
 
-    DAT_REWRITE(-3, "数据篡改");
+    DATE_REWRITE(-3, "数据篡改");
 
     private int state;
     private String stateInfo;

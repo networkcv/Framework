@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.lwj.seckill.mapper")
+//@ComponentScan("com.lwj")
 public class SeckillApplication {
 
     public static void main(String[] args) {
