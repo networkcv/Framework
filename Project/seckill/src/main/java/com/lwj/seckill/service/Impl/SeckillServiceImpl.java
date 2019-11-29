@@ -33,7 +33,7 @@ public class SeckillServiceImpl implements SeckillService {
     @Autowired
     private SeckillDao seckillDao;
     @Autowired
-    private RedisDao redisDao;
+    private RedisDao<Seckill> redisDao;
     @Autowired
     private SuccessKilledDao successKilledDao;
 
@@ -53,7 +53,7 @@ public class SeckillServiceImpl implements SeckillService {
     public Exposer exportSeckillUrl(long seckillId) {
         //优化点：缓存优化
         //1.访问redis
-        Seckill seckill = redisDao.getSeckill(seckillId);
+        Seckill seckill = redisDao.getValue(seckillId+"");
         if (seckill == null) {
             //2.访问数据库
             seckill = seckillDao.queryById(seckillId);
@@ -61,7 +61,7 @@ public class SeckillServiceImpl implements SeckillService {
                 return new Exposer(false, seckillId);
             }
             //3.更新redis
-            redisDao.putSeckill(seckill);
+            redisDao.set(seckill.getSeckillId()+"",seckill);
         }
 
         Date startTime = seckill.getStartTime();

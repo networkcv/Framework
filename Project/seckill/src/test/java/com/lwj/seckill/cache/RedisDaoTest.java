@@ -12,23 +12,26 @@ import org.springframework.test.context.junit4.SpringRunner;
  * create by lwj on 2019/11/28
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = SeckillApplication.class,webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = SeckillApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RedisDaoTest {
     @Autowired()
-    private RedisDao redisDao;
+    private RedisDao<Seckill> redisDao;
 
     @Test
     void getSeckill() {
-        Seckill seckill = redisDao.getSeckill(1000);
-        System.out.println(seckill);
+        Seckill res = redisDao.getValue("1002");
+        System.out.println(res);
 
     }
 
     @Test
     void putSeckill() {
-        Seckill seckill = new Seckill();
-        seckill.setSeckillId(1000);
-        seckill.setName("test");
-        redisDao.putSeckill(seckill);
+        for (int i = 0; i <1000 ; i++) {
+            Seckill seckill = new Seckill();
+            seckill.setSeckillId(i);
+            seckill.setName("test");
+            redisDao.set(String.valueOf(seckill.getSeckillId()), seckill);
+        }
+
     }
 }

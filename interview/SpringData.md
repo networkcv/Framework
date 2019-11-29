@@ -147,10 +147,37 @@
 
 
 ## Spring Data Redis
-Spring Data Redis 是属于Spring Data 下的的一个模块，作用是简化对于Redis的操作  
-### 修改pom.xml
+Spring Data Redis 是属于Spring Data 下的的一个模块，作用是简化对于Redis的操作   
+springboot 2.0.0.RELEASE 之前，data-redis 底层客户端为 jedis,所以只需要引入 <artifactId>spring-boot-starter-data-redis</artifactId>即可，  
+如果使用yml自动配置的话，务必写对属性前缀，这样Springboot的默认配置类才能读取到。    
+从springboot 2.0.0.RELEASE 开始底层区分两个不同的实现，jedis及lettuce，默认采用 lettuce,yml配置文件中的也会标注出使用得是jedis还是lettuce    
+公共配置 spring.redis.timeout 的参数改为 Duration 类型，需要增加时间单位参数 如毫秒ms 秒s  
+
+
+springboot整合redis原理: 获取redisPoolConfig，通过config创建出JedisConnectionFactory，通过factory构建出一个方便使用的template，我们还可以在template上再进一步的封装。
+
+
+### Springboot 2.0之前 整合Redis  
+- 修改application.properties
+```yml
+spring.redis.database=0
+spring.redis.host=192.168.99.100
+spring.redis.port=6379
+# redis服务器的登录密码 没有可以不配置
+#spring.redis.password= 
+spring.redis.pool.max-active=8
+spring.redis.pool.max-idle=8
+spring.redis.pool.max-wait=-1
+spring.redis.pool.min-idle=0
+# redis 服务名称
+#spring.redis.sentinel.master=
+# 主机列表，格式为 host:port， 多个用逗号分隔  
+#spring.redis.sentinel.nodes= 
+spring.redis.timeout=10
+```
+- 修改pom.xml
 ```xml
-<!--    springboot 整合redis -->
+<!--    springboot 2.0之前 整合redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -167,31 +194,34 @@ Spring Data Redis 是属于Spring Data 下的的一个模块，作用是简化�
             <version>1.1.3</version>
         </dependency>
 ```
-### 编写配置类
+- 编写配置类
 ```java
 @Configuration
 public class RedisConfig {
     //1.创建JedisPollConfig对象，在该对象中完成连接池的配置
     @Bean
+    //读取properties配置文件中配置的redis基本属性
+    @ConfigurationProperties(prefix = "spring.redis")
     public JedisPoolConfig jedisPoolConfig() {
         JedisPoolConfig config = new JedisPoolConfig();
         //最大空闲数
-        config.setMaxIdle(10);
+        // config.setMaxIdle(10);
         //最小空闲数
-        config.setMinIdle(5);
+        // config.setMinIdle(5);
         //最大连接数
-        config.setMaxTotal(20);
+        // config.setMaxTotal(20);
         return config;
     }
 
     //2.创建JedisConnectionFactory 配置redis连接信息
     @Bean
+    @ConfigurationProperties(prefix = "spring.redis")
     public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig config) {
         JedisConnectionFactory factory = new JedisConnectionFactory();
         //配置连接池信息
         factory.setPoolConfig(config);
-        factory.setHostName("192.168.3.193");
-        factory.setPort(6379);
+        // factory.setHostName("192.168.3.193");
+        // factory.setPort(6379);
         return factory;
     }
 
@@ -262,6 +292,173 @@ public class ProtostuffSerializer implements RedisSerializer<Object> {
 
         public Object data;
 
+    }
+}
+```
+### Springboot 2.0之后 整合Redis 
+- pom.xml
+```xml
+        <parent>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-parent</artifactId>
+            <version>2.2.1.RELEASE</version>
+            <relativePath/> <!-- lookup parent from repository -->
+        </parent>
+        <!--redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        <!--   protostuff的自定义序列化     -->
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+```
+- application.yml
+```yml
+spring: 
+  #redis配置
+  redis:
+    database: 0
+    host: 192.168.3.193
+    port: 6379
+    password:
+    jedis:
+      pool:
+        max-active: 100 #连接池最大连接数（负值表示没有限制）
+        max-wait: -1ms #连接池最大阻塞等待时间（负值表示没有限制）
+        max-idle: 100 #连接池最大空闭连接数
+        min-idle: 50 #连接汉最小空闲连接数
+    timeout: 100ms #连接超时时间（毫秒）
+```
+- 配置类
+```java
+@Configuration
+public class NewRedisConfig {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.setEnableTransactionSupport(true);
+
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        template.setKeySerializer(keySerializer);
+        template.setHashKeySerializer(keySerializer);
+
+        //value的序列化器使用protostuff序列化器
+        //自定义的序列化类，在前面可以找到
+        ProtostuffSerializer valueSerializer = new ProtostuffSerializer();
+        template.setValueSerializer(valueSerializer);
+        template.setHashKeySerializer(valueSerializer);
+        return template;
+    }
+}
+```
+- 对redisTemplate再进行封装
+```java
+
+@Repository
+@Slf4j
+public class RedisDaoImpl<T> implements RedisDao<T> {
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    public boolean set(String key, Object value) {
+        try {
+            ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+            opsForValue.set(key, value);
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean set(String key, Object value, Long expireTime) {
+        boolean result = false;
+        try {
+            // 创建对简单值(Redis术语中的string类型)执行操作的对象
+            ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+            operations.set(key, value);
+            redisTemplate.expire(key, expireTime, TimeUnit.MINUTES);
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public boolean existsKey(String key) {
+        return redisTemplate.hasKey(key);
+    }
+
+    @Override
+    public <T> T getValue(String key, Class<T> type) {
+        Object result = null;
+        ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+        try {
+            result = operations.get(key);
+            if (result == null) {
+                return null;
+            }
+            // 将 Object 类型强转成 type 对应的类型
+            return type.cast(result);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public void removeKey(String key) {
+        // 检查 key 是否存在
+        if (existsKey(key)) {
+            redisTemplate.delete(key);
+        }
+    }
+
+    @Override
+    public void remove(String... keys) {
+        for (String key : keys) {
+            removeKey(key);
+        }
+    }
+
+    @Override
+    public void removePattern(String pattern) {
+        // 获取所有匹配的键
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null && keys.size() > 0) {
+            redisTemplate.delete(keys);
+        }
+
+    }
+
+    @Override
+    public <T> T getValue(String key) {
+        T result = null;
+        try {
+            ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+            result = (T) opsForValue.get(key);
+            return result;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return result;
     }
 }
 ```

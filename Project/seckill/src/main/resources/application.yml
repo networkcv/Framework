@@ -44,16 +44,20 @@ spring:
       content-type: text/html
   #redis配置
   redis:
-    host: 192.168.3.193
+    database: 0
+#    host: 192.168.3.193
     port: 6379
-    timeout: 20000
     password:
     jedis:
       pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1
+        max-active: 100 #连接池最大连接数（负值表示没有限制）
+        max-wait: -1ms #连接池最大阻塞等待时间（负值表示没有限制）
+        max-idle: 100 #连接池最大空闭连接数
+        min-idle: 50 #连接汉最小空闲连接数
+    timeout: 100ms #连接超时时间（毫秒）
+    cluster:
+      nodes: 192.168.3.193:7000,192.168.3.193:7001,192.168.3.193:7002,192.168.3.193:7003,192.168.3.193:7004,192.168.3.193:7005
+
 
 ## 该配置节点为独立的节点，勿将这个配置放在spring的节点下，导致配置无法被识别
 mybatis:
