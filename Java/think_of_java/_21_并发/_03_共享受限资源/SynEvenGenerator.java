@@ -1,5 +1,6 @@
-package Java._21_并发._03_共享受限资源;
+package _21_并发._03_共享受限资源;
 
+import _21_并发._03_共享受限资源.EvenChecker;
 import org.junit.Test;
 
 /**

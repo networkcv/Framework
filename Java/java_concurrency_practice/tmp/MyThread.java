@@ -2,10 +2,12 @@ package tmp;
 
 import org.junit.Test;
 
+import java.util.concurrent.*;
+
 /**
  * create by lwj on 2019/11/30
  */
-public class NewThreadTest {
+class NewThreadTest {
     @Test
     public void test() throws InterruptedException {
         Object lock = new Object();
@@ -73,6 +75,30 @@ public class NewThreadTest {
         Thread.sleep(100);
         System.out.println(thread.getName() + "当前状态：" + thread.getState());
 
+    }
 
+
+}
+
+public class MyThread implements Callable<String> {
+    @Test
+    public void test4() throws Exception {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        Future<String> res = executorService.submit(new MyThread());
+        System.out.println(res.get());
+    }
+
+    @Override
+    public String call() throws Exception {
+        System.out.println(Thread.currentThread().getName());
+        return "callable";
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        FutureTask<String> task = new FutureTask<>(() -> {
+            return "callable";
+        });
+        new Thread(task).start();
+        System.out.println(task.get());
     }
 }
