@@ -38,13 +38,16 @@ public class ReadWriteLock1 {
         new Thread(() -> {
             readWriteLock.readLock().lock();
             System.out.println("获取读锁");
+
             readWriteLock.writeLock().lock();
             System.out.println("获取写锁");
 
             System.out.println("释放写锁");
-            readWriteLock.readLock().unlock();
-            System.out.println("释放读锁");
             readWriteLock.writeLock().unlock();
+
+            System.out.println("释放读锁");
+            readWriteLock.readLock().unlock();
+
         }).start();
         try {
             TimeUnit.SECONDS.sleep(300);

@@ -3,6 +3,7 @@ package _21_并发._07_JDK并发包.reentrantLock;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -11,7 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class MyReentrantLock4_可限时性 extends Thread {
     public static ReentrantLock lock = new ReentrantLock();
-
     @Test
     //t1先启动获取锁，一直休眠不释放锁，t2无法在3秒内获取锁，打印获取锁失败
     public void test1() throws InterruptedException {
