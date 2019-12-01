@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * create by lwj on 2019/11/12
  */
-public class ReadlData implements Data {
+public class RealData implements Data {
     protected final String result;
 
-    public ReadlData(String str){
+    public RealData(String str){
         try {
             //假设获取真实数据很慢，模拟用户等待
             TimeUnit.SECONDS.sleep(1);

@@ -7,8 +7,8 @@ public class Client {
     public Data request(final String queryStr) {
         final FutureData futureData = new FutureData();
         new Thread(() -> {
-            ReadlData readlData = new ReadlData(queryStr);
-            futureData.setReadlData(readlData);
+            RealData realData = new RealData(queryStr);
+            futureData.setReadlData(realData);
         }).start();
         return futureData;
     }

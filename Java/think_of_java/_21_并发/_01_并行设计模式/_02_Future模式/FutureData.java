@@ -5,7 +5,7 @@ package _21_并发._01_并行设计模式._02_Future模式;
  */
 public class FutureData implements Data {
     protected volatile boolean isReady = false;
-    protected ReadlData readlData = null;
+    protected RealData realData = null;
 
     @Override
     public synchronized String getResult() {
@@ -16,14 +16,14 @@ public class FutureData implements Data {
                 e.printStackTrace();
             }
         }
-        return readlData.getResult();
+        return realData.getResult();
     }
 
-    public synchronized void setReadlData(ReadlData readlData) {
+    public synchronized void setReadlData(RealData readlData) {
         if (isReady) {
             return;
         }
-        this.readlData = readlData;
+        this.realData = readlData;
         isReady = true;
         notifyAll();
     }

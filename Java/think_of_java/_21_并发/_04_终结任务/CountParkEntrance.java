@@ -1,4 +1,4 @@
-package Java._21_并发._04_终结任务;
+package _21_并发._04_终结任务;
 
 import java.util.ArrayList;
 import java.util.List;

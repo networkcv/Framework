@@ -1,4 +1,4 @@
-package Java._21_并发._05_线程之间的协作;
+package _21_并发._05_线程之间的协作;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
