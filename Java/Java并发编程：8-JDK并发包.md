@@ -197,3 +197,6 @@ Thread t2 = new Thread(() -> {
         });
         t2.start();
 t2.interrupt() //打断线程2的等待
+
+
+在jdk1.5以后，将同步synchronized替换成了Lock，将同步锁对象换成了Condition对象，并且Condition对象可以有多个，这样可以解
