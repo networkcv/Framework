@@ -29,8 +29,14 @@
   - [2.6 yeild()和join()](#2.6yeild()和join())
 
 ## Java内存模型和线程安全  
-竞态条件  临界区
-ThreadLocal volatile synchronized
+synchronized 
+
+线程安全 
+    安全性问题 
+    活跃性问题
+        死锁 预防死锁  wait和notify优化循环等待
+    性能问题
+
 
 ## 并发级别和无锁   
 并发级别 AQS CAS 无锁类的使用 AtomicXXX类 Unsafe  乐观锁与悲观锁的比较 公平锁
