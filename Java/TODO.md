@@ -28,10 +28,21 @@
   - [2.5 wait()和notify()/notifyAll()](#2.5wait()和notify()/notifyAll())
   - [2.6 yeild()和join()](#2.6yeild()和join())
 
-## Java内存模型和线程安全  
-synchronized 
+## 4.Java内存模型  ok！
+- [1.硬件内存架构、Java内存结构和Java内存模型](#1.硬件内存架构、Java内存结构和Java内存模型)
+    - [1.1 硬件内存架构](#1.1硬件内存架构)
+    - [1.2 Java内存结构](#1.2Java内存结构)
+    - [1.3 Java内存模型](#1.3Java内存模型)
+- [2.并发编程常见问题来源](#2.并发编程常见问题来源)
+    - [2.1 原子性问题](#2.1原子性问题)
+    - [2.2 可见性问题](#2.2可见性问题)
+    - [2.3 有序性问题](#2.3有序性问题)
+- [3.Java如何解决并发问题](#3.Java如何解决并发问题)
+    - [3.1 Happens-Before](#3.1Happens-Before)
+    - [3.2 volatile](#3.2volatile)
+    - [3.3 synchronized](#3.3synchronized)
 
-线程安全 
+## 5.线程安全
     安全性问题 
     活跃性问题
         死锁 预防死锁  wait和notify优化循环等待
@@ -53,6 +64,7 @@ ConcurrentHashMap CopyOnWriteArrayList
 
 ## 线程池  
 Executors Callable Future FutureTask Timer
+创建多少线程才是合适的
 
 ## 锁优化  
 锁粒度，锁分离，锁粗化，锁消除
