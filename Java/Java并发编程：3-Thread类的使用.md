@@ -1,24 +1,19 @@
-## 前言： 
+**前言**： 
 前面大致了解了线程的创建和生命周期，线程在生命周期中并不是固定处于某一个状态而是随着代码的执行在不同状态之间切换。本篇通过对Thread类中方法的讲解来展示线程生命周期的变化，同时也会对Thread类本身进行理解。
 
-## [Thread的使用](#Thread的使用)
-- [1.Thread中的属性](#1.Thread中的属性)
-- [2.Thread中的方法](#2.Thread中的方法)
-  - [2.1 start()、run()和stop()](#2.1start()、run()和stop())
-  - [2.2 suspend()和resume()](#2.2suspend()和resume())
-  - [2.3 sleep()和TimeUnit](#2.3sleep()和TimeUnit)
-  - [2.4 interrupt()、isInterrupted()和Thread.interrupted()](#2.4interrupt()、isInterrupted()和Thread.interrupted())
-  - [2.5 wait()和notify()/notifyAll()](#2.5wait()和notify()/notifyAll())
-  - [2.6 yeild()和join()](#2.6yeild()和join())
-- [Reference](#Reference)
+[toc]
 
 
-## 面试问题
+
+**面试问题**
+
 Q ：wait和sleep方法的区别？  
 Q ：为什么wait和notify/notifyAll要定义在Object中？
 
-# Thread的使用
+
+
 ## 1.Thread中的属性
+
 ```java
     public class Thread implements Runnable {
         private volatile String name;
@@ -110,14 +105,14 @@ Q ：为什么wait和notify/notifyAll要定义在Object中？
 ```
 
 &emsp;&emsp;**defaultUncaughtExceptionHandler** :Thread类提供的默认未捕获异常的处理器。
- 
+
 
 ## 2.Thread中的方法
 &emsp;&emsp;通过Thread中的属性，大致了解了Thread类的结构，下面我们通过线程状态转换图来学习Thread类中的方法。  
 
 ![6-线程状态转换图.jpg](./img/6-线程状态转换图.jpg)
 
-### 2.1start()、run()和stop()
+### 2.1 start()、run()和stop()
 &emsp;&emsp;在我们实例化一个Thread对象后，这个对象处于初始状态，也就是threadStatus为NEW，此时这个对象只是堆中的一个普通Java对象，虽然被称为线程对象，但其实在操作系统中并没有与之对应的线程，只有当调用该对象的start，操作系统才会创建一个新线程，我们可以通过断点进行查看。  
 
 在执行thread.start()之前
@@ -141,7 +136,7 @@ Q ：为什么wait和notify/notifyAll要定义在Object中？
 &emsp;&emsp;windows的线程是抢占式的，意味着线程可以强制结束其他线程，例如通过任务管理器结束一个无响应的应用程序。   
 Java的线程工作方式是协作式，这样设计是为了让线程自身能够在线程关闭前处理自己的数据。
 
-### 2.2suspend()和resume()
+### 2.2 suspend()和resume()
 **不推荐使用**  
 &emsp;&emsp;如果想让一个线程暂停执行，而不是终止这个线程，可以使用suspend()将线程挂起，需要线程继续执行时使用resume()。正常情况下是先suspend()再resume()，如果将这两个方法的调用顺序调换，那么线程将永远被挂起，并且suspend()不会释放锁，这种情况下则会发生死锁。而且被suspend挂起的线程状态显示为"RUNNABLE"状态，这给排查bug带来困难。  
 &emsp;&emsp;因此在JUC中提供了LockSupport类来代替suspend()和resume()，可以看到线程状态转换图中的LockSupport.park()和LockSupport.unpark(),后面会的对LockSupport的实现进行详细的讲解。
@@ -182,7 +177,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
     // 这种情况线程会被挂起，控制台只会显示在挂起前打印的值，
 ```
 
-### 2.3sleep()和TimeUnit
+### 2.3 sleep()和TimeUnit
 &emsp;&emsp;static sleep(long millis) 的作用是当前正在执行的线程睡眠一段时间，出 CPU 让其去执行其他的任务，睡眠结束后获取到时间片才会继续执行任务。  
 &emsp;&emsp;调用sleep()，会抛出编译期异常InterruptedException，你需要捕获或者将该异常继续上抛。sleep方法不会释放锁，也就是说如果当前线程持有对某个对象的锁，其他线程无法访问这个对象。由于sleep(long millis)中控制睡眠时长的单位是毫秒级，这样可读性比较差，建议使用TimeUnit：
 
@@ -201,7 +196,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
 
 
 
-### 2.4interrupt()、isInterrupted()和Thread.interrupted()
+### 2.4 interrupt()、isInterrupted()和Thread.interrupted()
 &emsp;&emsp;Java没有提供任何机制来安全的终止线程，但它提供了**中断**（Interruption），这是一种协作机制，能够使一个线程终止另一个线程的当前工作。我们很少希望某个任务、线程或服务立即停止，因为这种立即停止会使共享的数据结构处于不一致的状态。通过协作的方式，我们可以让要退出的程序清理当前正在执行的工作，然后再结束，这提供了更好的灵活性，因为任务本身的代码比发出取消请求的代码更清楚如何清除工作。  
 &emsp;&emsp;Java通过协作式中断，通过推迟中断请求的处理，开发人员能制定更灵活的中断策略，使程序在响应性和健壮性之间实现合理的平衡。需要使用中断的方法都要求抛出或捕获处理InterruptedException异常。
 
@@ -247,7 +242,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
     }
  ```
 
-### 无法响应中断的阻塞
+**无法响应中断的阻塞**
 
 - 执行同步的SocketI/O无法响应中断。  
 
@@ -255,7 +250,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
 
 - 等待获得内置锁（synchronized）而阻塞，无法响应中断。但使用Lock类中提供了lockInterruptibly方法，该方法允许在等待一个锁的同时仍能响应中断。
 
-### 2.5wait()和notify()/notifyAll()
+### 2.5 wait()和notify()/notifyAll()
 调用这三个方法的前提是调用者持有锁，不然会抛出IllegalMonitorStateException异常。
 ```java
     Object lock =new Object();
@@ -309,7 +304,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
 - sleep会自动唤醒，如果想要提前唤醒，可以使用interrupt方法中断；调用wait()方法的线程，不会自己唤醒，需要线程调用notify/notifyAll方法唤醒。
 
 
-### 2.6yeild()和join()
+### 2.6 yeild()和join()
 **yeild()**
 ```java
     public static native void yield();
@@ -395,8 +390,7 @@ Java中提供了3种join的方法。
 &emsp;&emsp;https://blog.csdn.net/justloveyou_/article/details/54347954   
 &emsp;&emsp;https://blog.csdn.net/qq_35508033/article/details/89299305
 
-
-### 感谢阅读！
+**感谢阅读**！
 
 
 

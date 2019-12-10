@@ -1,38 +1,25 @@
-## 前言： 
-本篇将阐述并发问题是如何产生的以及解决办法，开篇会讲解硬件中的内存架构以便更好的理解Java内存模型。
+**前言**： 
+在[线程和进程]()一篇中提到了多线程带来的风险，本篇将阐述风险之一的数据安全性问题是如何产生的，以及解决办法，开篇会介绍硬件中的内存架构以便更好的理解Java内存模型。
 
-## [Java内存模型](#Java内存模型)
-- [1.硬件内存架构、Java内存结构和Java内存模型](#1.硬件内存架构、Java内存结构和Java内存模型)
-    - [1.1 硬件内存架构](#1.1硬件内存架构)
-    - [1.2 Java内存结构](#1.2Java内存结构)
-    - [1.3 Java内存模型](#1.3Java内存模型)
-- [2.并发编程常见问题来源](#2.并发编程常见问题来源)
-    - [2.1 原子性问题](#2.1原子性问题)
-    - [2.2 可见性问题](#2.2可见性问题)
-    - [2.3 有序性问题](#2.3有序性问题)
-- [3.Java如何解决并发问题](#3.Java如何解决并发问题)
-    - [3.1 Happens-Before](#3.1Happens-Before)
-    - [3.2 volatile](#3.2volatile)
-    - [3.3 synchronized](#3.3synchronized)
-- [Reference](#Reference)
+[TOC]
 
+**面试问题**
+Q ：谈谈Java内存模型？
 
-## 面试问题
-Q ：谈谈Java内存模型？  
 Q ：volatile是如何保证可见性？
+
 Q ：synchronized和volatile的区别？
 
-# Java内存模型
 ## 1.硬件内存架构、Java内存结构和Java内存模型
-### 1.1硬件内存架构
+### 1.1 硬件内存架构
 
 ![15-内存架构.jpg](./img/15-内存架构.jpg)
 
 CPU <=> 寄存器 <=> 缓存 <=> 主内存
 
 **CPU寄存器**：寄存器是CPU的组成部分，也是CPU运算时取指令和数据的地方，寄存器是有限存贮容量的高速存贮部件。CPU访问寄存器的速度远远大于主内存。
-> 每个CPU都包含一系列的寄存器，包含的寄存器有指令寄存器(IR)和程序计数器(PC)。在中央处理器的算术及逻辑部件中，包含的寄存器有累加器(ACC)。
 
+> 每个CPU都包含一系列的寄存器，包含的寄存器有指令寄存器(IR)和程序计数器(PC)。在中央处理器的算术及逻辑部件中，包含的寄存器有累加器(ACC)。
 
 **高速缓存Cache**：高速缓存Cache位于CPU与主内存间的一种容量较小但速度很高的存储器。由于CPU与主内存的运算速度之间有着几个数量级的差距，所以加入读写速度尽可能接近处理器运算速度的高速缓存来作为内存与处理器之间的缓冲。将运算需要使用到的数据复制到缓存中，让运算能快速进行。当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
 &emsp;&emsp;每个CPU可以有多个CPU缓存层。在某一时刻，一个或者多个缓存行（cache lines）可能被读到缓存，一个或者多个缓存行可能再被刷新回主存。
@@ -42,7 +29,7 @@ CPU <=> 寄存器 <=> 缓存 <=> 主内存
 **运作原理**：通常情况下，当一个CPU需要读取主存时，它会将主存的部分读到CPU缓存中。它甚至可能将缓存中的部分内容读到它的内部寄存器中，然后在寄存器中执行操作。当CPU需要将结果写回到主存中去时，它会将内部寄存器的值刷新到缓存中，然后在某个时间点将值刷新回主存，在刷回主存前缓存的值将对其他CPU不可见。
 
 
-### 1.2Java内存结构
+### 1.2 Java内存结构
 &emsp;&emsp;注意这里说的是Java内存结构，而不是Java内存模型，这两个是不同的概念，Java内存结构指的是JVM的内存分区，Java内存模型则为了解决多线程对共享数据访问而建立的抽象模型。
 ![16-Java内存分区.jpg](./img/16-Java内存分区.jpg)
 
@@ -52,7 +39,7 @@ CPU <=> 寄存器 <=> 缓存 <=> 主内存
 - 静态成员变量跟随着类定义一起也存放在堆上。
 - 存放在堆上的对象可以通过指向这个对象的引用来访问。
 
-### 1.3Java内存模型
+### 1.3 Java内存模型
 **Java内存模型简介**
 &emsp;&emsp;Java内存模型(Java Memory Model)是通过各种操作来定义的，包括对变量的读/写操作，监视器的加锁和释放操作，以及线程的启动和合并操作。JMM是和多线程相关的，JMM为程序中所有的操作定义了一个偏序关系，称为Happens-Before。要想保证执行操作B的线程看到操作A的结果，无论A和B是否在同一个线程中执行，那么A和B之间必须满足Happens-Before关系。如果两个操作之间缺乏Happens-Before关系，那么JVM可以对它们任意的排序。
 
@@ -73,8 +60,8 @@ JMM定义了线程和主内存之间的抽象关系：
 
 
 
-## 2.并发编程常见问题来源
-### 2.1原子性问题
+## 2.线程安全问题的源头
+### 2.1 原子性问题
 &emsp;&emsp;我们知道线程在分配到CPU时间片后才能继续执行，这种分时复用CPU的方式，使得程序中一个线程在等待 I/O 操作结束的时侯，另一个线程可以继续运行。当然更多的时候可能是多个线程交替执行。交替的时机大多是在时间片结束，交替前CPU会执行完当前的CPU指令，注意，这里是CPU指令，并不是Java中的一条语句，高级语言中的一条语句往往需要多条CPU指令完成，例如i++，至少需要三条CPU指令：
 
 - 指令1：把i的值从内存加载到CPU寄存器；
@@ -94,7 +81,7 @@ JMM定义了线程和主内存之间的抽象关系：
 
 
 
-### 2.2可见性问题
+### 2.2 可见性问题
 &emsp;&emsp;**可见性**：线程对共享变量修改的可见性。当一个线程修改了共享变量的值，其他线程能够立刻得知这个修改。
 在单核CPU的多个线程，共同操作同一个CPU缓存（高速缓存cache），一个线程对缓存的写，对另外一个线程一定可见。
 在多核CPU的多线程环境下，每个CPU都有自己的CPU缓存。CPU缓存不会与内存实时同步，Thread1对CPU1cache的操作，Thread2对CPU2cache操作，所以两个线程之间的操作对彼此是不可见的。这也是前边示例结果不正确的原因之一。
@@ -102,7 +89,7 @@ JMM定义了线程和主内存之间的抽象关系：
 可见性问题不仅会发生在CPU缓存上，还会发生在虚拟机层面。  
 
 
-### 2.3有序性问题
+### 2.3 有序性问题
 &emsp;&emsp;近些年计算机性能的提升原因除了时钟频率的提高，其他很大程度上归功于指令重排序措施，在编译器中生成的指令顺序，可以与源代码中的顺序不同。
 
 **指令重排序**
@@ -143,20 +130,21 @@ public class OrderExample{
 前面是两条语句之间发生指令重排导致的有序性问题，一条语句内的指令重排也会造成有序性问题。
 
 **双重检查锁**
+
 ```java
-    public class SingleClass{
-        private static Resource resource;
-        public static Resource getInstance(){
-            if(resource == null){
-                synchronized(this){
-                    if(resource == null){
-                        resource = new Resource();
-                    }
+public class SingleClass{
+    private static Resource resource;
+    public static Resource getInstance(){
+        if(resource == null){
+            synchronized(this){
+                if(resource == null){
+                    resource = new Resource();
                 }
             }
-            return resource;
         }
+        return resource;
     }
+}
 ```
 上例是利用双重检查创建单例对象，可能会发布一个部分构建的实例，在于new Resource()的执行过程中发生重排序。
 
@@ -175,8 +163,8 @@ public class OrderExample{
 
 
 
-## 3.Java如何解决并发问题
-### 3.1Happens-Before
+## 3.Java如何解决数据安全性问题
+### 3.1 Happens-Before
 &emsp;&emsp;“Happens-Before”字面意思是先发生，但理解为**前一个操作的结果对后一个操作是可见的** 更好些，需要注意的是，A对B可见(A Happens-Before B)，不代表A一定会在B之前发生，而是如果A在B之前发生了，那么B一定能看到A的执行结果，如果B先发生，那么A不一定能看到B的执行结果。
 - **程序的顺序性规则**：一个线程内保证语义的串行性，就是单线程内，前面的操作对后续的任意操作是可见的。
 - **volatile规则**：volatile变量的写对后续的读是可见的，这条保证了volatile变量的可见性。
@@ -216,7 +204,7 @@ public class OrderExample{
 
 &emsp;&emsp;总的来说，“Happens-Before”规则帮我们解决了可见性问题。
 
-### 3.2volatile
+### 3.2 volatile
 我们已经知道volatile可以保证可见性和有序性，那么它是如何做到的。
 首先要了解一个CPU指令，内存屏障(Memory Barrier)也可以被称为内存栅栏。
 - 它可以保证特定操作的执行顺序。
@@ -224,12 +212,44 @@ Happens-Before中，通过在需要保证可见性的指令之间插入内存屏
 - 保证某些变量的内存可见性。
 每次修改操作，都会强制将CPU中的volatile变量从缓存刷到内存，读操作的时候也会强制从主存中读，这样任何线程都能读取到这些数据的最新版本。
 
-### 3.3synchronized
+### 3.3 synchronized
 &emsp;&emsp;原子性问题的起因是做了一半发生了线程切换，就像现实中我们不会连续工作一整天，中午肯定要去吃饭，回来继续之前的工作，但走之前肯定会将桌面锁定，防止别人不小心碰到你的键盘修改了某些内容。
 &emsp;&emsp;synchronized做的事情也类似，区别在于你锁的自己的资源，而synchronized锁的是公共的资源。
 &emsp;&emsp;对于被锁定的公共资源，就算发生线程切换，其他线程也无法对其操作，只能进入阻塞队列中等待锁的释放。通过这样的方式就能保证一组复合操作的原子性。
 
-&emsp;&emsp;synchronized关键字底层原理属于JVM层面,笔者在这里就不多做介绍了。
+&emsp;&emsp;synchronized关键字底层原理属于JVM层面，在此就简单介绍一下。
+
+**同步代码块**
+
+```java
+public class SynchronizedDemo {
+    public void method() {
+        synchronized (this) {
+            System.out.println("synchronized 代码块");
+        }
+    }
+}
+```
+
+![](D:\study\Framework\Java\img\19-synchronized原理.jpg)
+
+&emsp;&emsp;**synchronized 同步语句块的实现使用的是 monitorenter 和 monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。** 当执行 monitorenter 指令时，线程试图获取锁也就是获取 monitor(monitor对象存在于每个Java对象的对象头中，synchronized 锁便是通过这种方式获取锁的，也是为什么Java中任意对象可以作为锁的原因) 的持有权。当计数器为0则可以成功获取，获取后将锁计数器设为1也就是加1。相应的在执行 monitorexit 指令后，将锁计数器设为0，表明锁被释放。如果获取对象锁失败，那当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
+
+**同步方法**
+
+```java
+public class SynchronizedDemo2 {
+    public synchronized void method() {
+        System.out.println("synchronized 方法");
+    }
+}
+```
+
+![](D:\study\Framework\Java\img\20-synchronized原理.jpg)
+
+&emsp;&emsp;synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，取得代之的确实是 ACC_SYNCHRONIZED 标识，该标识指明了该方法是一个同步方法，JVM 通过该 ACC_SYNCHRONIZED 访问标志来辨别一个方法是否声明为同步方法，从而执行相应的同步调用。
+
+。
 
 **synchronized关键字和volatile关键字比较**
 - volatile关键字是线程同步的轻量级实现，所以volatile性能肯定比synchronized关键字要好。但是volatile关键字只能用于变量而synchronized关键字可以修饰方法以及代码块。synchronized关键字在JavaSE1.6之后进行了主要包括为了减少获得锁和释放锁带来的性能消耗而引入的偏向锁和轻量级锁以及其它各种优化之后执行效率有了显著提升，实际开发中使用 synchronized 关键字的场景还是更多一些。
@@ -240,9 +260,11 @@ Happens-Before中，通过在需要保证可见性的指令之间插入内存屏
 ## Reference
 &emsp;&emsp;《Java 并发编程实战》  
 &emsp;&emsp;《Java 编程思想(第4版)》  
+&emsp;&emsp;https://snailclimb.gitee.io/javaguide/#/
 &emsp;&emsp;https://zhuanlan.zhihu.com/p/29881777
 &emsp;&emsp;https://time.geekbang.org/column/intro/159
 &emsp;&emsp;https://www.cnblogs.com/dolphin0520/p/3920373.html
+
 
 **不成体系的知识，犹如一块满身是孔的奶酪。**
 **感谢阅读！**

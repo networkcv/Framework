@@ -43,10 +43,10 @@
     - [3.3 synchronized](#3.3synchronized)
 
 ## 5.线程安全
-    安全性问题 
-    活跃性问题
-        死锁 预防死锁  wait和notify优化循环等待
-    性能问题
+安全性问题 
+活跃性问题
+死锁 预防死锁  wait和notify优化循环等待
+性能问题
 
 
 ## 并发级别和无锁   
@@ -64,7 +64,7 @@ ConcurrentHashMap CopyOnWriteArrayList
 
 ## 线程池  
 Executors Callable Future FutureTask Timer
-创建多少线程才是合适的
+10-创建多少线程才是合适的
 
 ## 锁优化  
 锁粒度，锁分离，锁粗化，锁消除
