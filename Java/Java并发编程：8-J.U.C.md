@@ -1,6 +1,49 @@
 ## J.U.C
 
-### 1. Lock和Condition
+### 1. Lock & Condition
+
+之前提到并发编程的两大核心问题：**互斥**，即同一时刻只允许一个线程访问共享资源；**同步**，线程之间的通信、协作。Java通过synchronized和wait，notify来实现。JDK5之后，在J.U.C中提供了新的实现方式，使用Lock和Condition两个接口来实现管程，其中Lock用于解决互斥，Condition用于解决同步。
+
+1.5中synchronized性能不如Lock，但是在1.6之后，synchronized做了很多优化，将性能追上来。所以并不是因为性能才提供了Lock和Condition这种管程的实现方式。而是synchronized的会自动加锁和释放锁，无法手动去释放，在很多情况下不够灵活，比如申请不到资源时，可以通过主动释放占有的资源，来通过破坏不可抢占条件。
+
+而Lock接口就提供了更加灵活的方式来解决这个问题：
+
+1. 能够响应中断。synchronized的问题是，如果获取不到锁，线程就会进入阻塞，并且无法响应中断信号，Lock接口提供了可以响应中断信号的加锁方式，这样就可以主动释放占有的资源，以达到破坏不可抢占条件。
+2. 支持超时。如果线程在一段时间内没有获取到锁，不是进入阻塞，而是返回一个错误，同样会释放持有的资源，也可以达到破坏不可抢占条件。
+3. 非阻塞地获取锁，如果尝试获取锁失败，并不进入阻塞状态，而是直接返回，也可以达到破坏不可抢占条件。
+
+```Java
+//支持中断的加锁
+void lockInterruptibly() throws InterruptedException;
+//支持超时的加锁
+boolean tryLock(long time, TimeUnit unit) throws InterruptedException;
+//支持非阻塞获取锁
+boolean tryLock();
+```
+
+ReentrantLock的可见性和有序性都是借助volatile规则来保证的。
+
+答案必须是肯定的。Java SDK里面锁的实现非常复杂,这里我就不展开细说了,但是原理还是需要简单介绍一下:它是利用了volatile相关的Happens-Before规则。Java SDK里面的 ReentrantLock,内部持有一个volatile的成员变量state,获取锁的时候,会读写state的值;解锁的时候,也会读写state的值(简化后的代码如下面所示) 。也就是说,在执行value+=1之前,程序先读写了一次volatile变量state,在执行value+=1之后,又读写了一次volatile ,变量state,根据相关的Happens-Before规则:
+
+1,顺序性规则:对于线程T1, value+=1 Happens-Before释放锁的操作unlockO);
+
+2, volatile变量规则:由于state=1会先读取state,所以线程T1的unlock)操作 Happens-Before线程T2的lock)操作;
+
+3,传递性规则:线程T2的lock)操作Happens-Before线程T1的value+=1.
+
+```java
+class SamleLock{
+	volatile int state;
+	lock(){
+    //	...
+		state=1;
+	}
+	unlock(){
+	//	...
+		state=0;
+	}
+}
+```
 
 
 
