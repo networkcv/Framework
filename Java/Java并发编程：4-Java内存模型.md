@@ -206,7 +206,7 @@ public class SingleClass{
 
 ### 3.2 volatile
 我们已经知道volatile可以保证可见性和有序性，那么它是如何做到的。
-首先要了解一个CPU指令，内存屏障(Memory Barrier)也可以被称为内存栅栏。
+首先要了解一个CPU指令，内存屏障(Memory Barrier)，也可以被称为内存栅栏。
 - 它可以保证特定操作的执行顺序。
 Happens-Before中，通过在需要保证可见性的指令之间插入内存屏障，来禁止在内存屏障前后的指令执行重排序优化。
 - 保证某些变量的内存可见性。
@@ -249,9 +249,10 @@ public class SynchronizedDemo2 {
 
 &emsp;&emsp;synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，取得代之的确实是 ACC_SYNCHRONIZED 标识，该标识指明了该方法是一个同步方法，JVM 通过该 ACC_SYNCHRONIZED 访问标志来辨别一个方法是否声明为同步方法，从而执行相应的同步调用。
 
-。
+
 
 **synchronized关键字和volatile关键字比较**
+
 - volatile关键字是线程同步的轻量级实现，所以volatile性能肯定比synchronized关键字要好。但是volatile关键字只能用于变量而synchronized关键字可以修饰方法以及代码块。synchronized关键字在JavaSE1.6之后进行了主要包括为了减少获得锁和释放锁带来的性能消耗而引入的偏向锁和轻量级锁以及其它各种优化之后执行效率有了显著提升，实际开发中使用 synchronized 关键字的场景还是更多一些。
 - 多线程访问volatile关键字不会发生阻塞，而synchronized关键字可能会发生阻塞。
 - volatile关键字能保证数据的可见性，但不能保证数据的原子性。synchronized关键字两者都能保证。

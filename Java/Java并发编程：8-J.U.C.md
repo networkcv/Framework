@@ -1,5 +1,10 @@
-## JDK并发包
-### [1.5. 谈谈 synchronized和ReentrantLock 的区别](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/JavaConcurrencyAdvancedCommonInterviewQuestions?id=_15-谈谈-synchronized和reentrantlock-的区别)
+## J.U.C
+
+### 1. Lock和Condition
+
+
+
+### synchronized和ReentrantLock 的区别
 
 **① 两者都是可重入锁**
 
