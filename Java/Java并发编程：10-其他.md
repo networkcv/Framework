@@ -82,7 +82,7 @@ public class ReadlData implements Data {
 ```
 
 
-# 并发调试和JDK8新特性
+## 并发调试和JDK8新特性
 ### 多线程调试的方法
 使用条件断点或异常断点
 ### 线程dump及分析
@@ -111,8 +111,8 @@ StampedLock的读可以不阻塞写，读线程在 读取后返回前的时候�
 锁内部维护了一个等待线程队列，所有申请锁，但是没成功的线程都记录在这个队列中，每个节点都有一个标记位，判断当前节点是否已经释放锁  
 当一个线程试图获取锁时，会判断当前等待队列尾部节点的标记位是否已经成功释放锁
 
+## Lambda 表达式    
 
-Lambda 表达式    
 http://blog.oneapm.com/apm-tech/226.html
 https://blog.csdn.net/qq_36951116/article/details/80296967
 

@@ -5,6 +5,8 @@ import java.util.concurrent.locks.Lock;
 
 /**
  * create by lwj on 2019/12/11
+ * 测试进入阻塞状态的线程是否可以被中断
+ * 结论：无法中断
  */
 public class BlockTest {
     public static void main(String[] args) {
@@ -19,7 +21,6 @@ public class BlockTest {
             }
         });
         thread.start();
-        Lock
         Thread thread2 = new Thread(() -> {
             synchronized (o) {
                 System.out.println("ok");

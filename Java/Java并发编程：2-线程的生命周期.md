@@ -1,26 +1,21 @@
-## 前言： 
+**前言**： 
+
 上一篇中我们了解到进程和线程的区别，以及使用多线程的优缺点，本篇主要讲在Java中是如何去创建一个线程，以及线程的生命周期。
 
 [TOC]
 
-## [线程的生命周期](#线程的生命周期)
-- [1.如何创建一个线程](#1.如何创建一个线程)
-  - [1.1实现Runnable接口](#1.1实现Runnable接口)
-  - [1.2继承Thread类](#1.2继承Thread类)
-  - [1.3实现Callable接口](#1.3实现Callable接口)
-  - [1.4对创建线程的一些个人理解](#1.4对创建线程的一些个人理解)
-- [2.线程的生命周期和状态](#2.线程的生命周期和状态)
-- [Reference](#Reference)
 
 
-## 面试问题
+**面试问题**
+
 Q ：线程的实现方式?  
 Q ：start()和run()的区别?
 Q ：线程的生命周期和状态?  
 
 
-# 线程的生命周期
+
 ## 1.如何创建一个线程
+
 ### 1.1实现Runnable接口
 &emsp;&emsp;实现Runnable接口，重写run方法。  
 &emsp;&emsp;Runnable的意思是“任务”，是通过实现Runnable接口，定义一个子任务，交由Thread对象执行，然后通过调用Thread的start方法来创建一个新线程来执行该任务，具体的执行内容定义在run方法中。但如果直接调用run方法，则会被当作当前线程的一次普通方法调用，不会创建一个新线程。 
@@ -72,7 +67,8 @@ Q ：线程的生命周期和状态?
         }
     }
 ```
-### Future模式
+**Future模式**
+
 &emsp;&emsp;我们了解了FutureTask接口的继承结构，知道它有什么功能，但具体是如何实现的呢。  
 &emsp;&emsp;下面简单的模拟一下Callable的实现原理，只模拟Future接口get方法的实现，用FutureData
 来模拟FutureTask类。  
@@ -255,12 +251,14 @@ Q ：线程的生命周期和状态?
         // MyThread2当前状态：TERMINATED
 ```
 
-### 临界区
+**临界区**
+
 &emsp;&emsp;临界区用来表示一种公共资源或者说是共享数据，可以被多个线程使用，但是每次只能一个线程使用它，一旦临界区资源被占用，其他线程想要使用这个资源，就必须等待。
 
 ![7-临界区.jpg](./img/7-临界区.jpg)
 
-### 阻塞(Blocking)和非阻塞(Non-Blocking)
+**阻塞(Blocking)和非阻塞(Non-Blocking)**
+
 https://blog.csdn.net/historyasamirror/article/details/5778378  
 
 &emsp;&emsp;阻塞非阻塞是关于线程与进程的。
@@ -275,5 +273,6 @@ https://blog.csdn.net/historyasamirror/article/details/5778378
 &emsp;&emsp;https://blog.csdn.net/justloveyou_/article/details/54347954 
 &emsp;&emsp;https://snailclimb.gitee.io/javaguide/#/
 
-### 感谢阅读！
-### 若想有所改变，必须做出舍弃。 
+**感谢阅读！**
+
+**若想有所改变，必须做出舍弃。** 

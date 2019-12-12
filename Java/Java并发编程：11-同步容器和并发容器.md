@@ -1,3 +1,34 @@
+### BlockingQueue
+
+在任何时刻都只允许一个任务插入或移除元素  
+可以挂起和恢复消费者   
+LinkedBlockingQueue   无界队列
+ArrayBlockingQueue  
+DelayQueue  延时的无界队列，用于放置实现类Delayed接口的对象，其中的对象只能在其到期后才能从队列取走
+PriorityBlockingQueue 基础的优先级队列，可以阻塞读取操作
+
+插入   
+
+- add() 队满则抛异常
+- offer() 队满返回false
+- offer(e,time,unit) 队满则会在给定时间内阻塞
+- put() 如果队列已满则会进入阻塞，直到可插入
+
+移除  
+
+- remove()  队空则抛异常
+- poll() 队空则返回null
+- poll(e,time,unit) 队空则会在给定时间内阻塞
+- take()  队空则进入阻塞，直到可返回
+
+检查  
+
+- element()   队空则抛异常
+- peek() 队空则返回null
+
+
+### ConcurrentHashMap
+
 15. HashTable的size方法中明明只有一条语句"return count"，为什么还要做同步
     (同一时间只能有一个线程执行被锁定对象的同步方法，但是对于该对象的非同步方法，可以多条线程同时访问)
     所以，这样就出现了问题，而给size添加了同步之后，意味着线程B调用size方法只有在线程A调用put方法之后，这样就保证了线程安全。
@@ -28,7 +59,7 @@ ConcurrentMap
         对整个容器进行加锁，效率比较低
     Collections.synchronizedXXX(List/Map)
             对线程不安全的容器进行加锁
-
+    
     高并发
     ConcurrentHashMap
         将对整个容器的锁拆解为多个对容器的分段锁    1.8后没有分段锁，采用CAS？
@@ -46,7 +77,7 @@ ConcurrentQueue
 
         put()   //加入，满了则会等待，线程阻塞
         take()  //取出，空了则会等待，线程阻塞
-
+    
     高并发
     CopyOnWriteList
         读的量特别大，写的量特别小，例如 监听器的配置
