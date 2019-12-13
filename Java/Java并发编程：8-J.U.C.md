@@ -201,7 +201,9 @@ public void release()   //释放信号量
 
 
 
-## 3. CountDownLatch & CyclicBarrier
+## 3.ReadWriteLock & SemapedLock
+
+## 4.CountDownLatch & CyclicBarrier
 
 再以CountDownLatch以例，任务分为N个子线程去执行，state也初始化为N（注意N要与线程个数一致）。这N个子线程是并行执行的，每个子线程执行完后countDown()一次，state会CAS减1。等到所有子线程都执行完后(即state=0)，会unpark()主调用线程，然后主调用线程就会从await()函数返回，继续后余动作
 
