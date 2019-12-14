@@ -36,7 +36,7 @@ public final int getAndIncrement(){
     }
   }
 }
-```  
+```
 - AtomicReference<V>   
 针对线程引用来保证线程安全
 - AtomicStampedReference<V>  

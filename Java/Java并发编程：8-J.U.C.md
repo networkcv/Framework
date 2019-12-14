@@ -27,7 +27,7 @@ boolean tryLock();
 
 可重入锁，同一把锁可以在持有时再进行获取(synchronized也可以)，获取几次也必须要释放几次，不然会造成死锁 。
 
-以ReentrantLock为例，state初始化为0，表示未锁定状态。A线程lock()时，会调用tryAcquire()独占该锁并将state+1。此后，其他线程再tryAcquire()时就会失败，直到A线程unlock()到state=0（即释放锁）为止，其它线程才有机会获取该锁。当然，释放锁之前，A线程自己是可以重复获取此锁的（state会累加），这就是可重入的概念。但要注意，获取多少次就要释放多么次，这样才能保证state是能回到零态的。
+以ReentrantLock为例，state初始化为0，表示未锁定状态。A线程lock()时，会调用tryAcquire()独占该锁并将state+1。此后，其他线程再tryAcquire()时就会失败，直到A线程unlock()到state=0（即释放锁）为止，其它线程才有机会获取该锁。当然，释放锁之前，A线程自己是可以重复获取此锁的（state会累加），这就是可重入的概念。但要注意，获取多少次就要释放多么次，这样才能保证state是能回到0状态。
 
 ```java
 try {
@@ -38,6 +38,55 @@ try {
 }
 // 由于加了两次锁，但只释放了一次，所以其他线程无法成功拿到锁，会进入阻塞。
 ```
+贴出ReentrantLock的部分源码供大家参考，以下为非公平锁的尝试获取锁方法。
+
+```java
+final boolean nonfairTryAcquire(int acquires) {	// acquires = 1
+            final Thread current = Thread.currentThread();
+            int c = getState();
+    		//c为0，可以理解为当前锁未被使用，那么当前线程就可以去竞争一下锁
+            if (c == 0) {
+                //竞争的过程就是使用CAS尝试去修改state状态
+                if (compareAndSetState(0, acquires)) {
+                    //成功则设置 独占锁的拥有线程 为当前线程
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+    		// 程序执行到这一步，有两种可能1:c==0但是竞争失败了，2:c!=0
+    		// 第一种情况：锁没人用却竞争失败了说明竞争激烈，则线程需要进入等待队列中等待，就像多个人抢着出门，挤着谁都出不去，但只要有人在门口等待一下，有序撤离，这其实才是最快的方式。
+    		// 第二种情况：c!=0，说明当前锁被使用，下边判断锁在谁手里，如果自己拿着则累加state，锁在别人手里，则和情况一样，进入等待队列中。
+            else if (current == getExclusiveOwnerThread()) {
+                // 判断为重入锁，对state进行累加，
+                int nextc = c + acquires;
+                // int的MAX为2147483647 再+1的话会溢出，不会变成2147483648，反而会变成-2147483647
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                // 因为只有当前持有锁的线程才能走到这里，所以此处并不需要使用CAS，
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+```
+以下为非公平锁的尝试释放锁方法。
+```java
+protected final boolean tryRelease(int releases) {// acquires = 1
+    // 解一次锁减state减一次
+    int c = getState() - releases;
+    if (Thread.currentThread() != getExclusiveOwnerThread())
+        throw new IllegalMonitorStateException();
+    boolean free = false;
+    // 只有减为0时，说明锁可以被其他线程获取，返回true，同时设置 独占锁的拥有线程 为当前线程
+    if (c == 0) {
+        free = true;
+        setExclusiveOwnerThread(null);
+    }
+    setState(c);
+    return free;
+}
+```
+
 
 ### 1.3 公平锁与非公平锁
 
@@ -59,12 +108,8 @@ public class MyReentrantLock5_公平锁 extends Thread {
     @Test
     public void test() throws InterruptedException {
         Thread t1 = new Thread(() -> {
-            try {
-                //线程启动后先休眠1s，尽量保证量两个线程同时抢锁
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            //线程启动后先休眠1s，尽量保证量两个线程同时抢锁，不然可能t1拿锁放锁100次了，t2还没启动
+            TimeUnit.SECONDS.sleep(1);
             for (int i = 0; i < 100; i++) {
                 lock.lock();
                 System.out.println(Thread.currentThread().getName() + " 获得锁");
@@ -72,11 +117,7 @@ public class MyReentrantLock5_公平锁 extends Thread {
             }
         });
         Thread t2 = new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            TimeUnit.SECONDS.sleep(1);
             for (int i = 0; i < 100; i++) {
                 lock.lock();
                 System.out.println(Thread.currentThread().getName() + " 获得锁");
@@ -95,7 +136,68 @@ public class MyReentrantLock5_公平锁 extends Thread {
 
 
 
-### 1.4 ReentrantLock的原理
+> 一个写多线程测试代码需要注意的点，上面这段程序我是使用Junit提供的@Test注解来运行的，没有放在main方法中来跑，如果上边的代码定义在main中，则可以不用写最后两行代码“ t1.join() ; t2.join() ;”。
+>
+> @Test运行方式是在main方法中通过反射来执行test()方法，在执行test方法执行完后会立即退出，如果没有t1.join();将无法看到t1的打印结果。main方法中执行则会等待其中线程执行完成返回后再退出。
+
+```java
+   final void lock() {
+            if (compareAndSetState(0, 1))
+                setExclusiveOwnerThread(Thread.currentThread());
+            else
+                acquire(1);
+        }
+  final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+```
+
+
+
+```java
+ final void lock() {
+            acquire(1);
+        }
+
+protected final boolean tryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (!hasQueuedPredecessors() &&
+                    compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc < 0)
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+```
+
+
+
+### 1.4 ReentrantLock 原理
 
 ReentrantLock实现了Lock接口，其可见性和有序性都是借助volatile规则来保证的。原理是利用了volatile相关的Happens-Before规则。J.U.C中的 ReentrantLock，内部持有一个volatile的成员变量state,获取锁的时候,会读写state的值;解锁的时候,也会读写state的值(简化后的代码如下面所示) 。相当于用前后两次对volatile变量的修改操作，将我们要对共享变量的修改操作给包起来了。通过巧妙利用volatile变量规则及传递性规来保证可见性和有序性。
 
@@ -103,8 +205,9 @@ ReentrantLock实现了Lock接口，其可见性和有序性都是借助volatile�
 class SampleLock{
 	volatile int state;
 	lock(){
+        state=1;
     //	...
-		state=1;
+        
 	}
 	unlock(){
 	//	...
@@ -113,14 +216,11 @@ class SampleLock{
 }
 ```
 
-- CAS状态  
-  尝试去拿CAS锁
-- 等待队列  
-  用于保存等待在锁上的队列
-- park()  
-  等待队列中的操作进行park挂起
 
 
+使用CAS来保障原子性
+
+ 
 
 ### 1.5.Condition
 
@@ -201,7 +301,7 @@ public void release()   //释放信号量
 
 
 
-## 3.ReadWriteLock & SemapedLock
+## 3.ReadWriteLock & StampedLock
 
 ## 4.CountDownLatch & CyclicBarrier
 

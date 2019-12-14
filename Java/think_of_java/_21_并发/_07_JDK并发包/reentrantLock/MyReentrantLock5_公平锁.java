@@ -42,7 +42,37 @@ public class MyReentrantLock5_公平锁 extends Thread {
         });
         t1.start();
         t2.start();
-        t1.join();
-        t2.join();
+//        t1.join();
+//        t2.join();
+    }
+
+    public static void main(String[] args){
+        Thread t1 = new Thread(() -> {
+            try {
+                //线程启动后先休眠1s，尽量保证量两个线程同时抢锁
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (int i = 0; i < 100; i++) {
+                lock.lock();
+                System.out.println(Thread.currentThread().getName() + " 获得锁");
+                lock.unlock();
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (int i = 0; i < 100; i++) {
+                lock.lock();
+                System.out.println(Thread.currentThread().getName() + " 获得锁");
+                lock.unlock();
+            }
+        });
+        t1.start();
+        t2.start();
     }
 }

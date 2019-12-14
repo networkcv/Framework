@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * create by lwj on 2019/12/13
  */
-public class ReentrantLockTest {
+public class ReentrantLockDebugTest {
     public static void main(String[] args) {
         ReentrantLock reentrantLock = new ReentrantLock();
         new Thread(() -> {

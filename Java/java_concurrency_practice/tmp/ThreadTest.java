@@ -1,5 +1,7 @@
 package tmp;
 
+import org.junit.Test;
+
 /**
  * create by lwj on 2019/12/1
  */
@@ -56,12 +58,5 @@ public class ThreadTest {
                 t.m3();
             }
         }
-    }
-
-    public static void main(String[] args) {
-        ThreadTest t = new ThreadTest();
-        new Thread(new MyThread01(0, t)).start();
-        new Thread(new MyThread01(1, t)).start();
-        new Thread(new MyThread01(-1, t)).start();
     }
 }
