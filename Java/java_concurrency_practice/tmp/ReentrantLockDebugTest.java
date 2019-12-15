@@ -1,6 +1,6 @@
 package tmp;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -9,19 +9,24 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ReentrantLockDebugTest {
     public static void main(String[] args) {
         ReentrantLock reentrantLock = new ReentrantLock();
-        new Thread(() -> {
+        Condition condition = reentrantLock.newCondition();
+        Thread thread = new Thread(() -> {
             reentrantLock.lock();
             try {
-                TimeUnit.SECONDS.sleep(100000);
+                condition.await();
+                System.out.println("0");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             reentrantLock.unlock();
-        }).start();
-        new Thread(() -> {
+        }, "t1");
+        Thread thread1 = new Thread(() -> {
             reentrantLock.lock();
+            condition.signal();
             System.out.println("1");
             reentrantLock.unlock();
-        }).start();
+        }, "t2");
+        thread.start();
+        thread1.start();
     }
 }

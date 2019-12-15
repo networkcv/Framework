@@ -141,90 +141,70 @@ public class MyReentrantLock5_公平锁 extends Thread {
 > @Test运行方式是在main方法中通过反射来执行test()方法，在执行test方法执行完后会立即退出，如果没有t1.join();将无法看到t1的打印结果。main方法中执行则会等待其中线程执行完成返回后再退出。
 
 ```java
-   final void lock() {
-            if (compareAndSetState(0, 1))
-                setExclusiveOwnerThread(Thread.currentThread());
-            else
-                acquire(1);
-        }
-  final boolean nonfairTryAcquire(int acquires) {
-            final Thread current = Thread.currentThread();
-            int c = getState();
-            if (c == 0) {
-                if (compareAndSetState(0, acquires)) {
-                    setExclusiveOwnerThread(current);
-                    return true;
-                }
-            }
-            else if (current == getExclusiveOwnerThread()) {
-                int nextc = c + acquires;
-                if (nextc < 0) // overflow
-                    throw new Error("Maximum lock count exceeded");
-                setState(nextc);
-                return true;
-            }
-            return false;
-        }
-```
+//非公平锁
+final void lock() {
+    // 在加锁的时候就去尝试一下
+    if (compareAndSetState(0, 1))
+        setExclusiveOwnerThread(Thread.currentThread());
+    else
+        acquire(1);
+}
+//公平锁
+final void lock() {
+    acquire(1);
+}
 
-
-
-```java
- final void lock() {
-            acquire(1);
+//非公平锁/公平锁
+final boolean nonfairTryAcquire(int acquires) {
+    final Thread current = Thread.currentThread();
+    int c = getState();
+    if (c == 0) {
+        if (!hasQueuedPredecessors() &&	//公平锁比非公平锁多这一行判断，检查阻塞队列的首节点（head是头节点，head后边才是阻塞队列中保存的第一个节点）是不是当前线程，如果不是的话则需要去排队
+            compareAndSetState(0, acquires)) {
+            setExclusiveOwnerThread(current);
+            return true;
         }
-
-protected final boolean tryAcquire(int acquires) {
-            final Thread current = Thread.currentThread();
-            int c = getState();
-            if (c == 0) {
-                if (!hasQueuedPredecessors() &&
-                    compareAndSetState(0, acquires)) {
-                    setExclusiveOwnerThread(current);
-                    return true;
-                }
-            }
-            else if (current == getExclusiveOwnerThread()) {
-                int nextc = c + acquires;
-                if (nextc < 0)
-                    throw new Error("Maximum lock count exceeded");
-                setState(nextc);
-                return true;
-            }
-            return false;
-        }
+    }
+    ...
+}
 ```
 
 
 
 ### 1.4 ReentrantLock 原理
 
-ReentrantLock实现了Lock接口，其可见性和有序性都是借助volatile规则来保证的。原理是利用了volatile相关的Happens-Before规则。J.U.C中的 ReentrantLock，内部持有一个volatile的成员变量state,获取锁的时候,会读写state的值;解锁的时候,也会读写state的值(简化后的代码如下面所示) 。相当于用前后两次对volatile变量的修改操作，将我们要对共享变量的修改操作给包起来了。通过巧妙利用volatile变量规则及传递性规来保证可见性和有序性。
+ReentrantLock在API层面实现了和synchronized关键字类似的加锁功能，而且在使用上更加灵活。其原理仅仅是利用了volatile相关的Happens-Before规则来保证可见性和有序性，通过CAS判断或修改锁的state状态来保证原子性。
+
+ReentrantLock的具体实现则是使用AQS框架来完成的。其静态内部类Sync继承了AbstractQueuedSynchronizer，NonfairSync和FairSync继承Sync，各自重写了尝试加锁的tryAcquire方法。使ReentrantLock可以支持公平锁和非公平锁。
+
+AbstractQueuedSynchronizer内部持有一个volatile的成员变量state，加锁时会读写state的值；解锁时也会读写state的值 。相当于用前后两次对volatile变量的修改操作，将共享变量的修改操作给包起来了。并通过传递性规与volatile规则共同保证可见性和有序性。
+
+简化后的代码如下面所示：
 
 ```java
 class SampleLock{
 	volatile int state;
+    // 加锁时必须先执行修改state的操作，再执行对共享变量进行操作
 	lock(){
         state=1;
     //	...
-        
-	}
+
+    }
 	unlock(){
 	//	...
 		state=0;
 	}
+    // 解锁时必须最后执行修改state的操作，对共享变量的操作要在之前完成，这样才能保证volatile规则
 }
 ```
 
 
 
-使用CAS来保障原子性
-
  
 
 ### 1.5.Condition
 
-Condition与ReentrantLock结合使用，这两者之间的关系可以参考synchronized和wait()/notify()的关系  
+Condition需要与ReentrantLock结合使用，这两者之间的关系可以参考synchronized和wait()/notify()的关系  
 通过API的方式来对ReentrantLock进行类似于wait和notify的操作  
 
 ```java
