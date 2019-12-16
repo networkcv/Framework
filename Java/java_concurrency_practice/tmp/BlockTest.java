@@ -9,6 +9,7 @@ import java.util.concurrent.locks.Lock;
  * 结论：无法中断
  */
 public class BlockTest {
+
     public static void main(String[] args) {
         Object o = new Object();
         Thread thread = new Thread(() -> {

@@ -1,6 +1,57 @@
-## 1.Lock & Condition
+**前言**： 
 
-### 1.1 Lock接口的由来
+在正式开始之前学习J.U.C之前，我们先来了解一下Java中的管程模型，尤其是对管程示意图的掌握，会极大的帮助我们理解AQS中的方法逻辑。
+
+[toc]
+
+## 1.管程 
+
+管程：管理共享变量以及对共享变量的操作过程，使其支持并发。对应的英文是Monitor，Java中通常被直译为监视器，操作系统中一般翻译为“管程”。
+
+在并发编程中，有两大核心问题：一是互斥，即同一时刻只允许一个线程访问共享资源；二是同步，即线程之间如何通信、协作。对于这两个问题，管程都可以解决。
+
+互斥很好理解，但同步可能就不那么好理解了，同步在不同的场景也有不同的含义，关于指令执行顺序中的同步是指代码调用I/O操作时，必须等待I/O操作完成才返回的调用方式。  在并发编程中的同步则指的是线程之间的通信和协作。最简单的例子就是生产者和消费者，如果没有商品，消费者线程如何通知生产者线程进行生产，生产商品后，生产者线程如何通知消费者线程来消费。
+
+### 2.1 如何解决互斥
+
+将共享变量以及对共享变量的操作 统一封装起来，如下图，多个线程想要访问共享变量queue，只能通过管程提供的enq()和deq()方法实现，这两个方法保持互斥性，且只允许一个线程进入管程。管程的模型和面向对象模型的契合度很高，这也可功能是Java一开始选择管程的原因（JDK5增加了信号量），互斥锁背后的模型其实就是它。
+
+![](D:\study\Framework\Java\img\21-管程解决互斥.jpg)
+
+### 2.2 如何解决同步
+
+在管程模型中，共享变量和对共享变量的操作是封装起来的，图中最外层的框代表着封装，框外边的入口等待队列，当多个线程试图进入管程内部时，只允许一个线程进入，其他线程在入口等待队列中等待，相当于多个线程同时访问临界区，只有一个线程拿到锁进入临界区，其余线程在等待区中等待，等待的时候线程状态是阻塞的。
+
+管程中还引入了**条件变量**的概念，而且每个条件变量都有一个**等待队列**，如下图所示，管程通过引入“条件变量”和“等待队列”来解决线程同步的问题。
+
+结合上面提到的生产者消费者的例子，商品库存为空，或者库存为满，都是条件变量，如果库存为空，那么消费者线程会调用nofity()唤醒生产者线程，并且自己调用wait()进入“库存为空”这个条件变量的等待队列中。
+
+同理，生产者线程会唤醒消费者线程，自己调用wait()进入“库存为满”这个条件变量的等待队列中，被唤醒后会到入口等待队列中重新排队获取锁。这样就能解决线程之间的通信协作。
+
+![](D:\study\Framework\Java\img\22-管程解决同步.jpg)
+
+
+
+### 2.3 管程发展史上出现的三种模型
+
+Hasen模型：将notify()放到代码最后，当前线程执行完再去唤醒另一个线程。
+
+ Hoare模型：中断当前线程，唤醒另一个线程执行，等那个线程执行完了，再唤醒当前线程。相比Hasen模型多了一次唤醒操作。
+
+ MESA模型：当前线程T1唤醒其他线程T2，T1继续执行，T2并不立即执行，而是从条件队列进到入口等待队列中，这样没有多余的唤醒操作，notify也不用放最后，但是会有一个问题，T2再次执行的时候，曾经满足的条件，现在已经不满足了，所以需要循环方式校验条件变量。
+
+
+```java
+while(条件变量){
+	wait();
+}
+```
+
+
+
+## 2.Lock 
+
+### 2.1 Lock接口的由来
 
 之前提到并发编程的两大核心问题：**互斥**，即同一时刻只允许一个线程访问共享资源；**同步**，线程之间的通信、协作。JDK5之前管程由synchronized和wait，notify来实现。JDK5之后，在J.U.C中提供了新的实现方式，使用Lock和Condition两个接口来实现管程，其中Lock用于解决互斥，Condition用于解决同步。
 
@@ -23,7 +74,38 @@ boolean tryLock();
 
 总的来说，显式的Lock对象在加锁和释放锁方面，相对于内建的synchronized锁来说，赋予更细粒度的控制。
 
-### 1.2 可重入
+
+
+### 2.2 ReentrantLock 原理
+
+ReentrantLock在API层面实现了和synchronized关键字类似的加锁功能，而且在使用上更加灵活。其原理仅仅是利用了volatile相关的Happens-Before规则来保证可见性和有序性，通过CAS判断或修改锁的state状态来保证原子性。
+
+ReentrantLock的具体实现则是使用AQS框架来完成的。其静态内部类Sync继承了AbstractQueuedSynchronizer，NonfairSync和FairSync继承Sync，各自重写了尝试加锁的tryAcquire方法。使ReentrantLock可以支持公平锁和非公平锁。
+
+AbstractQueuedSynchronizer内部持有一个volatile的成员变量state，加锁时会读写state的值；解锁时也会读写state的值 。相当于用前后两次对volatile变量的修改操作，将共享变量的修改操作给包起来了。并通过传递性规与volatile规则共同保证可见性和有序性。
+
+简化后的代码如下面所示：
+
+```java
+class SampleLock{
+	volatile int state;
+    // 加锁时必须先执行修改state的操作，再执行对共享变量进行操作
+	lock(){
+        state=1;
+    //	...
+
+    }
+	unlock(){
+	//	...
+		state=0;
+	}
+    // 解锁时必须最后执行修改state的操作，对共享变量的操作要在之前完成，这样才能保证volatile规则
+}
+```
+
+
+
+### 2.3 可重入
 
 可重入锁，同一把锁可以在持有时再进行获取(synchronized也可以)，获取几次也必须要释放几次，不然会造成死锁 。
 
@@ -88,7 +170,7 @@ protected final boolean tryRelease(int releases) {// acquires = 1
 ```
 
 
-### 1.3 公平锁与非公平锁
+### 2.4 公平锁与非公平锁
 
 ```java
 public ReentrantLock(boolean fair) {
@@ -159,7 +241,7 @@ final boolean nonfairTryAcquire(int acquires) {
     final Thread current = Thread.currentThread();
     int c = getState();
     if (c == 0) {
-        if (!hasQueuedPredecessors() &&	//公平锁比非公平锁多这一行判断，检查阻塞队列的首节点（head是头节点，head后边才是阻塞队列中保存的第一个节点）是不是当前线程，如果不是的话则需要去排队
+        if (!hasQueuedPredecessors() &&	//公平锁比非公平锁多这一行判断，检查等待队列的首节点（head是头节点，head后边才是阻塞队列中保存的第一个节点）是不是当前线程，如果不是的话则需要去排队
             compareAndSetState(0, acquires)) {
             setExclusiveOwnerThread(current);
             return true;
@@ -169,40 +251,28 @@ final boolean nonfairTryAcquire(int acquires) {
 }
 ```
 
-
-
-### 1.4 ReentrantLock 原理
-
-ReentrantLock在API层面实现了和synchronized关键字类似的加锁功能，而且在使用上更加灵活。其原理仅仅是利用了volatile相关的Happens-Before规则来保证可见性和有序性，通过CAS判断或修改锁的state状态来保证原子性。
-
-ReentrantLock的具体实现则是使用AQS框架来完成的。其静态内部类Sync继承了AbstractQueuedSynchronizer，NonfairSync和FairSync继承Sync，各自重写了尝试加锁的tryAcquire方法。使ReentrantLock可以支持公平锁和非公平锁。
-
-AbstractQueuedSynchronizer内部持有一个volatile的成员变量state，加锁时会读写state的值；解锁时也会读写state的值 。相当于用前后两次对volatile变量的修改操作，将共享变量的修改操作给包起来了。并通过传递性规与volatile规则共同保证可见性和有序性。
-
-简化后的代码如下面所示：
-
-```java
-class SampleLock{
-	volatile int state;
-    // 加锁时必须先执行修改state的操作，再执行对共享变量进行操作
-	lock(){
-        state=1;
-    //	...
-
-    }
-	unlock(){
-	//	...
-		state=0;
-	}
-    // 解锁时必须最后执行修改state的操作，对共享变量的操作要在之前完成，这样才能保证volatile规则
-}
-```
+### 
 
 
 
- 
 
-### 1.5.Condition
+
+## 3.Condition
+
+### 3.1 Condition
+
+在 Condition 中, 维护着一个队列,每当执行 await 方法,都会根据当前线程创建一个节点,并添加到尾部.
+
+然后释放锁,并唤醒阻塞在锁的 AQS 队列中的一个线程.
+
+然后,将自己阻塞.
+
+在被别的线程唤醒后, 将刚刚这个节点放到 AQS 队列中.接下来就是那个节点的事情了,比如抢锁.
+
+紧接着就会尝试抢锁.接下来的逻辑就和普通的锁一样了,抢不到就阻塞,抢到了就继续执行.
+
+
+
 
 Condition需要与ReentrantLock结合使用，这两者之间的关系可以参考synchronized和wait()/notify()的关系  
 通过API的方式来对ReentrantLock进行类似于wait和notify的操作  
@@ -216,7 +286,10 @@ void signalAll();
 ```
 
 
-### 1.6 synchronized和ReentrantLock 的区别
+
+## 4.总结
+
+### 4.1 synchronized和ReentrantLock 的区别
 
 |                      | synchronized | ReentrantLock |
 | :------------------: | :----------: | :-----------: |
@@ -260,162 +333,19 @@ consumer.signalAll();
 
 
 
-## 2.Semaphore
-
-信号量可以允许多个线程访问同一个临界区。
-
-信号量模型可以简单概括：一个计数器、一个等待队列，两个方法。在信号量模型里，计数器和等待队列对外是透明的，只能通过信号量模型提供的方法来访问。acquire()和release()，也被称为PV操作。如果计数器为1，就只有一个线程可以拿到该信号量，作用就类似于锁 ，如果计数器为10，就有10个线程可以拿到该信号量，进而执行下一步的操作。
-
-![](D:\study\Framework\Java\img\27-信号量模型.jpg)
-
-Semaphore底层通过AQS实现，通过一个volatile变量间接实现同步。
-
-下面我们再来分析一下,信号量是如何保证互斥的。假设两个线程T1和T2同时访问addOne)方法,当它们同时调用acquire)的时候,由于acquire)是一个原子操作,所以只能有一个线程(假设T1)把信号量里的计数器减为0,另外一个线程(T2)则是将计数器减为-1。对于线程T1,信号量里面的计数器的值是0,大于等于0,所以线程T1会继续执行;对于线程T2,信号量里面的计数器的值是-1,小于0,按照信号量模型里对down()操作的描述,线程T2将被阻塞。所以此时只有线程T1会进入临界区执行count+=1: .
-
-当线程T1执行release)操作,也就是up()操作的时候,信号量里计数器的值是-1,加1之后的值是0,小于等于0,按照信号量模型里对up0)操作的描述,此时等待队列中的T2将会被唤·醒。于是T2在T1执行完临界区代码之后才获得了进入临界区执行的机会，从而保证了互斥性。
-
-```java
-public void acquire() throws InterruptedException   //获取信号量
-public void release()   //释放信号量
-```
 
 
+> 在本人学习这一部分内容时，也对AQS源码进行了阅读，大致的流程很容易走下来，但是在流程背后的一些设计细节，却不知其所以然。因此在本篇中没有对整个AQS原理进行详细的介绍，学习是一个逐渐深入的过程。有的东西需要周期反复的去思考才能理解透彻。
 
-## 3.ReadWriteLock & StampedLock
+ 
 
-## 4.CountDownLatch & CyclicBarrier
+## Reference
 
-再以CountDownLatch以例，任务分为N个子线程去执行，state也初始化为N（注意N要与线程个数一致）。这N个子线程是并行执行的，每个子线程执行完后countDown()一次，state会CAS减1。等到所有子线程都执行完后(即state=0)，会unpark()主调用线程，然后主调用线程就会从await()函数返回，继续后余动作
+&emsp;&emsp;《Java 并发编程实战》  
+&emsp;&emsp;《Java 编程思想(第4版)》  
+&emsp;&emsp;https://time.geekbang.org/column/intro/159
+&emsp;&emsp;https://juejin.im/post/5ae75505518825673027eddf
+&emsp;&emsp;http://www.tianxiaobo.com
 
-```java
-CountDownLatch end = new CountDownLatch(10);
-public void run(){
-  //每次调用这个countDown方法，end的值减1
-  end.countDown();
-}
-//只有当end被countdown到0的时候，主线程里的end.await()才会被唤醒
-public void main(){
-  end.await();
-}
-```
-
-### 
-循环栅栏，这个计数器可以反复使用，假设计数器设置为10，那么第一批10个线程后，计数器会重置，然后接着处理第二批的10个线程  
-
-### ReadWriteLock
-
-读写锁，在锁的功能上进行划分，可以让多个读线程进入  
-读-读不互斥，读读之间不阻塞  
-读-写互斥，读阻塞写，写也阻塞读
-写-写互斥，写写阻塞
-
-```java
-ReadWriteLock readWriteLock=new ReentrantReadWriteLock();
-private static Lock readLock = readWriteLock.readLock()
-private static Lock writeLock = readWriteLock.writeLock()
-```
-
-
-
-### LockSupport
-
-类比于 suspend/resume，推荐使用LockSupport的原因是，即使unpark在park之前调用，也不会导致线程永久被挂起  
-能够响应中断，但不抛出异常，中断的响应结果是，park()函数的返回，可以从Thread.interrupted()得到中断标志
-```java
-LockSupport.park(); //线程挂起
-LockSupport.unpark(t1); //线程继续执行
-```
-
-
-
-23. synchronized与Lock的比较
-    (1).Lock是一个接口，而synchronized是Java中的关键字，synchronized是内置的语言实现；
-    (2).synchronized在发生异常时，会自动释放线程占有的锁，因此不会导致死锁现象发生；而Lock在发生异常时，如果没有主动通过unLock()去释放锁，则很可能造成死锁现象，因此使用Lock时需要在finally块中释放锁；
-    (3).Lock可以让等待锁的线程响应中断，而synchronized却不行，使用synchronized时，等待的线程会一直等待下去，不能够响应中断；
-    (4).通过Lock可以知道有没有成功获取锁，而synchronized却无法办到；
-    (5).Lock可以提高多个线程进行读操作的效率。
-    在性能上来说，如果竞争资源不激烈，两者的性能是差不多的，而当竞争资源非常激烈时（即有大量线程同时竞争），此时Lock的性能要远远优于synchronized。所以说，在具体使用时要根据适当情况选择。
-
-26. CyclicBarrier与CountDownLatch的比较
-    CountDownLatch：一个或多个线程等待另外N个线程完成某个事情之后才能继续执行。
-
-    CyclicBarrier：N个线程相互等待，任何一个线程完成之前，所有的线程都必须等待。
-
-    对于CountDownLatch来说，重点的是那个“一个线程”，是它在等待，而另外那N个线程在把“某个事情”做完之后可以继续等待，可以终止；而对于CyclicBarrier来说，重点是那“N个线程”，它们之间任何一个没有完成，所有的线程都必须等待。
-
-    CountDownLatch是计数器，线程完成一个就计一个，就像报数一样，只不过是递减的；
-    CyclicBarrier更像一个水闸，线程执行就像水流，在水闸处就会堵住，等到水满（线程到齐）了，才开始泄流。
-
-    CountDownLatch不可重复利用，CyclicBarrier可重复利用。
-
-    19. 对ReadWriteLock的理解
-        ReadWriteLock同Lock一样也是一个接口，提供了readLock和writeLock两种锁的操作机制，一个是只读的锁，一个是写锁；
-        读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的（排它的）。每次只能有一个写线程，但是可以有多个线程并发地读数据；
-        所有读写锁的实现必须确保写操作对读操作的内存影响，换句话说，一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容；
-        理论上，读写锁比互斥锁允许对于共享数据更大程度的并发。与互斥锁相比，读写锁是否能够提高性能取决于读写数据的频率、读取和写入操作的持续时间以及读线程和写线程之间的竞争。
-        使用场景：假如程序中涉及到一些共享资源的读写操作，并且写操作没有读操作那么频繁。例如，最初填充有数据，然后很少修改的集合，同时频繁搜索，是使用读写锁的理想候选项。
-        互斥原则：
-        读-读能共存，
-        读-写不能共存，
-        写-写不能共存。
-
-        public interface ReadWriteLock {
-        Lock readLock();
-        Lock writeLock();
-        }
-
-
-
-
-CountDownLatch
-使用Latch (门问)替代wait notify来进行通知好处是通信方式简单,
-同时也可以指定等待时间使用await和countdown方法替代wait和notify 
-CountDownLatch不涉及锁定, 当count的值为零时当前线程继续运行当不涉及同步,只是涉及线程通信的时候,
-用synchronized + wait/notify就显得太重了
-这时应该考虑countdownlatch/cyclicbarrier/semaphore
-
-
-ReentrantLock
-reentrantlock用于替代synchronized,可以完成同样功能
-reentrantlock必须要手动释放锁，sys锁定时遇到异常会释放锁，但reentrantlock不会
-使用reentrantlock可以进行"尝试锁定"tryLock,这样无法锁定,或者在指定时间内无法锁定,
-线程可以决定是否继续等待使用ReentrantLock还可以调用lockInterruptibly方法,
-可以对线程interrupt方法做出响应,在一个线程等待锁的过程中,可以被打断
-ReentrantLock还可以指定为公平锁，synchronized为非公平锁
-
-Lock  lock =new ReentrantLock();
-try{
-    lock.lock();
-}finally{
-    lock.unlock();
-}
-
-可以使用tryLock进行尝试锁定，不管锁定与否，方法都将继续执行
-可以根据tryLock的返回值来判断是否锁定
-也可以根据tryLock的时间，由于tryLock(time)抛出异常，所以finally进行unlock的处理
-boolean locked= lock.tryLock();
-if(locked){
-    ...
-}
-try{
-    lock.tryLock(5,TimeUnit.SECONDS)
-}finally{
-    if(locked) lock.unlock();
-}
-
-interrupt配合lockInterruptibly()中断线程
-Thread t2 = new Thread(() -> {
-            try {
-                lock.lockInterruptibly();
-                System.out.println(locked);
-            } catch (Exception e) {
-                System.out.println("成功中断");
-            } finally {
-                lock.unlock();
-            }
-
-        });
-        t2.start();
-t2.interrupt() //打断线程2的等待
 
 

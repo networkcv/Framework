@@ -1,5 +1,6 @@
 package tmp;
 
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,12 +22,20 @@ public class ReentrantLockDebugTest {
             reentrantLock.unlock();
         }, "t1");
         Thread thread1 = new Thread(() -> {
-            reentrantLock.lock();
+            try {
+                reentrantLock.lockInterruptibly();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             condition.signal();
             System.out.println("1");
             reentrantLock.unlock();
         }, "t2");
+        Thread thread2 = new Thread(() -> {
+            thread1.interrupt();
+        }, "t3");
         thread.start();
         thread1.start();
+        thread2.start();
     }
 }
