@@ -2,7 +2,7 @@
 
 在正式开始之前学习J.U.C之前，我们先来了解一下Java中的管程模型，尤其是对管程示意图的掌握，会极大的帮助我们理解AQS中的方法逻辑。
 
-[toc]
+[TOC]
 
 ## 1.管程 
 
@@ -53,7 +53,7 @@ while(条件变量){
 
 ### 2.1 Lock接口的由来
 
-之前提到并发编程的两大核心问题：**互斥**，即同一时刻只允许一个线程访问共享资源；**同步**，线程之间的通信、协作。JDK5之前管程由synchronized和wait，notify来实现。JDK5之后，在J.U.C中提供了新的实现方式，使用Lock和Condition两个接口来实现管程，其中Lock用于解决互斥，Condition用于解决同步。
+之前提到并发编程的两大核心问题：**互斥**，即同一时刻只允许一个线程访问共享资源；**同步**，线程之间的通信、协作。JDK5之前管程由synchronized和wait，notify来实现。JDK5之后，在J.U.C中提供了新的实现方式，使用Lock和Condition两个接口来实现管程，其中Lock用于解决互斥，Condition用于解决同步。在Lock中维护一个“入口等待队列”，每个Condition中都维护一个“条件变量等待队列”。通过将封装后的线程对象在这两种队列中来回转移，来解决互斥和同步问题。
 
 JDK5中synchronized性能不如Lock，但是在JDK6之后，synchronized做了很多优化，将性能追上来。所以并不是因为性能才提供了Lock和Condition这种管程的实现方式。而是synchronized的会自动加锁和释放锁，无法手动控制锁的释放，在很多情况下不够灵活。比如申请不到资源时，可以通过主动释放占有的资源，来通过破坏不可抢占条件。
 
@@ -251,7 +251,7 @@ final boolean nonfairTryAcquire(int acquires) {
 }
 ```
 
-### 
+
 
 
 
@@ -259,7 +259,27 @@ final boolean nonfairTryAcquire(int acquires) {
 
 ## 3.Condition
 
-### 3.1 Condition
+### 3.1 简介
+
+Condition是一个接口，这个接口是为了结合ReentrantLock实现管程模型。再次搬出Java中的管程示意图。
+
+![](D:\Study\Framework\Java\img\22-管程解决同步.jpg)
+
+Lock与Condition这两者之间的关系可以参考synchronized和wait()/notify()。
+
+Condition声明了一组等待/通知的方法，AbstractQueuedSynchronizer 中的ConditionObject内部类实现了这个接口。 通过API的方式来对ReentrantLock进行类似于wait和notify的操作 。
+
+```java
+// Codition方法
+void await() throws InterruptedException;
+boolean await(long time, TimeUnit unit) throws InterruptedException;
+void signal();
+void signalAll();
+```
+
+
+
+### 3.2 Condition原理
 
 在 Condition 中, 维护着一个队列,每当执行 await 方法,都会根据当前线程创建一个节点,并添加到尾部.
 
@@ -273,16 +293,27 @@ final boolean nonfairTryAcquire(int acquires) {
 
 
 
-
-Condition需要与ReentrantLock结合使用，这两者之间的关系可以参考synchronized和wait()/notify()的关系  
-通过API的方式来对ReentrantLock进行类似于wait和notify的操作  
-
-```java
-// Codition方法
-void await() throws InterruptedException;
-boolean await(long time, TimeUnit unit) throws InterruptedException;
-void signal();
-void signalAll();
+```Java
+//从前向后遍历，删除waitStatus!=Node.CONDITION的节点
+private void unlinkCancelledWaiters() {
+            Node t = firstWaiter;
+            Node trail = null;
+            while (t != null) {
+                Node next = t.nextWaiter;
+                if (t.waitStatus != Node.CONDITION) {
+                    t.nextWaiter = null;
+                    if (trail == null)
+                        firstWaiter = next;
+                    else
+                        trail.nextWaiter = next;
+                    if (next == null)
+                        lastWaiter = trail;
+                }
+                else
+                    trail = t;
+                t = next;
+            }
+        }
 ```
 
 
@@ -335,7 +366,7 @@ consumer.signalAll();
 
 
 
-> 在本人学习这一部分内容时，也对AQS源码进行了阅读，大致的流程很容易走下来，但是在流程背后的一些设计细节，却不知其所以然。因此在本篇中没有对整个AQS原理进行详细的介绍，学习是一个逐渐深入的过程。有的东西需要周期反复的去思考才能理解透彻。
+> 在本人学习这一部分内容时，也对AQS源码进行了阅读，大致的流程很容易走下来，但是在流程背后的一些设计细节，却不知其所以然。因此在本篇中没有对整个AQS原理进行详细的介绍，学习是一个逐渐深入的过程。有的东西需要周期反复的思考才能理解透彻。
 
  
 
