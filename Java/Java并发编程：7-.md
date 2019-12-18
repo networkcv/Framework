@@ -67,14 +67,7 @@ LockSupport.park(); //线程挂起
 LockSupport.unpark(t1); //线程继续执行
 ```
 
-# synchronized与Lock的比较
 
-(1).Lock是一个接口，而synchronized是Java中的关键字，synchronized是内置的语言实现；
-(2).synchronized在发生异常时，会自动释放线程占有的锁，因此不会导致死锁现象发生；而Lock在发生异常时，如果没有主动通过unLock()去释放锁，则很可能造成死锁现象，因此使用Lock时需要在finally块中释放锁；
-(3).Lock可以让等待锁的线程响应中断，而synchronized却不行，使用synchronized时，等待的线程会一直等待下去，不能够响应中断；
-(4).通过Lock可以知道有没有成功获取锁，而synchronized却无法办到；
-(5).Lock可以提高多个线程进行读操作的效率。
-在性能上来说，如果竞争资源不激烈，两者的性能是差不多的，而当竞争资源非常激烈时（即有大量线程同时竞争），此时Lock的性能要远远优于synchronized。所以说，在具体使用时要根据适当情况选择。
 
 # CyclicBarrier与CountDownLatch的比较
 
@@ -116,48 +109,5 @@ CountDownLatch不涉及锁定, 当count的值为零时当前线程继续运行�
 用synchronized + wait/notify就显得太重了
 这时应该考虑countdownlatch/cyclicbarrier/semaphore
 
-# ReentrantLock
 
-reentrantlock用于替代synchronized,可以完成同样功能
-reentrantlock必须要手动释放锁，sys锁定时遇到异常会释放锁，但reentrantlock不会
-使用reentrantlock可以进行"尝试锁定"tryLock,这样无法锁定,或者在指定时间内无法锁定,
-线程可以决定是否继续等待使用ReentrantLock还可以调用lockInterruptibly方法,
-可以对线程interrupt方法做出响应,在一个线程等待锁的过程中,可以被打断
-ReentrantLock还可以指定为公平锁，synchronized为非公平锁
-
-Lock  lock =new ReentrantLock();
-try{
-    lock.lock();
-}finally{
-    lock.unlock();
-}
-
-可以使用tryLock进行尝试锁定，不管锁定与否，方法都将继续执行
-可以根据tryLock的返回值来判断是否锁定
-也可以根据tryLock的时间，由于tryLock(time)抛出异常，所以finally进行unlock的处理
-boolean locked= lock.tryLock();
-if(locked){
-    ...
-}
-try{
-    lock.tryLock(5,TimeUnit.SECONDS)
-}finally{
-    if(locked) lock.unlock();
-}
-
-interrupt配合lockInterruptibly()中断线程
-Thread t2 = new Thread(() -> {
-            try {
-                lock.lockInterruptibly();
-                System.out.println(locked);
-            } catch (Exception e) {
-                System.out.println("成功中断");
-            } finally {
-                lock.unlock();
-            }
-
-        });
-        t2.start();
-
-t2.interrupt() //打断线程2的等待
 

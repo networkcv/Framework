@@ -1,8 +1,12 @@
 **前言**： 
 
-在正式开始之前学习J.U.C之前，我们先来了解一下Java中的管程模型，尤其是对管程示意图的掌握，会极大的帮助我们理解AQS中的方法逻辑。
+在正式开始之前学习J.U.C之前，我们先来了解一下Java中的管程模型，尤其是对管程示意图的掌握，会极大的帮助我们理解并发包中的方法逻辑，之后会对Lock和Condition进行简单的介绍。
 
 [TOC]
+
+**面试问题**
+Q ：你对**Lock**和**Condition**的理解？
+Q ：**ReentrantLock**与**synchronized**的区别？
 
 ## 1.管程 
 
@@ -259,7 +263,7 @@ final boolean nonfairTryAcquire(int acquires) {
 
 ## 3.Condition
 
-### 3.1 简介
+### 3.1 Condition简介
 
 Condition是一个接口，这个接口是为了结合ReentrantLock实现管程模型。再次搬出Java中的管程示意图。
 
@@ -281,38 +285,42 @@ void signalAll();
 
 ### 3.2 Condition原理
 
-在 Condition 中, 维护着一个队列,每当执行 await 方法,都会根据当前线程创建一个节点,并添加到尾部.
+在每个Condition中, 都维护着一个队列，每当执行await()方法，都会将当前线程封装为一个节点，并添加到条件等待队列尾部。然后彻底释放与Condition对象绑定的锁（也就是ReentrantLock对象），注意这里是彻底释放，无论ReentrantLock重入了几次都会全部释放，在释放锁的同时还会并唤醒阻塞在锁的入口等待队列中的一个线程，完成以上操作后再将自己阻塞。
 
-然后释放锁,并唤醒阻塞在锁的 AQS 队列中的一个线程.
-
-然后,将自己阻塞.
-
-在被别的线程唤醒后, 将刚刚这个节点放到 AQS 队列中.接下来就是那个节点的事情了,比如抢锁.
-
-紧接着就会尝试抢锁.接下来的逻辑就和普通的锁一样了,抢不到就阻塞,抢到了就继续执行.
-
-通过在条件变量上调用等待方法，使拿到锁的线程释放锁，并进入条件变量等待队列中，等待被其他线程唤醒，唤醒后会从条件变量等待等列中移除，重新竞争锁，如果拿不到的话会进入入口等待队列，
+在其他线程调用该Condition的signal()后，该线程会被唤醒，唤醒后会从条件变量等待队列中将该线程对应的节点移除 ，然后重新去竞争锁，如果拿不到的话会再次进去入口等待队列中。
 
 ```Java
-//从前向后遍历，删除waitStatus!=Node.CONDITION的节点
-private void unlinkCancelledWaiters() {
-            Node t = firstWaiter;
-            Node trail = null;
-            while (t != null) {
-                Node next = t.nextWaiter;
-                if (t.waitStatus != Node.CONDITION) {
-                    t.nextWaiter = null;
-                    if (trail == null)
-                        firstWaiter = next;
-                    else
-                        trail.nextWaiter = next;
-                    if (next == null)
-                        lastWaiter = trail;
-                }
-                else
-                    trail = t;
-                t = next;
+public final void await() throws InterruptedException {
+            if (Thread.interrupted())
+                throw new InterruptedException();
+    		//添加到等待队列尾部
+            Node node = addConditionWaiter();
+    		//彻底释放锁，并唤醒入口等待队列中仍在等待的头节点，可能有的节点在等待途中取消了等待，但是队列不会立刻移除这些节点，只是会将等待状态修改为取消，在需要执行唤醒的时候，再统一将这些已取消的节点移除。
+            int savedState = fullyRelease(node);
+            int interruptMode = 0;
+    		//判断当前节点是否在入口等待队列中，在入口等待队列中的线程是不持有锁的。如果对一个不持有锁的对象进行挂起和唤醒操作，则可能出现Lost-weakup问题。线程在阻塞过程中产生中断也会退出循环。
+            while (!isOnSyncQueue(node)) {
+           	//调用 LockSupport.park 阻塞当前线程
+                LockSupport.park(this);
+                //唤醒后会检查在阻塞期间是否被中断过，检查的结果是三种状态，THROW_IE，REINTERRUPT，0。前两种会导致退出循环。
+               /* THROW_IE：
+                 *     中断在 node 转移到同步队列“前”发生，需要当前线程自行将 node 转移到同步队
+                 *     列中，并在随后抛出 InterruptedException 异常。
+                  REINTERRUPT：
+                 *     中断在 node 转移到同步队列“期间”或“之后”发生，此时表明有线程正在调用 
+                 *     singal/singalAll 转移节点。在该种中断模式下，再次设置线程的中断状态。
+                 *     向后传递中断标志，由后续代码去处理中断。
+                 */
+                if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+                    break;
             }
+            if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
+                interruptMode = REINTERRUPT;
+            if (node.nextWaiter != null) // clean up if cancelled
+                //清理等待状态为 取消（CANCELLED） 的节点
+                unlinkCancelledWaiters();
+            if (interruptMode != 0)
+                reportInterruptAfterWait(interruptMode);
         }
 ```
 
@@ -320,7 +328,7 @@ private void unlinkCancelledWaiters() {
 
 ## 4.总结
 
-### 4.1 synchronized和ReentrantLock 的区别
+**synchronized和ReentrantLock 的区别**
 
 |                      | synchronized | ReentrantLock |
 | :------------------: | :----------: | :-----------: |
@@ -341,7 +349,7 @@ synchronized 是依赖于 JVM 实现的，JDK6 为 synchronized 关键字进行�
 
 通过synchronized关键字与wait()和notify()/notifyAll()方法相结合实现的管程，其内部只能通过调用锁定对象的wait()和notify()进行线程间通信。假设有一个生产者多个消费者，消费者在消费完后需要通知生产者进行生产，但由于生产者和其他消费者都在synchronized锁定的同一个对象上wait。
 
-调用notify随机唤醒的话，可能会唤醒的消费者，也可能唤醒生产者，如果唤醒生产者则可以进行生产，如果被唤醒的是消费者，那么该消费者还是会由于没有库存继续等待，如果消费者的数量远远多于生产者，那么会一直出现消费者唤醒其他消费者的现象，生产者不会被唤醒，则程序无法继续执行下去；
+调用notify随机唤醒的话，可能会唤醒的消费者，也可能唤醒生产者，如果唤醒生产者则可以进行生产，如果被唤醒的是消费者，那么该消费者还是会由于没有库存会唤醒其他线程，自己继续等待，如果消费者的数量远远多于生产者，那么会一直出现消费者唤醒其他消费者的现象，生产者不会被唤醒，则程序无法继续执行下去；
 
 调用notifyAll方法的话，可以解决这个问题，但也带来另一个问题。唤醒全部消费者的同时也会唤醒全部生产者，会带来很大的性能开销。
 
@@ -362,9 +370,13 @@ providers.signalAll();
 consumer.signalAll();    
 ```
 
+**写在最后：**
 
+自己动手实践才是真理，自己写两个线程，然后使用线程断点一步一步的跟着看，在每个环节尽可能自己模拟多线程并发的情况来观察程序的运行变化。
 
+![](D:\study\Framework\Java\img\28-多线程断点.jpg)
 
+![](D:\study\Framework\Java\img\29-多线程断点.jpg)
 
 > 在本人学习这一部分内容时，也对AQS源码进行了阅读，大致的流程很容易走下来，但是在流程背后的一些设计细节，却不知其所以然。因此在本篇中没有对整个AQS原理进行详细的介绍，学习是一个逐渐深入的过程。有的东西需要周期反复的思考才能理解透彻。
 
