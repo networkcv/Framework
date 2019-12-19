@@ -235,7 +235,7 @@ protected final boolean tryAcquire(int acquires) {
         }
 ```
 
-返回false的后续操作。
+tryAcquire返回false的后续操作。
 
 ```java
         public final void acquire(int arg) {
@@ -275,28 +275,12 @@ protected final boolean tryAcquire(int acquires) {
         }
 ```
 
+
+
 **读锁加锁**
 
 ```java
 protected final int tryAcquireShared(int unused) {
-            /*
-             * Walkthrough:
-             * 1. 如果写锁被别的线程使用,返回false
-             * 2. Otherwise, this thread is eligible for
-             *    lock wrt state, so ask if it should block
-             *    because of queue policy. If not, try
-             *    to grant by CASing state and updating count.
-             *    Note that step does not check for reentrant
-             *    acquires, which is postponed to full version
-             *    to avoid having to check hold count in
-             *    the more typical non-reentrant case.
-             另外，如果这个线程有资格加锁wrt state，那么需要检查它是否需要阻塞
-             如果不需要，试着去进行CAS修改状态和更新读锁的数量，注意，该步骤不检查可重入
-*获得
-             * 3. If step 2 fails either because thread
-             *    apparently not eligible or CAS fails or count
-             *    saturated, chain to version with full retry loop.
-             */
             Thread current = Thread.currentThread();
             int c = getState();
     		//如果不是当前线程占用写锁则会返回-1，表示共享锁加锁失败
@@ -306,16 +290,20 @@ protected final int tryAcquireShared(int unused) {
                 return -1;
     		//获取读锁的数量
             int r = sharedCount(c);
-    		//这里又是公平锁和非公平的一个区别，具体可以参考写锁的加锁方法。
-            if (!readerShouldBlock() &&		//判断是否需要
-                r < MAX_COUNT &&
-                compareAndSetState(c, c + SHARED_UNIT)) {
+    		//这里又是公平锁和非公平的一个区别，
+            if (!readerShouldBlock() &&		//判断是否需要阻塞
+                r < MAX_COUNT &&			//检查读锁数量是否超过最大2^16-1
+                compareAndSetState(c, c + SHARED_UNIT)) {	//CAS尝试去修改读锁state
                 if (r == 0) {
+                    //读锁为0时，将当前线程设置为firstReader，firstReaderHoldCount=1
                     firstReader = current;
                     firstReaderHoldCount = 1;
                 } else if (firstReader == current) {
+                    //读锁的重入
                     firstReaderHoldCount++;
                 } else {
+                    //读锁不为0，且firstReader也不是当前线程
+                    //会将当前线程获取读锁的次数保存在ThrearLocl实例readHolds中
                     HoldCounter rh = cachedHoldCounter;
                     if (rh == null || rh.tid != getThreadId(current))
                         cachedHoldCounter = rh = readHolds.get();
@@ -323,11 +311,16 @@ protected final int tryAcquireShared(int unused) {
                         readHolds.set(rh);
                     rh.count++;
                 }
+                //获取读锁成功
                 return 1;
             }
+    		//在readerShouldBlock()返回true时，或者CAS修改失败时走到这里
+    		//在这个方法中会用自旋的方式获取读锁，直到写锁被其他线程持有
             return fullTryAcquireShared(current);
         }
 ```
+
+
 
 **读锁释放**
 
@@ -369,21 +362,13 @@ protected final boolean tryReleaseShared(int unused) {
 
 
 
-
-
-
-
 ### 1.4 小结
 
-读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的（排它的）。每次只能有一个写线程，但是可以有多个线程并发地读数据；
-
-一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容；
+读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的（排它的）。每次只能有一个写线程，但是可以有多个线程并发地读数据，一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容。
 
 理论上，读写锁比互斥锁允许对于共享数据更大程度的并发。与互斥锁相比，读写锁是否能够提高性能取决于读写数据的频率、读取和写入操作的持续时间以及读线程和写线程之间的竞争。
 
 
-
-## 2.StampedLock
 
 
 
@@ -465,6 +450,10 @@ LockSupport.unpark(t1); //线程继续执行
 
 
 https://juejin.im/post/5dc22993f265da4cf77c8ded
+
+http://www.tianxiaobo.com
+
+
 
 
 
