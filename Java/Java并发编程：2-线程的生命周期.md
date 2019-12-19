@@ -116,7 +116,7 @@ Q ：线程的生命周期和状态?
             }
         }
 
-        //Ouput
+        //Output
         // Thread-0 call()
         // Thread-1 call()
 ```

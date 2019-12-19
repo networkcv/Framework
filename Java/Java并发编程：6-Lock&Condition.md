@@ -240,8 +240,8 @@ final void lock() {
     acquire(1);
 }
 
-//非公平锁/公平锁
-final boolean nonfairTryAcquire(int acquires) {
+//公平锁/非公平锁
+final boolean tryAcquire(int acquires) {
     final Thread current = Thread.currentThread();
     int c = getState();
     if (c == 0) {
@@ -328,7 +328,7 @@ public final void await() throws InterruptedException {
 
 ## 4.总结
 
-**synchronized和ReentrantLock 的区别**
+### 4.1 synchronized和ReentrantLock 的区别
 
 |                      | synchronized | ReentrantLock |
 | :------------------: | :----------: | :-----------: |
@@ -345,7 +345,7 @@ public final void await() throws InterruptedException {
 
 synchronized 是依赖于 JVM 实现的，JDK6 为 synchronized 关键字进行了很多优化，这些优化都是在虚拟机层面实现的。ReentrantLock 是 JDK 层面实现的，也就是 API 层面，需要 lock() 和 unlock() 方法配合 try/finally 语句块来完成。
 
-**ReentrantLock可以支持多个条件变量**
+### 4.2 ReentrantLock与Condition的搭配使用
 
 通过synchronized关键字与wait()和notify()/notifyAll()方法相结合实现的管程，其内部只能通过调用锁定对象的wait()和notify()进行线程间通信。假设有一个生产者多个消费者，消费者在消费完后需要通知生产者进行生产，但由于生产者和其他消费者都在synchronized锁定的同一个对象上wait。
 
