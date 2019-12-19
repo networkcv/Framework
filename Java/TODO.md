@@ -57,14 +57,20 @@
 	- [3.3 线程封闭](#3.3 线程封闭)
 	- [3.4 实例封闭](#3.4 实例封闭)
 
-## 6.J.U.C
-
-Lock ReentrantLock Semaphore CountDownLatch  CyclicBarrier  
-LockSupport ReadWriteLock 
-
-## 并发级别和无锁   
-并发级别 AQS CAS 无锁类的使用 AtomicXXX类 Unsafe  乐观锁与悲观锁的比较 公平锁
-AtomicIntergerArray AtomicIntegerFieldUpdater LockFreeVector
+## 6.Lock&Condition  ok!
+- [1.管程](#1.管程)
+    - [1.1 如何解决互斥](#1.1 如何解决互斥)
+    - [1.2 如何解决同步](#1.2 如何解决同步)
+    - [1.3 管程发展史上出现的三种模型](#1.3 管程发展史上出现的三种模型)
+- [2.Lock ](#2.Lock )
+	- [2.1 Lock接口的由来](#2.1 Lock接口的由来)
+	- [2.2 ReentrantLock原理](#2.2 内存同步)
+    - [2.3 可重入](#2.3 可重入)
+    - [2.4 公平锁与非公平锁](#2.4 公平锁与非公平锁)
+- [3.Condition](#3.Condition)
+	- [3.1 Condition简介](#3.1 Condition简介)
+	- [3.2 Condition原理](#3.2 Condition原理)
+- [4.总结](#4.总结)
 
 ## 并发容器  
 同步容器,并发容器,阻塞队列 ConcurrentModificationException
