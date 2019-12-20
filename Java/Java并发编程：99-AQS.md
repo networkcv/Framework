@@ -754,7 +754,5 @@ CountDownLatch 是计数器，只能使用一次，而 CyclicBarrier 的计数�
 
 CountDownLatch 是计数器，线程完成一个记录一个，只不过计数不是递增而是递减，而 CyclicBarrier 更像是一个阀门，需要所有线程都到达，阀门才能打开，然后继续执行。
 
-### [6 ReentrantLock 和 ReentrantReadWriteLock](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_6-reentrantlock-和-reentrantreadwritelock)
 
-ReentrantLock 和 synchronized 的区别在上面已经讲过了这里就不多做讲解。另外，需要注意的是：读写锁 ReentrantReadWriteLock 可以保证多个线程可以同时读，所以在读操作远大于写操作的时候，读写锁就非常有用了。
 

@@ -72,7 +72,12 @@
 	- [3.2 Condition原理](#3.2 Condition原理)
 - [4.总结](#4.总结)
 
+## AQS
+
+AQS介绍，AQS原理，AQS设计模式，对JUC的总结。
+
 ## 同步容器和并发容器
+
 同步容器,并发容器,阻塞队列 ConcurrentModificationException
 ConcurrentHashMap CopyOnWriteArrayList
 
@@ -90,9 +95,7 @@ Executors Callable Future FutureTask Timer
 
 并发级别，无锁类，CAS，悲观锁和乐观锁， StampedLock
 
-## AQS
 
-AQS介绍，AQS原理，AQS设计模式，对JUC的总结。
 
 ## 其他
 
