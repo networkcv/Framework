@@ -279,25 +279,7 @@ protected final boolean tryAcquire(int acquires) {
 
 ```java
 protected final int tryAcquireShared(int unused) {
-            /*
-             * Walkthrough:
-             * 1. 如果写锁被别的线程使用,返回false
-             * 2. Otherwise, this thread is eligible for
-             *    lock wrt state, so ask if it should block
-             *    because of queue policy. If not, try
-             *    to grant by CASing state and updating count.
-             *    Note that step does not check for reentrant
-             *    acquires, which is postponed to full version
-             *    to avoid having to check hold count in
-             *    the more typical non-reentrant case.
-             另外，如果这个线程有资格加锁wrt state，那么需要检查它是否需要阻塞
-             如果不需要，试着去进行CAS修改状态和更新读锁的数量，注意，该步骤不检查可重入
-*获得
-             * 3. If step 2 fails either because thread
-             *    apparently not eligible or CAS fails or count
-             *    saturated, chain to version with full retry loop.
-             */
-            Thread current = Thread.currentThread();
+          Thread current = Thread.currentThread();
             int c = getState();
     		//如果不是当前线程占用写锁则会返回-1，表示共享锁加锁失败
     		//如果是当前线程占用写锁，再申请读锁，则是被允许的，这是锁降级的过程。
@@ -307,18 +289,48 @@ protected final int tryAcquireShared(int unused) {
     		//获取读锁的数量
             int r = sharedCount(c);
     		//这里又是公平锁和非公平的一个区别，具体可以参考写锁的加锁方法。
-            if (!readerShouldBlock() &&		//判断是否需要
+            if (!readerShouldBlock() &&		//判断是否需要阻塞
                 r < MAX_COUNT &&
-                compareAndSetState(c, c + SHARED_UNIT)) {
+                compareAndSetState(c, c + SHARED_UNIT)) { //读锁+1
+                //r=0，代表读锁没被占用，下边的操作对应写(独占)锁的话则是
+                //设置写锁的持有者为当前线程，但是读锁是共享的，所以不能这样设置
                 if (r == 0) {
+                    /*共享锁会为每个获取ReadLock的线程创建一个HoldCounter来记录该线程
+                    的线程ID和获取ReadLock的次数(包括重入)。并将这个HoldCounter对象
+                    保存在线程自己的ThreadLocal中。
+                    ThreadLocalHoldCounter readHolds;
+                    HoldCounter cachedHoldCounter;
+                    
+                    static final class ThreadLocalHoldCounter
+                        extends ThreadLocal<HoldCounter> {
+                        public HoldCounter initialValue() {
+                            return new HoldCounter();
+                        }
+                    }
+                    static final class HoldCounter {
+                        int count = 0;
+                        // Use id, not reference, to avoid garbage retention
+                        final long tid = getThreadId(Thread.currentThread());
+				  }
+                    
+                    设计者考虑到有些场景只有一个线程获取读锁，那么使用ThreadLocal
+                    反而会降低性能，所以在ReentrantReadWriteLock中定义了：
+                    private transient Thread firstReader = null;
+                    private transient int firstReaderHoldCount;
+                    来提供只有一个线程获取读锁的性能保障。
+                    */
                     firstReader = current;
                     firstReaderHoldCount = 1;
                 } else if (firstReader == current) {
+                    //当前线程重入读锁
                     firstReaderHoldCount++;
                 } else {
+                    //多个线程来申请读锁时会到这一步
                     HoldCounter rh = cachedHoldCounter;
+                    //如果rh.tid == getThreadId(current)，说明这个线程连续两次来拿读锁
                     if (rh == null || rh.tid != getThreadId(current))
                         cachedHoldCounter = rh = readHolds.get();
+                    //上一次拿读锁的是别的线程，这个线程是第一次来拿读锁
                     else if (rh.count == 0)
                         readHolds.set(rh);
                     rh.count++;
