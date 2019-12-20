@@ -235,7 +235,7 @@ protected final boolean tryAcquire(int acquires) {
         }
 ```
 
-返回false的后续操作。
+tryAcquire返回false的后续操作。
 
 ```java
         public final void acquire(int arg) {
@@ -274,6 +274,8 @@ protected final boolean tryAcquire(int acquires) {
             return free;
         }
 ```
+
+
 
 **读锁加锁**
 
@@ -335,11 +337,16 @@ protected final int tryAcquireShared(int unused) {
                         readHolds.set(rh);
                     rh.count++;
                 }
+                //获取读锁成功
                 return 1;
             }
+    		//在readerShouldBlock()返回true时，或者CAS修改失败时走到这里
+    		//在这个方法中会用自旋的方式获取读锁，直到写锁被其他线程持有
             return fullTryAcquireShared(current);
         }
 ```
+
+
 
 **读锁释放**
 
@@ -381,21 +388,13 @@ protected final boolean tryReleaseShared(int unused) {
 
 
 
-
-
-
-
 ### 1.4 小结
 
-读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的（排它的）。每次只能有一个写线程，但是可以有多个线程并发地读数据；
-
-一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容；
+读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的（排它的）。每次只能有一个写线程，但是可以有多个线程并发地读数据，一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容。
 
 理论上，读写锁比互斥锁允许对于共享数据更大程度的并发。与互斥锁相比，读写锁是否能够提高性能取决于读写数据的频率、读取和写入操作的持续时间以及读线程和写线程之间的竞争。
 
 
-
-## 2.StampedLock
 
 
 
@@ -477,6 +476,10 @@ LockSupport.unpark(t1); //线程继续执行
 
 
 https://juejin.im/post/5dc22993f265da4cf77c8ded
+
+http://www.tianxiaobo.com
+
+
 
 
 

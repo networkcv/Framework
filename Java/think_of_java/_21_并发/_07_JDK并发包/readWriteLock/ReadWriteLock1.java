@@ -73,4 +73,42 @@ public class ReadWriteLock1 {
         thread.start();
         thread.join();
     }
+
+    @Test
+    public void test4() throws InterruptedException {
+        Thread thread = new Thread(() -> {
+            readWriteLock.readLock().lock();
+        });
+        Thread thread2 = new Thread(() -> {
+            readWriteLock.readLock().lock();
+        });
+        thread.start();
+        thread2.start();
+        thread.join();
+        thread2.join();
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
