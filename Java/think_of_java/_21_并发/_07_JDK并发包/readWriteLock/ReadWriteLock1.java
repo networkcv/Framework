@@ -2,7 +2,7 @@ package _21_并发._07_JDK并发包.readWriteLock;
 
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -94,6 +94,10 @@ public class ReadWriteLock1 {
         thread.join();
         thread2.join();
         thread3.join();
+
+    }
+
+    class A extends AbstractQueuedSynchronizer{
 
     }
 

@@ -1,6 +1,13 @@
-**前言：**上一篇我们了解了Lock接口与Condition接口。本篇来看看J.U.C中提供的其他工具类，再次膜拜一下Doug Lea大神的杰作。
+**前言：**
 
-## 
+上一篇我们了解了Lock接口与Condition接口。本篇来看看J.U.C中的ReadWriteLock，再次膜拜一下Doug Lea大神的杰作。
+
+[TOC]
+
+**面试问题**
+Q ：谈谈ReadWriteLock的好处？
+
+
 
 ## 1.ReadWriteLock简介
 
@@ -23,7 +30,7 @@ ReadWriteLock直译为读写锁，从接口命名上就可以看出该工具类�
 
 ## 2.ReentrantReadWriteLock使用
 
-**锁的降级**
+### 2.1 锁降级
 
 ```java
     ReadWriteLock readWriteLock=new ReentrantReadWriteLock();
@@ -145,7 +152,7 @@ ReentrantReadWriteLock<font color=Crimson>不支持锁的升级</font>，但是<
     }
 ```
 
-**写锁支持条件变量**
+### 2.2 写锁支持条件变量
 
 <font color=cirmson>读锁不支持条件变量</font>，如果读锁调用newCondition（）会抛出UnsupportedOperationException异常；
 
@@ -175,11 +182,11 @@ ReentrantReadWriteLock内部还是使用的AQS框架，通过前面的学习我�
 
 ReentrantReadWriteLock中有两个内部类，ReadLock和WriteLock，这两个类在具体实现Lock接口时，分别调用ReentrantReadWriteLock中实现AQS类的同步组件Sync的共享和独占两种加锁释放锁方式来实现各自的功能。
 
-Sync中实现AQS中独占锁加锁tryAcquire（）和独占锁释放锁tryRelease（），以及共享锁的加锁tryAcquireShared（）和共享锁的释放锁tryReleaseShared（）。如果需要自定义同步组件的时候，也可以通过继承AQS，根据锁特性来实现上述方法中的两个或者全部。如ReentrantLock是独占锁，所以其内部只实现了tryAcquire（）和tryRelease（）。
+Sync中实现AQS中独占锁加锁tryAcquire（）和独占锁释放锁tryRelease（），以及共享锁的加锁tryAcquireShared（）和共享锁的释放锁tryReleaseShared（）。
 
 下面的内容也是围绕这四个方法展开。
 
-**写锁加锁**
+### 3.1 写锁加锁
 
 ```java
 protected final boolean tryAcquire(int acquires) {
@@ -238,7 +245,7 @@ protected final boolean tryAcquire(int acquires) {
 
 
 下面附上tryAcquire()的流程图：
-![](D:\study\Framework\Java\img\31-读写锁加锁流程.jpg)
+![](D:\study\Framework\Java\img\31-写锁加锁流程.jpg)
 
 tryAcquire返回false的后续操作。
 
@@ -257,7 +264,7 @@ tryAcquire返回false的后续操作。
 
 
 
-**写锁释放**
+### 3.2 写锁释放
 
 ```java
          protected final boolean tryRelease(int releases) {//realeases=1
@@ -282,7 +289,7 @@ tryAcquire返回false的后续操作。
 
 
 
-**读锁加锁**
+### 3.3 读锁加锁
 
 ```java
 protected final int tryAcquireShared(int unused) {
@@ -295,7 +302,7 @@ protected final int tryAcquireShared(int unused) {
                 return -1;
     		//获取读锁的数量
             int r = sharedCount(c);
-    		//这里又是公平锁和非公平的一个区别，具体可以参考写锁的加锁方法。
+    		//这里又是公平锁和非公平的一个区别。
             if (!readerShouldBlock() &&		//判断是否需要阻塞
                 r < MAX_COUNT &&
                 compareAndSetState(c, c + SHARED_UNIT)) { //读锁+1
@@ -332,9 +339,11 @@ protected final int tryAcquireShared(int unused) {
                     //当前线程重入读锁
                     firstReaderHoldCount++;
                 } else {
-                    //多个线程来申请读锁时会到这一步
+                    //多个线程来申请读锁时会到这一步,默认会从cachedHoldCounter中拿
                     HoldCounter rh = cachedHoldCounter;
                     //如果rh.tid == getThreadId(current)，说明这个线程连续两次来拿读锁
+                    //如果不等的话,则说明缓存失效了,需要重新从ThreadLocal取出HoldCounter
+                    //顺便修改缓存
                     if (rh == null || rh.tid != getThreadId(current))
                         cachedHoldCounter = rh = readHolds.get();
                     //上一次拿读锁的是别的线程，这个线程是第一次来拿读锁
@@ -346,14 +355,16 @@ protected final int tryAcquireShared(int unused) {
                 return 1;
             }
     		//在readerShouldBlock()返回true时，或者CAS修改失败时走到这里
-    		//在这个方法中会用自旋的方式获取读锁，直到写锁被其他线程持有
+    		//在这个方法中会用自旋的方式一直获取读锁，中途写锁被其他线程持有会返回-1
             return fullTryAcquireShared(current);
         }
 ```
 
+下面附上tryAcquireShared()的流程图：
 
+![](D:\Study\Framework\Java\img\32-读锁加锁流程.jpg)
 
-**读锁释放**
+### 3.4 读锁释放
 
 ```java
 protected final boolean tryReleaseShared(int unused) {
@@ -399,30 +410,31 @@ protected final boolean tryReleaseShared(int unused) {
 
 
 
+前面提到的四个方法，是Doug Lea大神留给我们的主要的发挥空间，AQS中其他核心方法都无法重写。如果需要实现自定义的同步组件，那么对这四个方法必然要深入理解，然后根据组件特性来实现独占锁或共享锁。如ReentrantLock是独占锁，所以其内部只实现了tryAcquire（）和tryRelease（）。因此本篇着重介绍了ReentrantReadWriteLock实现AQS的具体细节，没有从AQS框架整体上展开，有些地方可能不太好理解，还希望大家多多谅解。
+
 
 
 
 ## 4.总结
 
-读锁是共享的，可以在没有写锁的时候被多个线程同时持有，写锁是独占的。每次只能有一个写线程，但是可以有多个线程并发地读数据，一个获得了读锁的线程必须能够看到前一个释放的写锁所更新的内容。
+
+
+在ReentrantReadWriteLock中实现了独占锁和共享锁两种方式，读锁是共享的，可以在没有写锁的时候被多个线程同时持有，并发地读数据；写锁是独占的，每次只能被一个线程持有，其他线程要想修改共享数据，则需要排队等待。获得了读锁的线程能够看到前一个释放的写锁所更新的内容。
 
 理论上，读写锁比互斥锁允许对于共享数据更大程度的并发。与互斥锁相比，读写锁是否能够提高性能取决于读写数据的频率、读取和写入操作的持续时间以及读线程和写线程之间的竞争。
 
-在ReentrantReadWriteLock中实现了独占锁和共享锁两种方式，
-
 ReentrantReadWriteLock<font color=Crimson>不支持锁的升级</font>，但是<font color=dodgerblue>支持锁的降级</font>。
 
-<font color=cirmson>读锁不支持条件变量</font>，如果读锁调用newCondition（）会抛出UnsupportedOperationException异常；
+ReentrantReadWriteLock的<font color=cirmson>读锁不支持条件变量</font>，但<font color=dodgerblue>写锁支持条件变量。</font>
 
-<font color=dodgerblue>写锁支持条件变量</font>
+## Reference
 
+&emsp;&emsp;《Java 并发编程实战》  
+&emsp;&emsp;《Java 编程思想(第4版)》  
+&emsp;&emsp;https://juejin.im/post/5dc22993f265da4cf77c8ded
+&emsp;&emsp;http://www.tianxiaobo.com
 
-
-https://juejin.im/post/5dc22993f265da4cf77c8ded
-
-http://www.tianxiaobo.com
-
-
+**感谢阅读**！
 
 
 
