@@ -1,10 +1,4 @@
 
-
-线程一旦被挂起，下一次被唤醒会导致上下文切换  
-让步式上下文切换耗费CPU时钟非常严重，通常高达80,000个时钟周期  
-主频为3GHz的处理器每秒钟可用时钟周期为3,000,000,000  
-
-
 ## 多线程中的设计模式
 ### 单例模式
 ### 不变模式
@@ -83,35 +77,12 @@ public class ReadlData implements Data {
 ```
 
 
-## 并发调试和JDK8新特性
+## 并发调试
 ### 多线程调试的方法
 使用条件断点或异常断点
 ### 线程dump及分析
 jstack 进程号
 jstack -l 进程号 查看详细情况
-### JDK8对并发的新支持
-- LongAdder  
-和ConcurroncurrentHashMap的思想类似，将一个整数划分为多个单元，将并发线程的读写操作分发到多个单元上  
-以保证CAS更新能够成功，取值前需要对各个单元进行求和，返回sum  
-考虑到如果并发不高的话，这种做法会损耗系统资源，所以默认会维持一个long，如果发生冲突，则会拆分为多个单元  
-和AtomicInteger类似的使用方式，在AtomicInteger上进行了热点分离  
-```java
-public void add(long x)
-public void increment()
-public void decrement()
-public long sum()
-public long longValue()
-public int intValue()
-```
-- CompletableFuture   
-工具类，实现了CompletionStage，Java8中对Future的增强，可以流式调用
-- StampedLock 
-读写锁的改进，之前的ReadWriteLock是读写互斥的，StampedLock在读写互斥上做了改进  
-读写互斥时，在读线程比较多而写线程比较少的情况下，写线程容易发生饥饿现象，导致一直写不进去  
-StampedLock的读可以不阻塞写，读线程在 读取后返回前的时候，写线程完成了数据修改，则读线程需要重新读取  
-锁内部维护了一个等待线程队列，所有申请锁，但是没成功的线程都记录在这个队列中，每个节点都有一个标记位，判断当前节点是否已经释放锁  
-当一个线程试图获取锁时，会判断当前等待队列尾部节点的标记位是否已经成功释放锁
-
 ## Lambda 表达式    
 
 http://blog.oneapm.com/apm-tech/226.html
@@ -145,11 +116,39 @@ Consumer<Integer>  c = (int x) -> { System.out.println(x) };
 BiConsumer<Integer, String> b = (Integer x, String y) -> System.out.println(x + " : " + y);
 Predicate<String> p = (String s) -> { s == null };
 
-## JDK8多线程的变动
+## JDK8对并发的新支持
 
-LongAdder  CompletableFuture StampedLock
+### LongAdder  
+
+和ConcurroncurrentHashMap的思想类似，将一个long划分为多个单元，将并发线程的读写操作分发到多个单元上  
+以保证CAS更新能够成功，取值前需要对各个单元进行求和，返回sum  
+考虑到如果并发不高的话，这种做法会损耗系统资源，所以默认会维持一个long，如果发生冲突，则会拆分为多个单元  
+和AtomicInteger类似的使用方式，在AtomicInteger上进行了热点分离  
+
+```java
+public void add(long x)
+public void increment()
+public void decrement()
+public long sum()
+public long longValue()
+public int intValue()
+```
 
 
+
+### StampedLock 
+
+读写锁的改进，之前的ReadWriteLock是读写互斥的，StampedLock在读写互斥上做了改进  
+读写互斥时，在读线程比较多而写线程比较少的情况下，写线程容易发生饥饿现象，导致一直写不进去  
+StampedLock的读可以不阻塞写，读线程在 读取后返回前的时候，写线程完成了数据修改，则读线程需要重新读取  
+锁内部维护了一个等待线程队列，所有申请锁，但是没成功的线程都记录在这个队列中，每个节点都有一个标记位，判断当前节点是否已经释放锁  
+当一个线程试图获取锁时，会判断当前等待队列尾部节点的标记位是否已经成功释放锁
+
+
+
+### CompletableFuture   
+
+工具类，实现了CompletionStage，Java8中对Future的增强，可以流式调用
 
 ## 3.线程封闭
 
