@@ -2,7 +2,7 @@
 
 在[Lock & Condition]()中我们学习了管程这种并发编程模型，在管程模型提出之前，信号量模型一直是并发编程领域的终结者，几乎所有支持并发编程的语言都支持信号量机制，今天就来看看Java中的信号量实现--Semaphore。
 
-[toc]
+[TOC]
 
 **面试问题**
 Q ：谈谈ReadWriteLock的好处？
@@ -152,10 +152,10 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
 	public final boolean hasQueuedPredecessors() {
         /*
         检查信号量模型图中的等待队列，首节点是否是当前线程。
-         ____          ____          ____
-        | \\ |  -->   | t1 |  -->   | t2 |
-        |___ |        |___ |        |___ |
-         头节点	     首节点
+             ____          ____          ____
+      head  | \\ |  -->   | t1 |  -->   | t2 |	tail
+            |____|  <--   |____|  <--   |____|
+            头节点	         首节点
         */
         Node t = tail; 
         Node h = head;
@@ -172,21 +172,32 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
 ```java
 //AbstractQueuedSynchronizer   
 	/*
-	该方法是AQS中尝试获取共享锁失败后的处理方法，上一篇中的ReadLock尝试
+	该方法是AQS中尝试获取共享失败后的处理方法，上一篇中的ReadLock尝试
 	获取读锁失败后，也会执行该方法中定义的逻辑，而且还会做额外的中间检查。
 	*/
 	private void doAcquireSharedInterruptibly(int arg)
         throws InterruptedException {
         //把当前线程封装为共享类型的节点添加至等待队列，
-        //可以先看后边的代码块，了解如何添加节点后再回来看当前代码。
+        //该方法的具体操作见 代码块-1
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
             for (;;) {
+                //返回当前线程节点的前一个节点，代码块-3
                 final Node p = node.predecessor();
+                //只要p==head时，也就是当前线程节点为等待队列中的首节点，则可以尝试获取共享状态
                 if (p == head) {
+                    //这里再次去尝试获取arg个共享状态，也就是arg个许可
                     int r = tryAcquireShared(arg);
+                    //CAS已经成功修改了信号量，获取到了需要的许可数
                     if (r >= 0) {
+                        /*
+                        当前线程节点目前处于等待队列中的首节点，获取后则需要让出首节点的位置，
+                        其他线程成为首节点，才能进行尝试获取共享状态的操作。
+                        setHeadAndPropagate()便是如何将当前线程节点的下一个节点
+                        变成首节点的方法，并且如果后继节点是共享类型，还会唤醒后继节点方法
+                        具体内容在代码块-4。
+                        */
                         setHeadAndPropagate(node, r);
                         p.next = null; // help GC
                         failed = false;
@@ -204,10 +215,10 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
     }
 ```
 
-
+**代码块-1:**
 
 ```java
- //AbstractQueuedSynchronizer 
+//AbstractQueuedSynchronizer 
 	//向等待队列中添加节点。
 	private Node addWaiter(Node mode) {//前边传过来的节点类型 Node.SHARED
         //将当前线程封装为共享类型的节点。
@@ -231,15 +242,17 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
     }
 ```
 
-
+**代码块-2:**
 
 ```java
  //AbstractQueuedSynchronizer 
 	//初始化等待队列。
 	private Node enq(final Node node) {
+        //这里是一个自旋操作
         for (;;) {
             Node t = tail;
             if (t == null) { // Must initialize
+                //初始化头节点
                 if (compareAndSetHead(new Node()))
                     tail = head;
             } else {
@@ -249,6 +262,112 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
                     return t;
                 }
             }
+        }
+    }
+```
+
+**代码块-3:**
+
+```Java
+ //AbstractQueuedSynchronizer的静态内部Node
+	//返回当前线程节点的前一个节点
+    final Node predecessor() throws NullPointerException {
+        Node p = prev;
+        if (p == null)
+            throw new NullPointerException();
+        else
+            return p;
+    }
+```
+
+**代码块-4:**
+
+```Java
+//AbstractQueuedSynchronizer
+	//方法名称直译为设置头节点和传播
+	//参数propagate是之前获取成功后剩余的许可，node则是当前成功获取的许可的线程
+	private void setHeadAndPropagate(Node node, int propagate) {
+        //下边的检查需要用到旧的头节点
+        Node h = head;  
+        //设置结果如下图
+        setHead(node);
+        /*
+        	  h			   head
+             ____          ____          ____
+            | \\ |  -->   | t1 |  -->   | t2 |	tail
+            |___ |  <--   |____|  <--   |___ |
+           				   头节点	       首节点
+        */
+        /*
+         * Try to signal next queued node if:	满足下列条件会通知队列中的后续节点：
+         *   Propagation was indicated by caller,调用者传入propagate
+         *     or was recorded (as h.waitStatus either before
+         *     or after setHead) by a previous operation
+         *     (note: this uses sign-check of waitStatus because
+         *      PROPAGATE status may transition to SIGNAL.) 这将使用等待状态的信号检查，因为传播状态可能会转换为信号
+         * and
+         *   The next node is waiting in shared mode,
+         *     or we don't know, because it appears null
+         *
+         * The conservatism in both of these checks may cause
+         * unnecessary wake-ups, but only when there are multiple
+         * racing acquires/releases, so most need signals now or soon
+         * anyway.两种检查的保守性可能会导致不必要的唤醒，但只有当有多个赛车获得/释放，所以大多数需要信号现在或不久无论如何。
+         */
+        //这里的很多判断都是多线程下的健壮性判断
+        if (propagate > 0 || h == null || h.waitStatus < 0 ||
+            (h = head) == null || h.waitStatus < 0) {
+            Node s = node.next;
+            //节点s为共享类型，则唤醒该节点
+            if (s == null || s.isShared())
+                doReleaseShared();
+        }
+    }
+```
+
+**代码块-5:**
+
+```java
+//AbstractQueuedSynchronizer
+	//该方法用于在 acquires/releases 存在竞争的情况下，确保唤醒动作向后传播
+	private void doReleaseShared() {
+        /*
+         * Ensure that a release propagates, even if there are other
+         * in-progress acquires/releases.  This proceeds in the usual
+         * way of trying to unparkSuccessor of head if it needs
+         * signal. But if it does not, status is set to PROPAGATE to
+         * ensure that upon release, propagation continues.
+         * Additionally, we must loop in case a new node is added
+         * while we are doing this. Also, unlike other uses of
+         * unparkSuccessor, we need to know if CAS to reset status
+         * fails, if so rechecking.
+         */
+        /*
+         * 下面的循环在 head 节点存在后继节点的情况下，做了两件事情：
+         * 1. 如果 head 节点等待状态为 SIGNAL，则将 head 节点状态设为 0，并唤醒后继节点
+         * 2. 如果 head 节点等待状态为 0，则将 head 节点状态设为 PROPAGATE，保证唤醒能够正
+         *    常传播下去。关于 PROPAGATE 状态的细节分析，后面会讲到。
+         */
+        for (;;) {
+            Node h = head;
+            if (h != null && h != tail) {
+                int ws = h.waitStatus;
+                if (ws == Node.SIGNAL) {
+                    if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+                        continue;            // loop to recheck cases
+                    unparkSuccessor(h);
+                }
+            /* 
+             * ws = 0 的情况下，这里要尝试将状态从 0 设为 PROPAGATE，保证唤醒向后
+             * 传播。setHeadAndPropagate 在读到 h.waitStatus < 0 时，可以继续唤醒
+             * 后面的节点。
+             */
+                else if (ws == 0 &&
+                         !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                    continue;                // loop on failed CAS
+            }
+            if (h == head)                   // loop if head changed
+                break;
         }
     }
 ```
@@ -337,3 +456,5 @@ Sync的实现如下：
         }
 
 可以看到，就是CAS将许可数量置为0。
+
+[http://www.tianxiaobo.com](http://www.tianxiaobo.com/)
