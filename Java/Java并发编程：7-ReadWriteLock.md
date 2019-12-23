@@ -5,7 +5,7 @@
 [TOC]
 
 **面试问题**
-Q ：谈谈ReadWriteLock的好处？
+Q ：谈谈对ReadWriteLock的理解？
 
 
 

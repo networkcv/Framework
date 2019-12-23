@@ -295,7 +295,7 @@ public final void await() throws InterruptedException {
                 throw new InterruptedException();
     		//添加到等待队列尾部
             Node node = addConditionWaiter();
-    		//彻底释放锁，并唤醒入口等待队列中仍在等待的头节点，可能有的节点在等待途中取消了等待，但是队列不会立刻移除这些节点，只是会将等待状态修改为取消，在需要执行唤醒的时候，再统一将这些已取消的节点移除。
+    		//彻底释放锁，并唤醒入口等待队列中仍在等待的首节点，可能有的节点在等待途中取消了等待，但是队列不会立刻移除这些节点，只是会将等待状态修改为取消，在需要执行唤醒的时候，再统一将这些已取消的节点移除。
             int savedState = fullyRelease(node);
             int interruptMode = 0;
     		//判断当前节点是否在入口等待队列中，在入口等待队列中的线程是不持有锁的。如果对一个不持有锁的对象进行挂起和唤醒操作，则可能出现Lost-weakup问题。线程在阻塞过程中产生中断也会退出循环。
