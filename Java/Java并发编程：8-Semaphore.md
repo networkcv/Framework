@@ -204,7 +204,12 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
                         return;
                     }
                 }
+                /*
+                代码块-6，从最开始的尝试获取到添加节点后判断是否为头节点，
+                两次尝试都失败，则会在此处判断当前线程是否应该被挂起(可以理解为进入等待)
+               	*/
                 if (shouldParkAfterFailedAcquire(p, node) &&
+                    //代码块-7，挂起当前线程
                     parkAndCheckInterrupt())
                     throw new InterruptedException();
             }
@@ -335,18 +340,7 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
 //AbstractQueuedSynchronizer
 	//该方法用于在 acquires/releases 存在竞争的情况下，确保唤醒动作向后传播
 	private void doReleaseShared() {
-        /*
-         * Ensure that a release propagates, even if there are other
-         * in-progress acquires/releases.  This proceeds in the usual
-         * way of trying to unparkSuccessor of head if it needs
-         * signal. But if it does not, status is set to PROPAGATE to
-         * ensure that upon release, propagation continues.
-         * Additionally, we must loop in case a new node is added
-         * while we are doing this. Also, unlike other uses of
-         * unparkSuccessor, we need to know if CAS to reset status
-         * fails, if so rechecking.
-         */
-        /*
+      	/*
          * 下面的循环在 head 节点存在后继节点的情况下，做了两件事情：
          * 1. 如果 head 节点等待状态为 SIGNAL，则将 head 节点状态设为 0，并唤醒后继节点
          * 2. 如果 head 节点等待状态为 0，则将 head 节点状态设为 PROPAGATE，保证唤醒能够正
@@ -373,6 +367,54 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
             if (h == head)                   // loop if head changed
                 break;
         }
+    }
+```
+
+**代码块-6:**
+
+```java
+ //AbstractQueuedSynchronizer
+	private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+        /*
+         * static final int CANCELLED =  1;
+      	 * static final int SIGNAL    = -1;
+         * static final int CONDITION = -2;
+         * static final int PROPAGATE = -3;
+
+         * 线程节点在被创建的时候，waitStatus默认为0
+         * 所以第一次进人该方法一定会返回false，在返回前设置为SIGNAL
+         * 下次再进入该方法的时候才会返回true
+         */
+        int ws = pred.waitStatus;
+        if (ws == Node.SIGNAL)
+            //返回true，后续会挂起线程
+            return true;
+        if (ws > 0) {
+            //如果前驱节点取消了，那么会一直找到前边没被取消的节点
+            do {
+                node.prev = pred = pred.prev;
+            } while (pred.waitStatus > 0);
+            pred.next = node;
+        } else {
+            /*
+             * 只有waitStatus为0时或者为-3时，才能到这里。
+             * 调用方需要再确认一下获取不到再挂起
+             */
+            compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
+        }
+        return false;
+    }
+```
+
+**代码块-7:**
+
+```java
+//AbstractQueuedSynchronizer
+	private final boolean parkAndCheckInterrupt() {
+     	//调用LockSupport挂起当前线程
+        LockSupport.park(this);
+		//被唤醒后会返回等待中是否被中断     	
+        return Thread.interrupted();
     }
 ```
 
