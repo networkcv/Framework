@@ -5,7 +5,7 @@
 [TOC]
 
 **面试问题**
-Q ：谈谈ReadWriteLock的好处？
+Q ：谈谈对Semaphore的理解？
 
 
 
@@ -29,24 +29,31 @@ Q ：谈谈ReadWriteLock的好处？
 
 举个简单的例子，在哲学家用餐问题中，我们可以通过**破坏请求与保持条件**，一次性申请所有的资源来解决死锁问题，具体的操作就是把筷子都放桌子中央，需要吃饭的人一次拿两根。筷子不够两根的话，进行等待。
 
-桌子中央的5根筷子就相当于信号量中的5个许可，在Init()时设置，当某个哲学家打算用餐时，则通过down(2)，拿走两根筷子(许可)，用餐完毕后up(2)归还筷子，如果中间只剩一根筷子，那么再执行down(2)并不会拿走剩下的这一根筷子，而是会进入等待队列，当有筷子被归还时，//TODO检查到可用筷子数满足等待队列，在实际使用的务必注意，申请了几个许可
+桌子中央的5根筷子就相当于信号量中的5个许可，在Init()时设置，当某个哲学家打算用餐时，则通过down(2)，拿走两根筷子(许可)，用餐完毕后up(2)归还筷子，如果中间只剩一根筷子，那么再执行down(2)并不会拿走剩下的这一根筷子，而是会进入等待队列，当有筷子被归还时，先排队的人会尝试去拿筷子，如果此时没有其他哲学家竞争的话，就可以拿到筷子进行用餐，用餐结束后，归还筷子，并通知排在他后边的人可以去拿了。
 
 ## 2.Semaphore使用
 
-申请多少信号量，记得释放多少信号量。
-
-acquire()和release()，也被称为PV操作。如果计数器为1，就只有一个线程可以拿到该信号量，作用就类似于锁 ，如果计数器为10，就有10个线程可以拿到该信号量，进而执行下一步的操作。
-
-下面我们再来分析一下,信号量是如何保证互斥的。假设两个线程T1和T2同时访问addOne)方法,当它们同时调用acquire)的时候,由于acquire)是一个原子操作,所以只能有一个线程(假设T1)把信号量里的计数器减为0,另外一个线程(T2)则是将计数器减为-1。对于线程T1,信号量里面的计数器的值是0,大于等于0,所以线程T1会继续执行;对于线程T2,信号量里面的计数器的值是-1,小于0,按照信号量模型里对down()操作的描述,线程T2将被阻塞。所以此时只有线程T1会进入临界区执行count+=1: .
-
-当线程T1执行release)操作,也就是up()操作的时候,信号量里计数器的值是-1,加1之后的值是0,小于等于0,按照信号量模型里对up0)操作的描述,此时等待队列中的T2将会被唤·醒。于是T2在T1执行完临界区代码之后才获得了进入临界区执行的机会，从而保证了互斥性。
-
-```java
-public void acquire() throws InterruptedException   //获取信号量
-public void release()   //释放信号量
-```
+**申请多少信号量，记得释放多少信号量。**
 
 
+
+ **一旦(one egg) 进入等待队列中，只有前驱节点释放或取消后继才会被唤醒。**
+
+举个例子：
+
+线程A和线程B分别需要10个和5个许可，信号量一开始只剩4个许可，A先申请，申请不到，挂起A，B后申请，也申请不到，挂起B，注意，**等待队列中A是排在B前边的**。过了一会有线程归还了1个许可，此时信号量中有5个空闲许可，而线程B也刚好需要5个。那么是不是线程B就可以被唤醒了？不是的，B线程只能被其前驱节点唤醒，在被唤醒前是出于挂起（等待）状态的，对许可的个数变化是不知情的。
+
+
+
+**构造时传入的许可数，并不代表信号量最大支持的许可数**
+
+构造传入的许可数，代表的AQS先帮你指定初始的数量，你在后边的使用中还可以继续通过release继续往上加，只要不超过int最大值都可以。所以记得用多少，还多少。少还的话，其他线程不够用，多还则程序会抛出错误。
+
+
+
+**Semaphore(1）是不是可以当ReentrantLock使用**
+
+看着功能挺像的，但内部实现完全不同，一个是共享模式，一个是独占模式，建议不要这样做。
 
 
 
@@ -205,11 +212,15 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
                     }
                 }
                 /*
-                代码块-6，从最开始的尝试获取到添加节点后判断是否为头节点，
+                代码块-7，从最开始的尝试获取到添加节点后判断是否为头节点，
                 两次尝试都失败，则会在此处判断当前线程是否应该被挂起(可以理解为进入等待)
+                在此处会将前驱节点的waitStatus设置为SIGNAL，表示当前节点需要被唤醒
+                而具体的唤醒方法是由前驱节点来调用的，可以理解为，在排队时你告诉你前边的人
+                让他买完后叫你一下(设置前驱节点的waitStatus为SIGNAL)，
+                这样你就可以低头玩手机了(挂起线程)。
                	*/
                 if (shouldParkAfterFailedAcquire(p, node) &&
-                    //代码块-7，挂起当前线程
+                    //代码块-8，挂起当前线程
                     parkAndCheckInterrupt())
                     throw new InterruptedException();
             }
@@ -303,31 +314,18 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
             |___ |  <--   |____|  <--   |___ |
            				   头节点	       首节点
         */
+
         /*
-         * Try to signal next queued node if:	满足下列条件会通知队列中的后续节点：
-         *   Propagation was indicated by caller,调用者传入propagate
-         *     or was recorded (as h.waitStatus either before
-         *     or after setHead) by a previous operation
-         *     (note: this uses sign-check of waitStatus because
-         *      PROPAGATE status may transition to SIGNAL.) 这将使用等待状态的信号检查，因为传播状态可能会转换为信号
-         * and
-         *   The next node is waiting in shared mode,
-         *     or we don't know, because it appears null
-         *
-         * The conservatism in both of these checks may cause
-         * unnecessary wake-ups, but only when there are multiple
-         * racing acquires/releases, so most need signals now or soon
-         * anyway.两种检查的保守性可能会导致不必要的唤醒，但只有当有多个赛车获得/释放，所以大多数需要信号现在或不久无论如何。
-         */
-        /*
-         * 这里的很多都是多线程下的健壮性判断  
-         * 仅用propagate > 0 判断是否 唤醒后续节点是不充分的
-         * 
+         * 这里是唤醒后续节点的健壮性判断。  
+         * 在JDK 6u11,6u17中，只判断了propagate > 0 && node.waitStatus != 0
+         * 会导致并发释放信号量所导致部分请求信号量的线程无法被唤醒的问题，
+         * 详见 BUG – JDK-6801020 
+         * 仅用propagate > 0 判断是否唤醒后续节点是不充分的
          */
         if (propagate > 0 || h == null || h.waitStatus < 0 ||
             (h = head) == null || h.waitStatus < 0) {
             Node s = node.next;
-            //节点s为共享类型，则唤醒该节点
+            //后续节点为共享类型，则唤醒该节点
             if (s == null || s.isShared())
                 doReleaseShared();
         }
@@ -344,7 +342,7 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
          * 下面的循环在 head 节点存在后继节点的情况下，做了两件事情：
          * 1. 如果 head 节点等待状态为 SIGNAL，则将 head 节点状态设为 0，并唤醒后继节点
          * 2. 如果 head 节点等待状态为 0，则将 head 节点状态设为 PROPAGATE，保证唤醒能够正
-         *    常传播下去。关于 PROPAGATE 状态的细节分析，后面会讲到。
+         *    常传播下去。
          */
         for (;;) {
             Node h = head;
@@ -353,6 +351,7 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
                 if (ws == Node.SIGNAL) {
                     if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
                         continue;            // loop to recheck cases
+                    //代码块-6 唤醒后续节点
                     unparkSuccessor(h);
                 }
             /* 
@@ -371,6 +370,31 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
 ```
 
 **代码块-6:**
+
+```java
+ //AbstractQueuedSynchronizer
+	//唤醒后续节点
+	private void unparkSuccessor(Node node) {
+        int ws = node.waitStatus;
+        if (ws < 0)
+            compareAndSetWaitStatus(node, ws, 0);
+
+        /*
+         * 找到下一个没有被取消的节点唤醒
+         */
+        Node s = node.next;
+        if (s == null || s.waitStatus > 0) {
+            s = null;
+            for (Node t = tail; t != null && t != node; t = t.prev)
+                if (t.waitStatus <= 0)
+                    s = t;
+        }
+        if (s != null)
+            LockSupport.unpark(s.thread);
+    }
+```
+
+**代码块-7:**
 
 ```java
  //AbstractQueuedSynchronizer
@@ -398,7 +422,11 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
         } else {
             /*
              * 只有waitStatus为0时或者为-3时，才能到这里。
-             * 调用方需要再确认一下获取不到再挂起
+             * 第一次进入该方法时，调用方需要再确认一下，如果还是获取不到再挂起。
+             * 返回false，重新回到doAcquireSharedInterruptibly中自旋，
+             * 再次看看自己是否可以获取，获取不到会再次进入该方法。
+             * 下次进入时，waitStatus就等于SIGNAL了，该方法就可以返回true
+             * 线程才会被真正挂起，进入等待。
              */
             compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
         }
@@ -406,7 +434,7 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
     }
 ```
 
-**代码块-7:**
+**代码块-8:**
 
 ```java
 //AbstractQueuedSynchronizer
@@ -422,85 +450,108 @@ tryAcquireShared()在Semaphore中有公平模式和非公平模式两种实现�
 
 ### 3.2 释放许可
 
-释放许可也有几个重载方法，但都会调用下面这个带参数的方法，
+跟前边获取许可的代码相比，释放许可就很轻松了。
 
-public void release(int permits) {
-        if (permits < 0) throw new IllegalArgumentException();
-        sync.releaseShared(permits);
-    }
-
-releaseShared方法在AQS中，如下：
-
-public final boolean releaseShared(int arg) {
-        //如果改变许可数量成功
+```java
+//AbstractQueuedSynchronizer
+	public final boolean releaseShared(int arg) {
+        //尝试去释放许可
         if (tryReleaseShared(arg)) {
+            //代码块-5,
             doReleaseShared();
             return true;
         }
         return false;
     }
+```
 
-AQS子类实现共享模式的类需要实现tryReleaseShared类来判断是否释放成功，实现如下：
 
-protected final boolean tryReleaseShared(int releases) {
-            for (;;) {
-                //获取当前许可数量
-                int current = getState();
-                //计算回收后的数量
-                int next = current + releases;
-                if (next < current) // overflow
-                    throw new Error("Maximum permit count exceeded");
-                //CAS改变许可数量成功，返回true
-                if (compareAndSetState(current, next))
-                    return true;
-            }
+
+```java
+//Semaphore
+	//尝试获取的时候是尝试一次，尝试释放的时候是不停的尝试直到成功
+	protected final boolean tryReleaseShared(int releases) {
+        for (;;) {
+            int current = getState();
+            int next = current + releases;
+            if (next < current) // overflow
+                throw new Error("Maximum permit count exceeded");
+            if (compareAndSetState(current, next))
+                return true;
         }
-
-从上面可以看到，一旦CAS改变许可数量成功，那么就会调用doReleaseShared()方法释放阻塞的线程。
-
-减小许可数量
-Semaphore还有减小许可数量的方法，该方法可以用于用于当资源用完不能再用时，这时就可以减小许可证。代码如下：
-
-protected void reducePermits(int reduction) {
-        if (reduction < 0) throw new IllegalArgumentException();
-        sync.reducePermits(reduction);
     }
+```
 
-可以看到，委托给了Sync，Sync的reducePermits方法如下：
+### 3.3 小结
 
-  final void reducePermits(int reductions) {
-            for (;;) {
-                //得到当前剩余许可数量
-                int current = getState();
-                //得到减完之后的许可数量
-                int next = current - reductions;
-                if (next > current) // underflow
-                    throw new Error("Permit count underflow");
-                //如果CAS改变成功
-                if (compareAndSetState(current, next))
-                    return;
-            }
-        }
+**非公平模式调用获取许可方法**，先CAS尝试。尝试失败后进入`doAcquireSharedInterruptibly()`
 
-从上面可以看到，就是CAS改变AQS中的state变量，因为该变量代表许可证的数量。
+在该方法中，首先会向等待队列的队尾添加新的共享类型节点，新节点waitStatus为0。
 
-获取剩余许可数量
-Semaphore还可以一次将剩余的许可数量全部取走，该方法是drain方法，如下：
 
-public int drainPermits() {
-        return sync.drainPermits();
-    }
 
-Sync的实现如下：
+检查是否为首节点，是的话再尝试一次，尝试失败或不是首节点，执行`shouldParkAfterFailedAcquire()`。
 
- final int drainPermits() {
-            for (;;) {
-                int current = getState();
-                if (current == 0 || compareAndSetState(current, 0))
-                    return current;
-            }
-        }
+该方法中会设置前驱节点的等待状态为SIGNAL `compareAndSetWaitStatus(pred, ws, Node.SIGNAL)`。
 
-可以看到，就是CAS将许可数量置为0。
+如果前驱节点waitStatus为-2(取消状态)，则会从后向前遍历找到未取消的前驱节点 ，然后再设置为SIGNAL。
 
-[http://www.tianxiaobo.com](http://www.tianxiaobo.com/)
+设置成功后，就可以安心挂起了，反正有人通知。
+
+被唤醒后先检查中断状态，如果未被中断则会回到`doAcquireSharedInterruptibly()`中的自旋操作。
+
+
+
+继续检查是否为首节点，不是的话继续挂起，是首节点，并且尝试成功后，返会剩余许可数`int r = tryAcquireShared(arg)`。
+
+共享型节点在唤醒后还需要将这个唤醒操作传递给后继结点，这也是与独占型节点的区别。
+
+独占模式在此处只需要重新设置head节点，共享模式则在设置head节点的同时还要向后继传播唤醒。
+
+`setHeadAndPropagate()`，将当前线程节点设置为head节点，如果出现以下情况则会向后传播唤醒：
+
+- 还有剩余的许可。
+- 旧的head节点为空或者waitStatus小于0，也就是SIGNAL和PROPAGATE这两种状态。
+- 新的head节点也就是当前线程节点的为空或者waitStatus小于0。
+
+
+
+具体的传播动作定义在`doReleaseShared()`中。这个方法其实也是释放许可所使用的核心方法。
+
+在该方法中会在head节点存在后继节点的情况下，做两件事：
+
+1. 如果 head 节点等待状态为 SIGNAL，则将 head 节点状态设为 0，并唤醒后继节点
+2. 如果 head 节点等待状态为 0，则将 head 节点状态设为 PROPAGATE，保证唤醒能够正
+   常传播下去。
+
+唤醒后续节点后，`doAcquireSharedInterruptibly()`主要流程就完了。
+
+
+
+**非公平模式调用释放许可方法**，会进入`releaseShared()`，尝试释放锁直到成功。
+
+后续的执行前边提到的`doReleaseShared()`。
+
+
+
+## 4.总结
+
+这篇文章把共享锁的整个流程走了一遍，其中有很多实现的细节有待深入，比如设置state时什么时候需要用CAS，什么时候不需用；在添加节点时，为什么先将当前节点指向尾节点，等CAS修改成功后，再将尾节点指向当前节点，还有等待队列为什么是从后向前遍历等等。
+
+限于本人的能力，这些实现细节还没有更深入的理解，目前只能看懂大概流程。后边会专门写一篇AQS的文章，来对J.U.C中的工具类做一个总结，也这些细节也进行一一剖析。
+
+**附上学习AQS的一点心得：**
+
+第一阶段：先熟悉一下各个方法大概都是做什么的，心里有个底。
+
+第二阶段：Debug！一边跟方法，一边要记住等待队列中的各个节点的waitStatus以及head和tail的指向的变化，最好能画成图，熟悉AQS流程和waitStatus的变化。
+
+第三阶段：熟悉了整体流程后，通过线程断点控制线程的执行流程，其实就是人工模拟CPU切换线程，使线程走到AQS中之前没有通过的判断逻辑中，看看会发生什么，比如setHeadAndPropagate()方法中那一长串的判断。
+
+第四阶段：向 Doug Lea 致敬 ！
+
+## Reference
+
+&emsp;&emsp;[http://www.tianxiaobo.com](http://www.tianxiaobo.com/)
+
+**感谢阅读**！
