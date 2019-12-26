@@ -191,6 +191,8 @@ implements List<E>, RandomAccess, Cloneable, Serializable
     }
 ```
 
+
+
 #### [3.3.2 CopyOnWriteArrayList 写入操作的实现](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_332-copyonwritearraylist-写入操作的实现)
 
 CopyOnWriteArrayList 写入操作 add() 方法在添加集合的时候加了锁，保证了同步，避免了多线程写的时候会 copy 出多个副本出来。
@@ -217,6 +219,14 @@ CopyOnWriteArrayList 写入操作 add() 方法在添加集合的时候加了锁�
         }
     }
 ```
+
+## CopyOnWrite-29
+
+RPC框架的核心任务就是维护路由关系。
+
+对读性能要求很高，读多写少，弱一致性，那就CopyOnWrite
+
+copyonWriteLinkedList的链表结构读取效率比较低，违背了读多写少的设计初衷，数组是连续分配内存的，直接复制内存块就可以完成拷贝，但链表元素是通过引用连接的，需要便利整个链表才能完成拷贝。
 
 ## [四 ConcurrentLinkedQueue](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=四-concurrentlinkedqueue)
 
