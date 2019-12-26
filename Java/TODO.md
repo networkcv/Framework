@@ -74,16 +74,14 @@
 
 
 
-## 7.ReadWriteLock
+## 7.ReadWriteLock  ok!
 
 - [1.ReadWriteLock简介]()
-
 - [2.ReentrantReadWriteLock使用]()
 
 	- [2.1 锁降级]()
 
 	- [2.2 写锁支持条件变量]()
-
 - [3.ReentrantReadWriteLock原理]()
 
 	- [3.1 写锁加锁]()
@@ -93,7 +91,16 @@
 	- [3.3 读锁加锁]()
 
 	- [3.4 读锁释放]()
+- [4.总结]()
 
+## 8.Semaphore  ok!
+
+- 1.[信号量模型]()
+- [2.Semaphore使用]()
+- [3.Semaphore解析]()
+  - [3.1 申请许可]()
+  - [3.2 释放许可]()
+  - [3.3 小结]()
 - [4.总结]()
 
 ## AQS
