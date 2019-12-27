@@ -2,6 +2,7 @@ package _21_并发._07_JDK并发包.reentrantLock;
 
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -74,7 +75,10 @@ public class MyReentrantLock1_基本使用 extends Thread {
             for (int j = 0; j < 100000; j++) {
                 try {
                     reentrantLock.lock();
+                    reentrantLock.tryLock(1, TimeUnit.SECONDS);
                     i++;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 } finally {
                     reentrantLock.unlock();
                 }

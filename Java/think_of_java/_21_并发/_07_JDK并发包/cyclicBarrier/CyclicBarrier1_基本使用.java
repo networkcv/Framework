@@ -13,7 +13,7 @@ public class CyclicBarrier1_基本使用 {
         });
         Random random = new Random();
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 18; i++) {
             cachedThreadPool.execute(() -> {
                 try {
                     int time = random.nextInt(250);

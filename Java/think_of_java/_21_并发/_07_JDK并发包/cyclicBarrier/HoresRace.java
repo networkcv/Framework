@@ -13,7 +13,6 @@ public class HoresRace {
     private List<Horse> horses = new ArrayList<>();
     private ExecutorService exec = Executors.newCachedThreadPool();
     private CyclicBarrier barrier;
-    private int target = 6;
     boolean flag = true;
 
     public HoresRace(int nHorse, final int pause) {
@@ -94,16 +93,11 @@ class Horse implements Runnable {
             while (!Thread.interrupted()) {
                 synchronized (this) {
                     //给不同马加速
-//                    if (flag && id == 6) {
-//                        strides += 50;
-//                        flag = false;
-//                    }
                     if (id == 3) {
                         strides += rand.nextInt(5);
                     } else {
                         strides += rand.nextInt(4);
                     }
-//                        strides += rand.nextInt(4);
                 }
                 barrier.await();
             }
