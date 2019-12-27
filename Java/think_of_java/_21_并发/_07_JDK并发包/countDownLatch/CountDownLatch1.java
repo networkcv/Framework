@@ -4,6 +4,7 @@ package _21_并发._07_JDK并发包.countDownLatch;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * create by lwj on 2019/11/7
@@ -57,8 +58,44 @@ public class CountDownLatch1 {
                 end.countDown();
             }, i + "号线程").start();
         }
+        new Thread(()->{
+            try {
+                end.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("1");
+        }).start();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         end.await();
         System.out.println("火箭发射！！");
     }
 
+    @Test
+    public void test4() throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(5);
+        new Thread(()->{countDownLatch.countDown();
+        countDownLatch.countDown();}).start();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new Thread(()-> {
+
+            try {
+                countDownLatch.await(2, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(2);
+        }).start();
+        countDownLatch.await(3,TimeUnit.SECONDS);
+        System.out.println(3);
+
+    }
 }

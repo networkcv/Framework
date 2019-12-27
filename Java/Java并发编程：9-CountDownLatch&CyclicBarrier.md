@@ -16,11 +16,9 @@ Q ：CountDownLatch和CyclicBarrier的区别？
 
 ## 1.CountDownLatch
 
-CountDownLatch主要用来解决一个线程等待多个线程的场景。
+### 1.1 CountDownLatch介绍
 
-### 1.1 CountDownLatch使用
-
-**CountDownLatch** ，闭锁，可以理解为倒计时器。
+**CountDownLatch** ，闭锁，门闩，也可以理解为倒计时器。
 
 比如有这样一个场景，火箭发射前需要确保各个部件正常，如果存在异常，则火箭无法发射。
 
@@ -55,27 +53,43 @@ CountDownLatch主要用来解决一个线程等待多个线程的场景。
     }
 ```
 
-为了保证`countDown-- `操作的原子性，在线程检查的时候使用了synchronzied关键字进行加锁，如果不加锁的话，countDown可能会因为线程切换导致原子性问题，造成countDown无法减为0，自然发射火箭的主线程也永远无法被唤醒。但是加锁之后，从多线程同时做检查变成了某一时刻只能有一个线程检查，无疑大大地降低了工作效率。有没有一个两全其美的办法？还真有，使用volatile就实现。
+为了保证`countDown-- `操作的原子性，在线程检查的时候使用了synchronzied关键字进行加锁，如果不加锁的话，countDown可能会因为线程切换导致原子性问题，但是加锁之后，从多线程同时做检查变成了某一时刻只能有一个线程检查，无疑大大地降低了工作效率。有没有一个两全其美的办法？还真有，使用volatile就可以实现。
 
 ```java
 //线程不安全的
-	volatile int countDown = 50000;
+	volatile int state = 50000;
     @Test
     public void test1() {
         for (int i = 0; i < 50000; i++) {
             new Thread(() -> {
                 System.out.println(Thread.currentThread().getName() + " 检查完毕!");
-                countDown--;
+                state--;
             }, i + "号线程").start();
         }
-        while (countDown != 0) {}
+        while (state != 0) {}
         System.out.println("火箭发射！！");
     }
 ```
 
+上边的代码有两个问题：
 
+1. 虽然使用volatile修饰state，使其修改结果对其他线程可见，并且不会因为重排序导致导致线程安全问题，但是volatile不能保证`state--`操作的原子性，发生原子性问题时，会使countDown无法减为0，自然发射火箭的主线程也永远无法被唤醒。
+2. 主线程一直在不停的检查state有没有被减为0，这样会降低程序的性能。
 
+解决办法：
 
+1. 使用CAS操作自旋来修改state，解决原子性问题。
+2. 先让主线程尝试一次，如果失败的话就挂起，进入等待状态，由将state修改为0的线程来唤醒它。
+
+如果你看了前边几篇文章，你会发现上边的逻辑很熟悉，AQS最根本的原理就是这样的，并且J.U.C中为了解决这类问题，已经帮我们做了实现——CountDownLatch。
+
+### 1.2 CountDownLatch使用
+
+**使用方式**
+
+CountDownLatch主要用来解决一个线程等待多个线程的场景。
+
+下面使用CountDownLatch来实现火箭发射的场景。
 
 ```java
   	@Test
@@ -100,169 +114,77 @@ CountDownLatch主要用来解决一个线程等待多个线程的场景。
 	*/
 ```
 
-使用Latch 替代wait notify来进行通知好处是通信方式简单,
-同时也可以指定等待时间使用await和countdown方法替代wait和notify 
-CountDownLatch不涉及锁定, 当count的值为零时当前线程继续运行当不涉及同步,只是涉及线程通信的时候,
-用synchronized + wait/notify就显得太重了
-这时应该考虑countdownlatch/cyclicbarrier/semaphore
+`countDown() `就是用CAS进行`state--` 减到0的线程会去通知等待在CountDownLatch上的节点，只通知首节点。
 
-再以CountDownLatch以例，任务分为N个子线程去执行，state也初始化为N（注意N要与线程个数一致）。这N个子线程是并行执行的，每个子线程执行完后countDown()一次，state会CAS减1。等到所有子线程都执行完后(即state=0)，会unpark()主调用线程，然后主调用线程就会从await()函数返回，继续后余动作
+`await()` 则是先尝试，尝试失败后进入等待队列，别唤醒后还会通知后边的节点，以此类推，以传播的方式唤醒等待队列中的所有节点。
+
+下面来看看CountDownLatch中的方法。
 
 ```java
-CountDownLatch end = new CountDownLatch(10);
-public void run(){
-  //每次调用这个countDown方法，end的值减1
-  end.countDown();
-}
-//只有当end被countdown到0的时候，主线程里的end.await()才会被唤醒
-public void main(){
-  end.await();
-}
+//构造初始的state值，可以执行state次countDown
+public CountDownLatch(int count) 
+
+//等待直到被唤醒
+public void await() throws InterruptedException
+
+//等待一段时间，超时自己醒
+public boolean await(long timeout, TimeUnit unit)
+
+//对state进行-1    
+public void countDown() 
+    
+//获取当前的state    
+public long getCount()
 ```
 
 
 
+**使用场景**
+
+1. 前面提到了倒计时器的用法，本质上就是为了等其他线程执行完，可以用在启动服务时，等待其他组件的加载。
+2. 可以使多个线程同时开始执行，提供很大的并行性，这里更关注的是线程到齐之后。平时在主线程启动线程时，由于代码顺序执行的缘故，线程并不是真正同时start的，中间存在时间差，如果执行的耗时特别短，那么可能很多问题不会暴露出来。所以在这里CountDownLatch起到了和Thread.yield类似的作用，可以增大出现并发问题的几率，因此可以写多个线程来进行死锁的检测。
 
 
 
-### [4 CountDownLatch （倒计时器）](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_4-countdownlatch-（倒计时器）)
+### 1.3 CountDownLatch原理
 
-CountDownLatch 是一个同步工具类，它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。在 Java 并发中，countdownlatch 的概念是一个常见的面试题，所以一定要确保你很好的理解了它。
+CountDownLatch的原理其实并不难，不过这里的不难是建立对AQS有了解之上的，有兴趣的可以看一看[Semaphore & AQS](https://segmentfault.com/a/1190000021400650)。
 
-#### [4.1 CountDownLatch 的三种典型用法](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_41-countdownlatch-的三种典型用法)
+在介绍时简单提了一下原理，下面看一看源码的实现细节吧。
 
-① 某一线程在开始运行前等待 n 个线程执行完毕。将 CountDownLatch 的计数器初始化为 n ：`new CountDownLatch(n)`，每当一个任务线程执行完毕，就将计数器减 1 `countdownlatch.countDown()`，当计数器的值变为 0 时，在`CountDownLatch上 await()` 的线程就会被唤醒。一个典型应用场景就是启动一个服务时，主线程需要等待多个组件加载完毕，之后再继续执行。
-
-② 实现多个线程开始执行任务的最大并行性。注意是并行性，不是并发，强调的是多个线程在某一时刻同时开始执行。类似于赛跑，将多个线程放到起点，等待发令枪响，然后同时开跑。做法是初始化一个共享的 `CountDownLatch` 对象，将其计数器初始化为 1 ：`new CountDownLatch(1)`，多个线程在开始执行任务前首先 `coundownlatch.await()`，当主线程调用 countDown() 时，计数器变为 0，多个线程同时被唤醒。
-
-③ 死锁检测：一个非常方便的使用场景是，你可以使用 n 个线程访问共享资源，在每次测试阶段的线程数目是不同的，并尝试产生死锁。
-
-#### [4.2 CountDownLatch 的使用示例](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_42-countdownlatch-的使用示例)
+构造设置state。
 
 ```java
-/**
- *
- * @author SnailClimb
- * @date 2018年10月1日
- * @Description: CountDownLatch 使用方法示例
- */
-public class CountDownLatchExample1 {
-  // 请求的数量
-  private static final int threadCount = 550;
-
-  public static void main(String[] args) throws InterruptedException {
-    // 创建一个具有固定线程数量的线程池对象（如果这里线程池的线程数量给太少的话你会发现执行的很慢）
-    ExecutorService threadPool = Executors.newFixedThreadPool(300);
-    final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-    for (int i = 0; i < threadCount; i++) {
-      final int threadnum = i;
-      threadPool.execute(() -> {// Lambda 表达式的运用
-        try {
-          test(threadnum);
-        } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } finally {
-          countDownLatch.countDown();// 表示一个请求已经被完成
-        }
-
-      });
+    public CountDownLatch(int count) {
+        if (count < 0) throw new IllegalArgumentException("count < 0");
+        this.sync = new Sync(count);
     }
-    countDownLatch.await();
-    threadPool.shutdown();
-    System.out.println("finish");
-  }
 
-  public static void test(int threadnum) throws InterruptedException {
-    Thread.sleep(1000);// 模拟请求的耗时操作
-    System.out.println("threadnum:" + threadnum);
-    Thread.sleep(1000);// 模拟请求的耗时操作
-  }
-}
+	Sync(int count) {
+        setState(count);
+    }
+
+    protected final void setState(int newState) {
+        state = newState;
+    }
 ```
 
-上面的代码中，我们定义了请求的数量为 550，当这 550 个请求被处理完成之后，才会执行`System.out.println("finish");`。
 
-与 CountDownLatch 的第一次交互是主线程等待其他线程。主线程必须在启动其他线程后立即调用 CountDownLatch.await()方法。这样主线程的操作就会在这个方法上阻塞，直到其他线程完成各自的任务。
 
-其他 N 个线程必须引用闭锁对象，因为他们需要通知 CountDownLatch 对象，他们已经完成了各自的任务。这种通知机制是通过 CountDownLatch.countDown()方法来完成的；每调用一次这个方法，在构造函数中初始化的 count 值就减 1。所以当 N 个线程都调 用了这个方法，count 的值等于 0，然后主线程就能通过 await()方法，恢复执行自己的任务。
+```java
+    public boolean await(long timeout, TimeUnit unit)
+        throws InterruptedException {
+        return sync.tryAcquireSharedNanos(1, unit.toNanos(timeout));
+    }
+```
 
-#### [4.3 CountDownLatch 的不足](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_43-countdownlatch-的不足)
+
+
+### 1.4 小结
+
+ **CountDownLatch 的不足**
 
 CountDownLatch 是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当 CountDownLatch 使用完毕后，它不能再次被使用。
-
-#### [4.4 CountDownLatch 相常见面试题：](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/AQS?id=_44-countdownlatch-相常见面试题：)
-
-解释一下 CountDownLatch 概念？
-
-CountDownLatch 和 CyclicBarrier 的不同之处？
-
-给出一些 CountDownLatch 使用的例子？
-
-CountDownLatch 类中主要的方法？
-
-### 1.2 CountDownLatch原理
-
-CountDownLatch类位于java.util.concurrent包下，利用它可以实现类似计数器的功能。比如有一个任务A，它要等待其他4个任务执行完毕之后才能执行，此时就可以利用CountDownLatch来实现这种功能了。
-
-　　CountDownLatch类只提供了一个构造器：
-
-```java
-public` `CountDownLatch(``int` `count) { }; ``//参数count为计数值
-```
-
- 　然后下面这3个方法是CountDownLatch类中最重要的方法：
-
-```java
-public void await() throws InterruptedException { };   //调用await()方法的线程会被挂起，它会等待直到count值为0才继续执行
-public boolean await(long timeout, TimeUnit unit) throws InterruptedException { };  //和await()类似，只不过等待一定的时间后count值还没变为0的话就会继续执行
-public void countDown() { };  //将count值减1
-```
-
- 　下面看一个例子大家就清楚CountDownLatch的用法了：
-
-```java
-public class Test {
-     public static void main(String[] args) {   
-         final CountDownLatch latch = new CountDownLatch(2);
-          
-         new Thread(){
-             public void run() {
-                 try {
-                     System.out.println("子线程"+Thread.currentThread().getName()+"正在执行");
-                    Thread.sleep(3000);
-                    System.out.println("子线程"+Thread.currentThread().getName()+"执行完毕");
-                    latch.countDown();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-             };
-         }.start();
-          
-         new Thread(){
-             public void run() {
-                 try {
-                     System.out.println("子线程"+Thread.currentThread().getName()+"正在执行");
-                     Thread.sleep(3000);
-                     System.out.println("子线程"+Thread.currentThread().getName()+"执行完毕");
-                     latch.countDown();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-             };
-         }.start();
-          
-         try {
-             System.out.println("等待2个子线程执行完毕...");
-            latch.await();
-            System.out.println("2个子线程已经执行完毕");
-            System.out.println("继续执行主线程");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-     }
-
-```
 
 ## 2.CyclicBarrier
 
