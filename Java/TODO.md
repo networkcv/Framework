@@ -139,7 +139,7 @@ Executors Callable Future FutureTask Timer
 
 ## 并发级别和无锁类
 
-并发级别，无锁类，CAS，悲观锁和乐观锁， StampedLock
+ StampedLock
 
 
 
