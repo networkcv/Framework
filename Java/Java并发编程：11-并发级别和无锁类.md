@@ -1,6 +1,6 @@
 **前言：**
 
-前面的几篇内容都是关于J.U.C的同步工具类，包括使用时需要注意的地方，以及它们是如何通过AQS来实现的，在解读源码的时候，发现经常出现CAS操作，下面我们来深入的了解一下CAS。
+前面的几篇内容都是关于J.U.C的同步工具类，包括使用时需要注意的地方，以及它们是如何通过AQS来实现的，在解读源码的时候，发现经常出现CAS操作，下面我们来了解一下CAS。
 
 [toc]
 
@@ -48,7 +48,7 @@ Q ：谈谈你对CAS的理解？
 
 ### 2.1 无锁类的介绍
 
-为了方便使用CAS，Java在J.U.C中提供了一个atomic包，里边提供一些直接使用CAS操作的线程安全的类型。
+为了方便使用CAS，Java在J.U.C中提供了一个atomic包，里边包含一些直接使用CAS操作的线程安全的类。
 
 根据操作的数据类型，可以分为以下4类：
 
@@ -84,7 +84,7 @@ Q ：谈谈你对CAS的理解？
 
 **原子累加器**
 
-- LongAdder
+- LongAdder	原子类型累加器
 - LongAccumulator
 - DoubleAdder
 - DoubleAccumulator
@@ -191,7 +191,24 @@ public boolean compareAndSet(V expectedReference,V newReference,
 
 ### 2.6 LongAdder
 
-这个类仅仅用来执行累加操作，相比于原子化的基本数据类型，速度更快，但是不支持`compareAndSet()`。
+这个类仅仅用来执行累加操作，相比于原子的基本数据类型，速度更快。
+
+实现原理和ConcurronHashMap类似，采用了热点分离的思想，将一个long划分为多个单元，将并发线程的读写操作分发到多个单元上，以保证CAS更新能够成功，取值前需要对各个单元进行求和，返回sum。
+
+考虑到如果并发不高的话，这种做法会损耗系统资源，所以默认会维持一个long，如果发生冲突，则会拆分为多个单元，并且会动态的扩容。在高并发环境下，LongAdder性能更高，但同时也会消耗更多的空间。
+
+和AtomicInteger类似的使用方式，但是不支持`compareAndSet()`。
+
+```java
+public void add(long x)
+public void increment()
+public void decrement()
+public long sum()
+public long longValue()
+public int intValue()
+```
+
+
 
 ### 2.7 Unsafe类
 

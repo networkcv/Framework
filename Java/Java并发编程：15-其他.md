@@ -40,24 +40,6 @@ Predicate<String> p = (String s) -> { s == null };
 
 ## JDK8对并发的新支持
 
-### LongAdder  
-
-和ConcurroncurrentHashMap的思想类似，将一个long划分为多个单元，将并发线程的读写操作分发到多个单元上  
-以保证CAS更新能够成功，取值前需要对各个单元进行求和，返回sum  
-考虑到如果并发不高的话，这种做法会损耗系统资源，所以默认会维持一个long，如果发生冲突，则会拆分为多个单元  
-和AtomicInteger类似的使用方式，在AtomicInteger上进行了热点分离  
-
-```java
-public void add(long x)
-public void increment()
-public void decrement()
-public long sum()
-public long longValue()
-public int intValue()
-```
-
-
-
 ### StampedLock 
 
 读写锁的改进，之前的ReadWriteLock是读写互斥的，StampedLock在读写互斥上做了改进  
