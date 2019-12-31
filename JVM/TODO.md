@@ -279,35 +279,7 @@ JVM的运行效率
     HotSpot的即时编译是放在额外的编译线程中进行的，根据cpu的数量，按1:2的比例配置C1及C2
     
 
-#  JVM
 
-## 1.类加载
-
-```java
-Class T {
-	public static T t=new T();
-	public statix int count=2;
-	private T(){
-		count++;
-	}
-	public static void main(String []args){
-		System.out.println(T.count);
-	}
-}
-// Output 2
-```
-
-![](D:\study\Framework\JVM\img\1577523754(1).jpg)
-
-loading：加载，使用ClassLoader将class字节码文件加载到内存
-
-linking：链接
-
-- verification：校验
-- preparation：准备，将静态变量赋值为默认值
-- resolution：解析，构造方法可以解析，private可以解析，但是多态不知道具体的调用者是谁，无法解析
-
-initializing：初始化，指的是类的初始化，而不是对象初始化，将静态变量赋值为初始值
 
 ## 2.G1
 

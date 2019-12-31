@@ -415,3 +415,244 @@ set CATALINA_OPTS--server-Xloggc:gc.log -XX:+PrintGCDetails-Xmx32M-Xms32M XX:+He
 **第四次：**
 
 JDK版本的升级，也会带来JVM性能的提高
+
+
+
+## 6.类装载器
+
+### 6.1 class装载验证流程
+
+```java
+Class T {
+	public static T t=new T();
+	public statix int count=2;
+	private T(){
+		count++;
+	}
+	public static void main(String []args){
+		System.out.println(T.count);
+	}
+}
+// Output 2
+```
+
+![](D:\study\Framework\JVM\img\1577523754(1).jpg)
+
+loading：加载，使用ClassLoader将class字节码文件加载到内存
+
+- 装载器的第一个阶段，可能从jar包中，也可能从网络上加载一个类
+- 取得类的二进制流
+- 转为方法区的数据结构
+- 在Java堆中生成对应的java.lang.Class对象
+
+linking：链接
+
+- verification：校验
+  - 文件格式的验证
+    - 是否以0xCAFEBABE开头
+    - 版本号是否合理
+  - 元数据验证
+    - 是否有父类
+    - 是否继承final类
+    - 非抽象类实现类所有的抽象方法
+  - 字节码验证
+    - 运行检查
+    - 栈数据类型和操作码数据吻合
+    - 跳转指令指定到合理的位置
+  - 符号引用验证
+    - 常量池中描述类是否存在
+    - 访问的方法或字段是否存在足够权限
+- preparation：准备，将静态变量赋值为默认值
+  - 分配内存，并为类设置初始值（方法区中）
+    - public static int v=1；
+    - 在准备阶段中，v会被设置为0
+    - 在初始化的 `<clinit>`中才会被设置为1
+    - 对于static final 类型，在准备阶段就会被赋上正确的值
+    - public static final int v=1；
+- resolution：解析
+  - 将符号引用替换为直接引用
+  - 构造方法可以解析，private可以解析，但是多态不知道具体的调用者是谁，无法解析
+
+- initializing：初始化，指的是类的初始化，而不是对象初始化，将静态变量赋值为初始值
+  - 执行类构造器 `<clinit>`
+    - static变量赋值语句
+    - static{}语句
+  - 先调用父类的`<clinit>`，再调用子类`<clinit>`
+  - `<clinit>`是线程安全的
+
+Java.lang.NoSuchFieldError错误可能在哪些阶段抛出？
+
+
+
+### 6.2 什么是类装载器ClassLoader 
+
+ClassLoader是一个抽象类，ClassLoader的实例将读入Java字节码，将类装载到JVM中。
+
+ClassLoader可以定制，满足不同的字节码流获取方式，ClassLoader负责类装载过程中的加载阶段。
+
+
+
+### 6.3 JDK中ClassLoader默认设计模式
+
+ClassLoader的重要方法
+
+```java
+public Class<?> loadClass(String name) throws ClassNotFoundException
+    //载入并返回一个Class
+protected final Class<?> defineClass(bytel b, int off, int len)
+    //定义一个类,不公开调用
+protected Class<?> findClass(String name) throws ClassNotFoundException
+    //loadClass回调该方法,自定义ClassLoader的推荐做法
+protected final Class<?> findLoadedClass(String name)
+    //寻找已经加载的类
+```
+
+**ClassLoader分类**
+
+- BootStrap ClassLoader (启动ClassLoader ) 	
+
+  默认加载 rt.jar，使用 -Xbootclasspath 将这个路径下的jar用该类加载器加载，可以使用Unsafe
+
+- Extension ClassLoader (扩展ClassLoader)
+
+  %JAVA_HOME%/lib/ext/*.jar
+
+- App ClassLoader (应用ClassLoader/系统ClassLoader) 
+
+  Classpath下的加载
+
+- Custom ClassLoader(自定义ClassLoader)
+
+  每个ClassLoader都有一个Parent作为父亲
+
+自底向上去查找，从顶向下的去加载。
+
+**双亲模式问题**
+
+顶层ClassLoader无法加载底层ClassLoader的类
+
+通过Thread.setContextClassLoader()来解决。
+
+上下文加载器，是一种角色，在顶层ClassLoader中，传入底层ClassLoader的实例。
+
+**打破常规模式**
+
+如Tomcat就是从底层先去查，查到了就加载，找不到才会委托父类去加载。
+
+### 6.4 热替换
+
+当一个类class被替换后，系统无需重启，替换的类立即生效，和热加载有异曲同工之处。
+
+## 7.性能监控工具
+
+### 7.1 系统性能监控
+
+​	确定系统运行的整体状态，基本定位问题所在
+
+​	**uptime** 
+
+![](D:\study\Framework\JVM\img\1577781898(1).jpg)
+
+系统时间：系统当前时间
+
+运行时间：7h23min
+
+连接数：连接到当前系统的终端数，CRT的窗口数
+
+1，5，15分钟内的系统评价负载：运行队列中的平均进程数
+
+**top**
+
+相当于windows的任务管理器
+
+![](D:\study\Framework\JVM\img\1577782179(1).jpg)
+
+在内存IO的读写会用到Swap区域。
+
+**vmstat**
+
+`vmstat 1 4` 每1s采集一次，共采集4次
+
+可以统计系统CPU，内存，swap，io等情况
+
+![](D:\study\Framework\JVM\img\1577782425(1).jpg)
+
+CPU占用率高，上下文切换频繁，说明系统有线程正在频繁切换
+
+bi：IO输入， bo：IO输出
+
+**pidstat**
+
+-p 进程号  -u 监控cpu -d 磁盘IO  -t 可以检测进程中线程的信息
+
+- 细致观察进程
+- 监控CPU
+- 监控IO
+- 监控内存
+
+
+
+### 7.2 Java自带的工具
+
+​	查看Java程序运行细节，进一步定位问题
+
+**jps**
+
+- 列出java进程，类似于ps命令
+- -q 可以执行jps只输出进程ID，不输出类的短名称 
+- -m 可以用于输出传递给Java进程主函数的参数
+- -l 可以用于输出主函数的完整路径
+- -v 可以显示传递给JVM的参数
+
+**jinfo**
+
+- 可以查看运行Java程序的扩展参数，甚至支持在运行时，修改部分参数
+- jinfo - flag  name  打印指定JVM参数的值  
+- ![](D:\study\Framework\JVM\img\1577785153(1).jpg)
+- jinfo - flag [+|-] name
+- jinfo - flag name=value
+
+![](D:\study\Framework\JVM\img\1577785203(1).jpg)
+
+**jmap**
+
+- 生成Java应用程序的堆快照和对象的统计信息
+
+  jmap -histo PID  >D:\a.txt
+
+  ![](D:\study\Framework\JVM\img\1577785462(1).jpg)
+
+- jmap -dump:format=b,file=D:/heap.hprof PID
+
+**jstack**
+
+- 打印线程dump
+- -l 打印锁信息
+- -m 打印java和native的帧信息
+- -F 强制dump，当jstack没有响应时使用
+
+jstack PID >> D:\a.txt 
+
+**JConsole**
+
+- JDK自带的图形化监控工具，命令行输入 jconsole
+- 可以查看Java应用程序的运行情况，监控堆信息，永久区使用情况，类加载情况。 
+
+**VisualVM**
+
+JDK1.6 中Java 引入了一个新的可视化的JVM 监控工具：Java VisualVM。 
+ 运行VisualVM 非常简单，只需在命令行状态下输入：`jvisualvm`  
+
+### 7.3 实战分析
+
+​	案例问题
+
+
+
+
+
+
+
+
+
+ 
