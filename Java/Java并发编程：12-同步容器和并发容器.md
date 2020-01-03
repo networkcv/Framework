@@ -1,6 +1,6 @@
 **前言：**
 
-本篇将介绍同步容器和并发容器。
+本篇将简单介绍同步容器和并发容器，不会过多的深入，关于HashMap和ConcurrentHashMap这两个类会另外的篇章中分析。
 
 [toc]
 
@@ -94,7 +94,13 @@ CopyOnWriteArraySet的作用是代替同步的Set，原理和CopyOnWriteArrayLis
 
 ConcurrentHashMap用于替代低性能的HashTable，在学习ConcurrentHashMap之前，建议先了解[HashMap底层的实现原理](https://segmentfault.com/a/1190000012926722)。
 
+在JDK8之后HashMap底层实现做了改进，将之前的 数组+链表 改进为 数组+链表+红黑树，当链表长度大于阈值（默认为8）时，将链表转化为红黑树，使搜索时间控制在O(logn)上。
 
+在JDK7的时候，ConcurrentHashMap底层是采用 分段的数组+链表 实现的，通过多个分段锁对桶数组进行分段管理，每个锁只负责桶数组的一部分，多线程并发访问的时候，只要访问的不是同一个锁负责的区域，就不会发生数据竞争，通过这种 “细化锁粒度”的方式来提高并发率。
+
+到了JDK8，ConcurrentHashMap在底层实现上也加入了红黑树，并且，在保证线程安全的方式上也做了改进，
+
+不再使用Segment分段锁机制，利用CAS+synchronized来保证线程安全，synchronized只锁定对应链表或红黑二叉树的首节点，这样只要hash值不冲突就不会发生数据竞争。
 
 ### 2.2.2 ConcurrentSkipListMap
 
