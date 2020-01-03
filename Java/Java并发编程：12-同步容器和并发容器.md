@@ -8,7 +8,7 @@
 
 Q ：
 
-Q ：
+Q ：ConcurrentHashMap 和 Hashtable 的区别？
 
 ## 1.同步容器
 
@@ -16,7 +16,7 @@ Q ：
 
 在内存中，数据要么以数组的方式连续存储，要么以链表的方式非连续存储，很多时候这两种最基本的数据结构无法满足我们的需求，因此衍生出更多的抽象数据结构，如树、堆、栈、队列和图等。
 
-高级语言中再进一步的封装，按照操作方式分为List、Map、Set和Queue这几大类。再使用不同的数据结构来实现这些接口，如ArrayList、LinkedList、HashSet、HashMap等等，以便应对不同场景，例如读多写少使用数组类型，写多读少使用链表类型。同时封装还可以降低我们的使用成本，通过最简单的API调用就可以使用这些复杂的数据结构。
+高级语言中再进一步的封装，按照集合特点分为List、Map、Set和Queue这几大类。再使用不同的数据结构来实现这些接口，如ArrayList、LinkedList、HashSet、HashMap等等，以便应对不同场景，例如读多写少使用数组类型，写多读少使用链表类型。同时封装还可以降低我们的使用成本，通过最简单的API调用就可以使用这些复杂的数据结构。
 
 ### 1.2 同步容器
 
@@ -32,51 +32,25 @@ Q ：
         }
 ```
 
-为了保证这些容器的线程安全，JDK的开发人员提供了另外一套线程安全的容器，Vector、Stack和Hashtable。
+为了保证这些容器的线程安全，JDK的开发人员提供了另外一套线程安全的容器，Vector、Stack和Hashtable，这些容器内部的方法都是用synchronized加锁，来保证组合操作的原子性，每次调用方法都要加锁和释放锁，而且由于锁的是整个集合对象，一个线程读取的时候，另外一个线程只能等待，这样极大的影响了性能，所以在JDK5中推出了并发容器。
 
-这些容器内部的方法都是用synchronized加锁，来保证组合操作的原子性，每次调用方法都要加锁和释放锁，而且由于锁的是整个集合对象，一个线程读取的时候，另外一个线程只能等待，这样极大的影响了性能。
+如果需要对已有的容器提供线程安全性保证，可以使用Collections工具类的  `synchronizedXXX()` 方法来包装我们的容器。但这是通过全局的锁来同步不同线程间的并发访问，因此也会带来不可忽视的性能问题。
 
-### 1.3 HashMap源码解读
 
-推荐：https://segmentfault.com/a/1190000012926722
 
 ## 2.并发容器
 
 ### 2.1 CopyOnWriteArrayList
 
-在容器内部维护着一个array，所有读操作都针对这个array，如果有写操作，则会将array复制一份，在新复制的数组上执行增加元素，执行后再将array指向新数组，这样的话读写可以并行，但是可能读到的不是最新的数据。
+CopyOnWriteArrayList用于代替同步List，在读远远多于写的场景下可以提供更好的并发性能。
 
-应用场景的选择需要注意，适合写操作非常少的场景，而且能够容忍读写的短暂不一致。
+在容器内部维护着一个Object[]数组引用 array，所有读操作不需要加锁，直接去读array，如果读的时候有写操作发生，写操作将array指向的数组复制一份，在新数组上增加元素，完成后将array指向新数组，在修改的过程中，读操作可以正常进行，只是在修改后但还没有指向新数组前，读到不是最新的数据。
 
-CopyOnWriteArrayList的迭代器是只读的，不支持增删改，因为迭代器遍历的仅仅是一个快照，对快照的修改是没有意义的。
-
-##### [3.1 CopyOnWriteArrayList 简介](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_31-copyonwritearraylist-简介)
+**读操作**
 
 ```java
-public class CopyOnWriteArrayList<E>
-extends Object
-implements List<E>, RandomAccess, Cloneable, Serializable
-```
-
-在很多应用场景中，读操作可能会远远大于写操作。由于读操作根本不会修改原有的数据，因此对于每次读取都进行加锁其实是一种资源浪费。我们应该允许多个线程同时访问 List 的内部数据，毕竟读取操作是安全的。
-
-这和我们之前在多线程章节讲过 `ReentrantReadWriteLock` 读写锁的思想非常类似，也就是读读共享、写写互斥、读写互斥、写读互斥。JDK 中提供了 `CopyOnWriteArrayList` 类比相比于在读写锁的思想又更进一步。为了将读取的性能发挥到极致，`CopyOnWriteArrayList` 读取是完全不用加锁的，并且更厉害的是：写入也不会阻塞读取操作。只有写入和写入之间需要进行同步等待。这样一来，读操作的性能就会大幅度提升。**那它是怎么做的呢？**
-
-##### [3.2 CopyOnWriteArrayList 是如何做到的？](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_32-copyonwritearraylist-是如何做到的？)
-
-`CopyOnWriteArrayList` 类的所有可变操作（add，set 等等）都是通过创建底层数组的新副本来实现的。当 List 需要被修改的时候，我并不修改原有内容，而是对原有数据进行一次复制，将修改的内容写入副本。写完之后，再将修改完的副本替换原来的数据，这样就可以保证写操作不会影响读操作了。
-
-从 `CopyOnWriteArrayList` 的名字就能看出`CopyOnWriteArrayList` 是满足`CopyOnWrite` 的 ArrayList，所谓`CopyOnWrite` 也就是说：在计算机，如果你想要对一块内存进行修改时，我们不在原有内存块中进行写操作，而是将内存拷贝一份，在新的内存中进行写操作，写完之后呢，就将指向原来内存指针指向新的内存，原来的内存就可以被回收掉了。
-
-##### [3.3 CopyOnWriteArrayList 读取和写入源码简单分析](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_33-copyonwritearraylist-读取和写入源码简单分析)
-
-##### [3.3.1 CopyOnWriteArrayList 读取操作的实现](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_331-copyonwritearraylist-读取操作的实现)
-
-读取操作没有任何同步控制和锁操作，理由就是内部数组 array 不会发生修改，只会被另外一个 array 替换，因此可以保证数据安全。
-
-```java
-    /** The array, accessed only via getArray/setArray. */
     private transient volatile Object[] array;
+
     public E get(int index) {
         return get(getArray(), index);
     }
@@ -89,22 +63,12 @@ implements List<E>, RandomAccess, Cloneable, Serializable
     }
 ```
 
-
-
-##### [3.3.2 CopyOnWriteArrayList 写入操作的实现](https://snailclimb.gitee.io/javaguide/#/docs/java/Multithread/并发容器总结?id=_332-copyonwritearraylist-写入操作的实现)
-
-CopyOnWriteArrayList 写入操作 add() 方法在添加集合的时候加了锁，保证了同步，避免了多线程写的时候会 copy 出多个副本出来。
+**写操作**
 
 ```java
-    /**
-     * Appends the specified element to the end of this list.
-     *
-     * @param e element to be appended to this list
-     * @return {@code true} (as specified by {@link Collection#add})
-     */
     public boolean add(E e) {
         final ReentrantLock lock = this.lock;
-        lock.lock();//加锁
+        lock.lock();//加锁 虽然可以读写并行，但是写写还是会阻塞的
         try {
             Object[] elements = getArray();
             int len = elements.length;
@@ -118,73 +82,17 @@ CopyOnWriteArrayList 写入操作 add() 方法在添加集合的时候加了锁�
     }
 ```
 
-RPC框架的核心任务就是维护路由关系。
 
-对读性能要求很高，读多写少，弱一致性，那就CopyOnWrite
 
-copyonWriteLinkedList的链表结构读取效率比较低，违背了读多写少的设计初衷，数组是连续分配内存的，直接复制内存块就可以完成拷贝，但链表元素是通过引用连接的，需要便利整个链表才能完成拷贝。
+选择应用场景时需要注意，适合对读性能要求很高，读多写少，而且能够容忍读写的短暂不一致，还需要注意的是其写时复制机制，会在内存中同时存在两个对象，如果对象过大，可能会引发Yong GC和Full GC。
+
+CopyOnWriteArraySet的作用是代替同步的Set，原理和CopyOnWriteArrayList相同。
 
 
 
 ### 2.2.1 ConcurrentHashMap
 
-key无序
-
-ConcurrentMap
-    不考虑并发
-    HashMap
-        线程不安全
-    TreeMap
-        底层通过红黑树实现
-
-    低并发
-    HashTable
-        对整个容器进行加锁，效率比较低
-    Collections.synchronizedXXX(List/Map)
-            对线程不安全的容器进行加锁
-    
-    高并发
-    ConcurrentHashMap
-        将对整个容器的锁拆解为多个对容器的分段锁    1.8后没有分段锁，采用CAS？
-    ConcurrentSkipListMap
-        底层用跳表实现的Map 对插入的数据进行排序
-
-并发容器
-Collections.synchronizedXXX(List/Map)  对线程不安全的容器进行加锁
-
-ConcurrentQueue
-        offer()    代替add() 如果队满，则返回false，不会抛出异常    
-        offer("aaa",1,TimeUnit.SECONDS) //按时间段阻塞，插入时最多等待1秒
-        poll()     取队列中的元素，如果队列为空，则返回null而不是抛异常
-        peek()     看一下，获得队首元素，但不取出 
-
-        put()   //加入，满了则会等待，线程阻塞
-        take()  //取出，空了则会等待，线程阻塞
-    
-    高并发
-    CopyOnWriteList
-        读的量特别大，写的量特别小，例如 监听器的配置
-    ConcurrentLinkedQueue
-    BlockingQueue   阻塞队列   阻塞式的生产者消费者模式
-        LinkedBlockingQueue 
-            无界队列
-        ArrayBlockingQueue  
-            有界队列，有固定大小的
-        LinkedTransferQueue  
-            需要实时处理的队列， transfer() 将生产的东西直接交给消费者，不经过队列，如果没有消费者则阻塞 netty用的比较多，可以用add/offer/put
-        SynchromusQueue   
-            同步队列 容量为0  不能用add，只能用put ，put调用的还是transfer，本质是一种特殊的TransferQueue，不保留数据
-    DelayQueue  
-        也是一个无界队列 在队列中待够指定时间才可以被消费   执行定时任务
-
-我们知道 HashMap 不是线程安全的，在并发场景下如果要保证一种可行的方式是使用 `Collections.synchronizedMap()` 方法来包装我们的 HashMap。但这是通过使用一个全局的锁来同步不同线程间的并发访问，因此会带来不可忽视的性能问题。
-
-所以就有了 HashMap 的线程安全版本—— ConcurrentHashMap 的诞生。在 ConcurrentHashMap 中，无论是读操作还是写操作都能保证很高的性能：在进行读操作时(几乎)不需要加锁，而在写操作时通过锁分段技术只对所操作的段加锁而不影响客户端对其它段的访问。
-
-关于 ConcurrentHashMap 相关问题，我在 [Java 集合框架常见面试题](https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/collection/Java集合框架常见面试题.md) 这篇文章中已经提到过。下面梳理一下关于 ConcurrentHashMap 比较重要的问题：
-
-- [ConcurrentHashMap 和 Hashtable 的区别](https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/collection/Java集合框架常见面试题.md#concurrenthashmap-和-hashtable-的区别)
-- [ConcurrentHashMap 线程安全的具体实现方式/底层具体实现](https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/collection/Java集合框架常见面试题.md#concurrenthashmap线程安全的具体实现方式底层具体实现)
+ConcurrentHashMap用于替代低性能的HashTable，在学习ConcurrentHashMap之前，建议先了解[HashMap底层的实现原理](https://segmentfault.com/a/1190000012926722)。
 
 
 
@@ -213,6 +121,28 @@ ConcurrentQueue
 使用跳表实现 Map 和使用哈希算法实现 Map 的另外一个不同之处是：哈希并不会保存元素的顺序，而跳表内所有的元素都是排序的。因此在对跳表进行遍历时，你会得到一个有序的结果。所以，如果你的应用需要有序性，那么跳表就是你不二的选择。JDK 中实现这一数据结构的类是 ConcurrentSkipListMap。
 
 ### 2.3.1 BlockingQueue
+
+ConcurrentQueue
+        offer()    代替add() 如果队满，则返回false，不会抛出异常    
+        offer("aaa",1,TimeUnit.SECONDS) //按时间段阻塞，插入时最多等待1秒
+        poll()     取队列中的元素，如果队列为空，则返回null而不是抛异常
+        peek()     看一下，获得队首元素，但不取出 
+
+​		put()   //加入，满了则会等待，线程阻塞
+​	    take()  //取出，空了则会等待，线程阻塞
+
+ConcurrentLinkedQueue
+BlockingQueue   阻塞队列   阻塞式的生产者消费者模式
+    LinkedBlockingQueue 
+        无界队列
+    ArrayBlockingQueue  
+        有界队列，有固定大小的
+    LinkedTransferQueue  
+        需要实时处理的队列， transfer() 将生产的东西直接交给消费者，不经过队列，如果没有消费者则阻塞 netty用的比较多，可以用add/offer/put
+    SynchromusQueue   
+        同步队列 容量为0  不能用add，只能用put ，put调用的还是transfer，本质是一种特殊的TransferQueue，不保留数据
+DelayQueue  
+    也是一个无界队列 在队列中待够指定时间才可以被消费   执行定时任务
 
 阻塞带Blocking，队列，入队操作阻塞，队空，出队操作阻塞。
 
@@ -370,20 +300,13 @@ JDK 提供的这些容器大部分在 `java.util.concurrent` 包中。
 
 
 
-|                      | ConcurrentHashMap | ConcurrentSkipListMap |
-| :------------------: | :---------------: | :-------------------: |
-|       key有序        |         N         |           Y           |
-| key和value都不能为空 |         Y         |           Y           |
-
-
-
-|                       |     Key      |    Value     | 线程安全 |
-| :-------------------: | :----------: | :----------: | :------: |
-|        HashMap        |  允许为null  |  允许为null  |    否    |
-|        TreeMap        | 不允许为null |  允许为null  |    否    |
-|       HashTable       | 不允许为null | 不允许为null |    是    |
-|   ConcurrentHashMap   | 不允许为null | 不允许为null |    是    |
-| ConcurrentSkipListMap | 不允许为null | 不允许为null |    是    |
+|                       |     Key      |    Value     | 线程安全 | key有序 |
+| :-------------------: | :----------: | :----------: | :------: | :-----: |
+|        HashMap        |  允许为null  |  允许为null  |    否    |   否    |
+|        TreeMap        | 不允许为null |  允许为null  |    否    |   是    |
+|       HashTable       | 不允许为null | 不允许为null |    是    |   否    |
+|   ConcurrentHashMap   | 不允许为null | 不允许为null |    是    |   否    |
+| ConcurrentSkipListMap | 不允许为null | 不允许为null |    是    |   是    |
 
 ### 3.5 BlockingQueue小结
 
@@ -396,6 +319,5 @@ JDK 提供的这些容器大部分在 `java.util.concurrent` 包中。
 &emsp;&emsp;《Java 并发编程实战》  
 &emsp;&emsp;《实战Java高并发程序设计》  
 &emsp;&emsp;https://snailclimb.gitee.io/javaguide/#/
-&emsp;&emsp;https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html
 
 **感谢阅读**！
