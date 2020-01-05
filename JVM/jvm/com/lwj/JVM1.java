@@ -1,4 +1,4 @@
-package jvm;
+package com.lwj;
 
 import org.junit.Test;
 
