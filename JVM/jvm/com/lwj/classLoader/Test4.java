@@ -6,13 +6,15 @@ package com.lwj.classLoader;
  * 所以可以看到只加载了父类，并没有加载子类
  */
 public class Test4 {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         System.out.println(MyTest4.i);
     }
 }
-class MyTest4 extends MyPTest4{
-    public static int j=1;
+
+class MyTest4 extends MyPTest4 {
+    public static int j = 1;
 }
-class MyPTest4{
-    public static  int i=1;
+
+class MyPTest4 {
+    public static int i = 1;
 }

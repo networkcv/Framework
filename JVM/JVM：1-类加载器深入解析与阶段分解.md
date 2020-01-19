@@ -1347,7 +1347,7 @@ public class MyTest17_1 {
 
 [![image-20191204150456819](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191204150456819.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191204150456819.png)
 
-如果删除 MySample.class ，然后保留 MyCat.class文件，当然指定路径下的类文件都在，执行结果为：
+如果删除 MySample.class ，然后保留 MyCat.class文件，当然指定路径下的类文件都在，执行结果为：`
 
 [![image-20191204152649511](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191204152649511.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191204152649511.png)
 
@@ -1848,13 +1848,21 @@ public class MyTest25 implements Runnable{
 
 - 线程上下文类加载器的一般使用模式：（步骤：获取-使用-还原） 伪代码：
 
-  ```
-       ```java
+  ```java
+  // 获取当前线程的线程上下文类加载器 ClassLoader =Thread.currentThread().getContextLoader(); 
+  try{ // targetTccl 是之前通过某种方式以及得到的类加载器 					 
+      Thread.currentThread().setContextLoader(targetTccl);
+      myMethod(); 
+  }
+  finally{ // 还原 
+      Thread.currentThread().setContextLoader(classLoader); 
+  } 
   ```
 
-  // 获取当前线程的线程上下文类加载器 ClassLoader classLoader=Thread.currentThread().getContextLoader(); try{ // targetTccl 是之前通过某种方式以及得到的类加载器 Thread.currentThread().setContextLoader(targetTccl); myMethod(); }finally{ // 还原 Thread.currentThread().setContextLoader(classLoader); } ```
+  
 
   - 在 myMethod 中调用 Thread.currentThread().getContextLoader() 做某些事情
+  - 如果一个类由类加载器A加载，那么这个类的依赖类也是由相同的类加载器加载（该类之前未被加载过）
   - ContextClassLoader 的目的就是为了破坏类加载委托机制
   - 在SPI接口的代码中，使用线程上下文类加载器就可以成功的加载到SPI的实现类。
   - 当高层提供了统一的接口让底层去实现，同时又要在高层加载（或实例化）底层的类时，就必须通过上下文类加载器来帮助高层的 ClassLoader 找到并加载该类。
@@ -2019,3 +2027,7 @@ protected final Class<?> findLoadedClass(String name)
 ### 6.4 热替换
 
 当一个类class被替换后，系统无需重启，替换的类立即生效，和热加载有异曲同工之处。
+
+
+
+为什么双亲委托模型无法满足SPI的要求
