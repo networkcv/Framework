@@ -1,13 +1,13 @@
-package com.lwj.spring;
+package com.lwj.spring.springstudy;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application {
+public class SpringStudyApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(SpringStudyApplication.class, args);
     }
 
 }

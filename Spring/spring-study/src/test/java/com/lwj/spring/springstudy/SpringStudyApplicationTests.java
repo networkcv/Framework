@@ -1,10 +1,10 @@
-package com.lwj.spring;
+package com.lwj.spring.springstudy;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ApplicationTests {
+class SpringStudyApplicationTests {
 
     @Test
     void contextLoads() {

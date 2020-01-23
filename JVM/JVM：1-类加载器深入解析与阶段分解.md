@@ -84,10 +84,10 @@
   - Java 虚拟机启动时被标明启动类的类 ：即包含 main 方法的类；
   - JDK1.7 开始提供的动态语言支持（了解）
   
-  四类：
+  大概分四类：
   
   - 创建该类或其子类实例时
-  - 访问该类静态部分（静态代码块和静态成员变量），如果是通过子类间接访问则只初始化父类，不初始化子类
+  - 访问该类静态部分（静态方法和静态成员变量），如果是通过子类间接访问则只初始化父类，不初始化子类
   - main方法所在的类
   - 对该类使用反射时
   
@@ -1402,8 +1402,8 @@ public class MyTest17_1 extends ClassLoader{
         Class<?> clazz=loader1.loadClass("com.hisense.MySample");  
         System.out.println(clazz.hashCode());
         //MyCat是由加载MySample的加载器去加载的：
-        如果只删除classpath下的MyCat，则会报错，NoClassDefFoundError；
-        如果只删除calsspath下的MySample，则由自定义加载器加载桌面上的MySample，由系统应用加载器加载MyCat。
+      	//如果只删除classpath下的MyCat，则会报错，NoClassDefFoundError；
+        //如果只删除calsspath下的MySample，则由自定义加载器加载桌面上的MySample，由系统应用加载器加载MyCat。
         Object  object=clazz.newInstance(); 
     }
 
@@ -2030,4 +2030,107 @@ protected final Class<?> findLoadedClass(String name)
 
 
 
-为什么双亲委托模型无法满足SPI的要求
+### 为什么双亲委托模型无法满足SPI的要求
+
+SPI是 （Service Provider Interface），它和API不同，它只负责提供规范或者接口，具体的操作由其实现类来完成。比如JDBC，Java只负责提供数据库连接的接口，也就是Connection，具体连接内容由数据库厂商提供的驱动来完成，我们使用Java语言连接某个数据库时，必须先加载该数据库驱动，之后才能获取数据库连接。
+
+而加载数据库驱动的时候，就涉及到类加载器的知识，Java的双亲委托机制在此处可能就不太适用了，因为像Connection这些接口，都是定义在rt.jar中，在JVM运行时会通过启动类加载器（BootstrapClassloader）来加载，比如加载Driver的ServiceLoader，位于java.util包下，通过BootstrapClassloader来加载，但是驱动的具体实现，如数据库驱动的jar包或者classs文件，，ServiceLoader在扫描加载驱动的时候，需要依赖具体的驱动类，那么会调用自己的类加载器（BootClassLoader）去尝试加载数据库驱动的jar，但由于其保存在其他位置，不在BootClassLoader的扫描范围内，所以无法加载该类。
+
+我们手动引入的数据库驱动的class文件是在classpath路径下，这部分class文件可以通过系统/应用类加载器（AppClassloader）来加载。所以Java设计了另外的一种方式，在线程中设置ContextClassLoader，上下文类加载器，在加载驱动的过程中，获取到系统类加载器，由系统类加载器来加载。
+
+不同的类加载器加载class，虽然看起来都是加载class文件到内存中，但是不同的类加载器拥有不同的命名空间，子类加载器可以看到父类加载器命名空间中的Class对象，但是父类看不到子类的。看不到则意味着无法引用。（A类依赖B类，那么会用A类的加载器来加载B类），在不同的命名空间的相同类会出现，ClassCastException，com.lwj.A not cast to com.lwj.A，相同类却无法转化。
+
+```java
+private static boolean isDriverAllowed(Driver driver, ClassLoader classLoader) {
+    boolean result = false;
+    if(driver != null) {
+        Class<?> aClass = null;
+        try {
+            aClass =  Class.forName(driver.getClass().getName(), true, classLoader);
+        } catch (Exception ex) {
+            result = false;
+        }
+		//判断调用线程的类加载器和加载该驱动的类加载器是否为同一个，不同后边会出现ClassNotFound问题
+        result = ( aClass == driver.getClass() ) ? true : false;
+    }
+
+    return result;
+}
+```
+
+### 加载
+
+类加载并不一定在要被使用时才加载，JVM可能会预判某些类可能要被使用，会进行预先加载。在加载过程中如果遇到了class文件缺失或者存在错误，那么在首次使用该类的时候（也就是初始化）才会报错。如果一直不使用该类，类加载器就不会报错。
+
+### 连接
+
+类被加载后，就进入连接阶段，连接就是将已经读入到内存的二进制数据合并到虚拟机的运行环境中。
+
+- 验证
+- 准备
+- 解析
+
+### 初始化
+
+假如这个类还没有被加载和连接，那就先进行加载和连接。
+
+假如这个类存在直接父类，并且这个父类还没有被初始化，那就先初始化直接父类。这一条仅限于类，不适用于接口。初始化一个类时，并不会先初始化它所实现的接口，在初始化一个接口时，并不会先初始化其父接口。只有当程序首次使用接口的静态变量时，才会导致接口初始化。
+
+假如类中存在初始化语句，那就依次执行这些初始化语句。
+
+#### 初始化时机
+
+必须是调用特定类中定义的静态变量，调用子类中 继承父类的静态变量，则会初始化父类，不会初始化子类。
+
+ClassLoader类的loadClass方法加载一个类时，并不是对类的主动使用，不会初始化。
+
+### 类加载器
+
+类加载器是逻辑上的父子关系，通过组合的方式来实现，而不是类的继承。一种类加载器的不同实例，通过组合的方式都可以构成父子关系。
+
+- 根/引导/启动 类加载器  BootstarpClassLoader
+
+  从系统属性sun.boot.class.path指定的目录中加载
+
+  jre/lib/rt.jar或者-Xbootclasspath指定jar包
+
+- 扩展 类加载器  ExtensionClassLoader
+
+  从系统属性java.ext.dirs指定的目录中加载
+
+  jre/ext/*.jar或者-Djava.ext.dirs指定目录下的jar包
+
+- 系统/应用 类加载器 AppClassLoader
+
+  从系统属性java.class.path指定的目录中加载
+
+  环境变量classpath，它是用户自定义类加载器的默认父加载器。
+
+使用系统属性 java.system.class.loader查看和设置 自定义的系统类加载器，之前的AppClassLoader作为新系统类加载器的父加载器。
+
+#### 获取类加载器的途径
+
+- clazz.getClassLoader（）获取当前类的类加载器
+- Thread.currentThread.getContextClassLoader（）获取当前线程上下文类加载器  
+- ClassLoader.getSystemClassLoader（）获取系统类加载器
+- DriverManager.getCallerClassLoader（） 获取到调用者的类加载器
+
+启动类加载器是JVM启动时通过C++代码创建的，而扩展类加载器和系统类加载器都是由启动类加载器来加载的。在双亲委托机制中，各个类加载器按照父子关系形成树形结构，除了根类加载器没有父加载器外，其余类加载器有且只有一个父加载器。
+
+上下文类加载器其实是破坏了双亲委托机制的一种设计。
+
+#### 双亲委托机制的优点
+
+父亲委托机制的优点是能够提高软件系统的安全性,因为在此机制下,用户自定义的类加载器不可能加载应该由父加载器加载的可靠类,从而防止不可靠甚至恶意的代码代替由父加载器加载的可靠代码。例如, javalang.Object类总是由根类加载器加载,其他任何用户自定义的类加载器都不可能加载含有恶意代码的java lang.Object
+
+#### 命名空间
+
+每个类加载器都有自己的命名空间,命名空间由该加载器及所有父加载器所加载的类组成在同一个命名空间中,不会出现类的完整名字(包括类的包名)相同的两个类在不同的命名空间中,有可能会出现类的完整名字(包括类的包名)相同的两个类
+
+同一个命名空间内的类是相互可见的。子加载器的命名空间包含所有父加载器的命餐空间,因此由子加载器加载的类能看见父加载器加载的类。例如系统类加载器加载的类能看见根类加载器加载的类。由父加载器加载的类不能看见子加载器加载的类如果两个加载器之间没有直接或间接的父子关系,那么它们各自加载的类相互补可见
+
+#### 创建用户自定义的类加载器
+
+要创建用户自己的类加载器,只需要扩展 java.lang.ClassLoader类,然后覆盖它的 findClass(String name)方法即可,该方法根据参数指定的类的名字,返回对应的 Class对象的引用。
+
+由用户自定义的类加载器可以被卸载，JVM自带的加载器所加载的类不会被卸载。

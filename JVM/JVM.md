@@ -600,39 +600,5 @@ Tomcat在接收大量请求时发生OOM，获取Dump文件，进行分析
 
 
 
-## 9.Class文件结构
-
-### 9.1语言无关性
-
-![](D:\Study\Framework\JVM\img\1577885643(1).jpg)
-
-### 9.2 文件结构
-
-![](D:\Study\Framework\JVM\img\1577885869(1).jpg)
-
-- 魔数
-
-  判断是否是class文件，0xCAFEBABE
-
-- 版本
-
-  Java的版本号，以target参数为准  -target 1.5|1.8
-
-- 常量池
-
-- 访问符
-
-- 类、超类、接口
-
-- 字段
-
-- 方法
-
-- 属性
-
-## 10.字节码运行
-
-
-
  
 
