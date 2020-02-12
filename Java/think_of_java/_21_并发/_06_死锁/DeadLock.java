@@ -23,7 +23,7 @@ public class DeadLock {
                 }
                 System.out.println("thread1 over");
             }
-        }).start();
+        },"A").start();
 
         new Thread(() -> {
             synchronized (lock2) {
@@ -36,7 +36,7 @@ public class DeadLock {
                 }
                 System.out.println("thread2 over");
             }
-        }).start();
+        },"B").start();
         try {
             TimeUnit.SECONDS.sleep(100);
         } catch (InterruptedException e) {

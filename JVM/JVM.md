@@ -1,4 +1,4 @@
-##  1.整数的表达
+##  `1`.整数的表达
 
 二进制 0b “零b”  0b101=5
 
@@ -147,9 +147,9 @@ java没有寄存器，所有参数传递使用操作数栈
 
 - -XX:SurvivorRatio=8，eden：一个Survivor：=8：1，所以两个Survivor占新生代的20%
 
-`-XX:+HeapDumpOnOutOfMemoryError`			OOM时导出堆到文件
+`-XX:+HeapDumpOnOutOfMemoryError`	OOM时导出堆到文件
 
-`-XX:+HeapDumpPath`		导出OOM的路径
+`-XX:HeapDumpPath`		导出OOM的路径  -XX:HeapDumpPath=d:/
 
 ![](D:\Study\Framework\JVM\img\1577613097(1).jpg)
 
@@ -169,9 +169,13 @@ java没有寄存器，所有参数传递使用操作数栈
 
 设置永久区的初始空间和最大空间
 
+JDK1.8后失效，采用-XX:MaxMetaspaceSize=10m来设定最大元空间大小
+
 
 
 ### 3.4 栈大小分配
+
+- -Xss256k
 
 - 通常只有几百k
 - 决定了函数调用的深度
