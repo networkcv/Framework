@@ -1,7 +1,5 @@
 package com.lwj.gc;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * create by lwj on 2020/2/7
  */
