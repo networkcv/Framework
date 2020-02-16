@@ -1423,7 +1423,7 @@ Young GC 和 Mixed GC 是分代 G1 模式下选择 Cset 的两种子模式；
 - 初始标记是在 Young GC 上执行的，在进行全局并发标记的时候不会做 MixedGC，在做 MixedGC 的时候也不会启动初始标记阶段。
 - 当 MixedGC 赶不上对象产生的速度的时候就退化成 FullGC，这一点是需要重点调优的地方。
 
-### G1最佳实践
+### G1最佳实践 
 
 - 不要设置新生代和老年代的大小
   - G1 收集器在运行的时候会调整新生代和老年代 的大小。通过改变代的大小来调整对象晋升的速度以及晋升年龄，从而达到我们为收集器设置的暂停时间目标。
@@ -1553,7 +1553,7 @@ Process finished with exit code 0
 
 
 
-**堆**
+# **堆**
 
 - 堆里存放的是对象的实例
 
@@ -1728,7 +1728,7 @@ Safepoint的选定既不能太少以至于让GC等待时间太长,也不能过�
 
 ### 内存分配
 
-![](D:\Study\Framework\JVM\img\1581068021(1).jpg)
+![](C:\Users\Administrator\Desktop\1581068021(1).jpg)
 
 1. 堆上分配
 
@@ -2007,7 +2007,7 @@ G1提供了两种GC模式, Young GC和Mixed GC，两种都是需要Stop The Worl
 
 - Mixed GC
 
-  MIixed GC不仅进行正常的新生代垃圾收集，同时也回收部分后台扫描线程标记的老年代分区。
+  **MIixed GC不仅进行正常的新生代垃圾收集，同时也回收部分后台扫描线程标记的收益高的老年代分区，其中后台扫描线程是指Global Concurrent Marking**
 
   它的GC步骤分为两步:
 
@@ -2019,28 +2019,67 @@ G1提供了两种GC模式, Young GC和Mixed GC，两种都是需要Stop The Worl
 
   由一些参数控制，另外也控制着哪些老年代Region会被选入CSet（收集集合）
 
-  - **G1 HeapWastePercent：**在globalconcurrent marking结束之后,我们可以知道old gen regions中有多少空间要被回收,在每次YGC之后和再次发生Mixed GC之前,会检查垃圾占比是否达到此参数,只有达到了,下次才会发生Mixed GC
+  - **G1 HeapWastePercent：**在globalconcurrent marking结束之后,我们可以知道old gen regions中有多少空间要被回收,在每次YGC之后和再次发生Mixed GC之前,会检查垃圾占比是否达到此参数,只有达到了,下次才会发生Mixed GC，先5次YGC后发生一次MixGC，下次可能就自动调整到8次YGC才发生一次MixGC。
 
   - **G1MixedGCLiveThresholdPercent**: oldgeneration region中的存活对象的占比,只有在此参数之下,才会被选入CSet
+
   - **G1MixedGCCountTarget**:一次global concurrent marking之后,最多执行Mixed GC的次数
+
   - **G1OldCSetRegionThresholdPercent**:次Mixed GC中能被选入CSet的最多old generation region数量 
+
   - ![](D:\Study\Framework\JVM\img\1581515060(1).jpg)
 
-  
+  - |                参数                |                             含义                             |
+    | :--------------------------------: | :----------------------------------------------------------: |
+    |       -XX:G1HeapReoionSize=n       |                  设置Region大小，并非最终值                  |
+    |        -XX:MaxGCPauseMillis        | 设置G1收集过程目标时间，默认值200ms，不是硬性条件，需要多次尝试 |
+    |        -XX:G1NewSizePercent        |                    新生代最小值，默认值5%                    |
+    |       -XX:G1MaxNewSizePercem       |                   新生代最大值，默认值60%                    |
+    |       -XX:ParallelGCThreads        |                   STW期间，并行GC的线程数                    |
+    |        -XX:ConcGCThreads=n         |                并发标记阶段，并行执行的线程数                |
+    | -XX:InitiatingHeapOccupancyPercent | 设置触发标记周期的Java堆占用率阀值,默认值是45%,这里的java堆占比指的是non young capacity bytes,包括old+humongous |
+
+    
 
   G1算法将堆划分为若干个区域(Region) ,它仍然属于分代收集器。不过,这些区域的一部分包含新生代,新生代的垃圾收集依然采用暂停所有应用线程的方式,将存活对象拷贝到老年代或者 Survivor空间。老年代也分成很多区域, G1收集器通过将对象从一个区域复制到另外一个区域,完成了清理工作。这就意味着,在正常的处理过程中, G1完成了堆的压缩(至少是部分堆的压缩) ,这样也就不会有CMS内存碎片问题的存在了
 
   **Humongous区域：**在G1中,还有一种特殊的区域, 叫Humongous区域。如果一个对象占用的空间达到或是超过了分区容量50%以上, G1收集器就认为这是一个巨型对象。这些巨型对象,默认直接会被分配在老年代,但是如果它是一个短期存在的巨型对象,就会对垃圾收集器造成负面影响。为了解决这个问题, G1划分了一个Humongous区,它用来专门 存放巨型对象。如果一个H区装不下一个巨型对象,那么G1会寻找连续的H分区来存储。为了能找到连续的H区,有时候不得不启动Full GC
 
+  
+
+  在CMS中,也有RSet的概念,在老年代中有一块区域用来记录指向新生代的引用。这是一种point-out,在进行Young GC时,扫描根时,仅仅需要扫描这一块区域,而不需要扫描整个老年代。
+
   但在G1中,并没有使用point-out,这是由于一个分区太小,分区数量太多,如果是用point-out的话,会造成大量的扫描浪费,有些根本不需要GC的分区引用也扫描了。于是G1中使用point-in来解决。point-in的意思是哪些分区引用了当前分区中的对象。这样,仅仅将这些对象当做根来扫描就避免了无效的扫描。由于新生代有多个,那么我们需要在新生代之间记录引用吗?这是不必要的,原因在于每次GC时,所有新生代都会被扫描**,所以只需要记录老年代到新生代之间的引用即可**
 
   需要注意的是,如果引用的对象很多,赋值器需要对每个引用做处理,赋值器开销会很大,为了解决赋值器开销这个问题,在G1中又引入了另外一个概念,卡表 (Card Table)。一个Card Table将一个分区在逻辑上划分为固定大小的连续区域,每个区域称之为卡。卡通常较小,介于128到512字节之间。Card Table通常为字节数组,由Card的素引(即数组下标)来标识每个分区的空间地址
 
+  情况下,每个卡都未被引用。当一个地址空间被引用时,这个地址空间对应的数组索引的值被标记为'0',即标记为脏被引用,此外RSet也将这个数组下标记录下来。一般情况下,这个RSet其实是一个Hash Table, Key是别的Region的起始地址, Value是一个集合,里面的元素是CardTable的Index
+
+  
+
+G1在运行过程中的主要模式：
+
+- YGC（不同于CMS）、
+
+  G1 YGC在Eden充满时触发，在回收之后所有之前属于Eden的区块全部变成空白，即不属于任何一个分区（Eden、Survivor、Old）
+
 - 并发阶段
+
+  **全局并发标记**	global concurrent marking
+
+  在G1 GC中, global concurrent marking主要是为Mixed GC提供标记服务的,并不是一次GC过程的一个必须环节。globalconcurrent marking的执行过程分为四个步骤
 
 - 混合模式
 
-- Full GC（一般是G1出现问题时发生）
+  Mix GC，由一些参数控制，另外也控制着哪些老年代Region会被选入CSet（收集集合）
+
+- Full GC
+
+  （一般是G1出现问题时发生，使用serialize Old  GC 进行Full GC）
+
+  
+
+  
 
 
 
@@ -2111,9 +2150,15 @@ SATB是维持并发GC的一种手段。G1并发的基础就是SATB, SATB可以�
 
 在GC收集的时候,新生代的对象也认为是活的对象,除此之外其他不可达的对象都认为是垃圾对象。
 
-为老年代设置分区的目的是老年代里有的分区垃圾多,有的分区垃圾少,这样在回收的时候可以专注于 的分区,这也是G1名称的由来。
 
-不过这个算法并不适合新生代垃圾收集,因为新生代的垃圾收集算法是复制算法,但是新生代也使用了分区机制主要是因为便于代大小的调整
+
+**为什么要采用分区机制？**
+
+为老年代设置分区的目的是老年代里有的分区垃圾多,有的分区垃圾少,这样在回收的时候可以专注于 的分区,这也是G1（Garbage First）名称的由来。
+
+不过这个机制并不适合新生代垃圾收集,因为新生代的垃圾收集算法是复制算法,但是**新生代也使用了分区机制主要是因为便于代大小的调整**
+
+
 
 ### 停顿预测模型
 
@@ -2136,6 +2181,22 @@ Mixed GC:年轻代的所有有Region +全局并发标记阶段选出的收益高
 Young GC和Mixed GC: Young GC: CSet就是所有年轻代里面的 Region
 
 Mixed GC: CSet是所有年轻代里的Region加上在全局并发标记阶段标记出来的收益高的Region
+
+G1的运行过程是这样的:会在Young GC和Mixed GC之间不断地切换运行,同时定期地做全局并发标记,**在实在赶不上对象创建速度的情况下使用Full GC(Serial GC)**
+
+初始标记是在Young GC上执行的,在进行全局并发标记的时候不会做Mixed GC,在做MixedGC的时候也不会启动初始标记阶段。
+
+当Mixed GC赶不上对象产生的速度的时候就退化成Full GC,这一点是需要重点调优的地方
+
+
+
+### G1最佳实践
+
+不断调优暂停时间指标
+
+通过-XX:MaxGCPauseMillis-x可以设置启动应用程序暂停的时间, G1在运行的时候会根据这个参数选择CSet来满足响应时间的设置。一般情况下这个值设置到100ms或者200ms都是可以的(不同情况下会不一样),但如果设置成50ms就不太合理。暂停时间设置的太短,就会导致出现G1跟不上垃圾产生的速度。最终退化成Full GC。所以对这个参数的调优是一个持续的过程,逐步调整到最佳状态。
+
+
 
 ### G1 VS CMS
 
@@ -2210,6 +2271,12 @@ Mixed GC: CSet是所有年轻代里的Region加上在全局并发标记阶段标
 - -XX:TargetSurvivorRatio=60	Survivor的已使用率超过60%会重新计算对象晋升阈值
 
 - -XX:+PrintGCDateStamps	打印每次GC的时间
+
+  
+
+- -XX:UseG1GC	使用G1垃圾收集器
+
+- -XX:MaxGCPauseMillis=200m	G1垃圾收集器的最大停顿时间为200毫秒
 
   
 
