@@ -830,15 +830,44 @@ new 一个对象时：
 
   重视服务的响应速度、系统停顿时间和用户体验的互联网网站或者B/S系统
 
+  -XX:+UseConcMarkSweepGC，表示新生代使用ParaNew，老年代使用CMS
+  
+  -XX:CMSlnitialOccupyFraction，当老年代空间使用超过这个值的时候启动收集默认为92%
+  
+  出现错误: "Concurrent Mode Failure",启动Serial old收集器。
+  
+  -XX:UseCMSCompactAtFullcollection，(默认开启)需要进行FullGC的时候开启内存碎片的整理,无法并发。
+  
+  -XX:CMSFullGCsBeforeCompaction，（默认为0）设置多少次不压缩的FullGC后来一次压缩的Full GC
+  
+  
+  
   ![](D:\Study\Framework\JVM\img\1581953695(1).jpg)
 
 ![](D:\Study\Framework\JVM\img\1581953930(1).jpg)
 
 **G1**
 
-G1收集器，会对新生代和老年代都进行垃圾收集，标记整理+复制算法，并行与并发收集器，JDK7引入，JDK9采用为默认收集器，采用分区回收的思想，在不牺牲吞吐量的前提先完成低停顿的内存回收，可指定预计的停顿时间，面向服务端的垃圾收集器，目标为取代CMS
+G1收集器，会对新生代和老年代都进行垃圾收集，标记整理+复制算法，没有空间碎片，并行与并发收集器，JDK7引入，JDK9采用为默认收集器，采用分区回收的思想，在不牺牲吞吐量的前提先完成低停顿的内存回收，可指定预计的停顿时间，面向服务端的垃圾收集器，目标为取代CMS
 
 ![](D:\Study\Framework\JVM\img\1581954828(1).jpg)
+
+![](D:\Study\Framework\JVM\img\1.png)
+
+**G1 并发标记周期**？？
+
+- 初始标记：时间很短暂，仅仅标记一下GC Roots，能直接关联到的对象，速度很快，会产生STW（全局停顿），都会有一次新生代的GC
+- 根区域扫描：扫描survivor区可以直接到达的老年代区域
+- 并发标记阶段：
+- 重新标记阶段：
+- 独占清理：
+- 并发清理：
+
+-XX:MaxGCPauseMills	指定目标最大停顿时间，G1会尝试调整新生代和老年代region的比例
+
+-XX:ParllerGCThreads	指定GC的工作线程数
+
+
 
 **ZGC**
 
@@ -853,6 +882,26 @@ GC时间不超过10ms
 有色指针和加载屏障
 
 
+
+### 内存分配与回收策略
+
+- 对象优先在Eden区分配
+
+- 大对象直接进入老年代，-XX:PretenureSizeThreshold  超过该参数则直接在老年代分配，缺省为0 ，表示不会直接分配在老年代
+
+- 长期存活的对象将进入老年代	-XX:MaxTenuringThreshold 设定Eden区进入老年代的年龄
+
+- 动态对象年龄判断	动态检查Survivor区域中的对象年龄，发现该区对象年龄的中位数大于指定值时，会在对象到达默认进入老年代的年龄之前，提前晋升老年代。
+
+- 空间分配担保	
+
+
+
+**内存泄漏和内存溢出**
+
+内存泄漏：该回收的内存没有被回收掉
+
+内存溢出：没有足够空间进行内存分配
 
 
 
