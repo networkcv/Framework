@@ -2433,3 +2433,641 @@ JDK1.8 中新生代默认采用Parallel Scavenge收集器，老年代默认采�
 
 
 
+## 2.垃圾回收
+
+### 2.1 GC如何确定垃圾
+
+**什么是垃圾？**
+
+不会被使用到的对象就是垃圾， 可能是一个没有引用指向的对象，也可能是两个互相引用的对象，还可能是环形引用的对象。
+
+强引用：
+
+软引用：
+
+弱引用：
+
+虚引用：
+
+**如何确定垃圾？**
+
+引用计数：会用循环引用的问题。
+
+正向可达：从roots对象计算可以到达的对象，到不了的对象可以被认为是垃圾。main方法中创建的对象都是roots对象
+
+
+
+### 2.2 垃圾收集算法
+
+#### 2.2.1 Mark-Sweep 标记清除
+
+![](D:\Study\Framework\JVM\img\1577455245(1).jpg)
+
+标记的地方，代表下次创建的对象时可以使用，而不是把该位置保存的值擦除。
+
+缺点：内存碎片化，如果再有大的对象需要被创建，则会进行fullGC，将未被清除的对象压缩复制在一个区域，将碎片化的内存空间整理到一起。
+
+#### 2.2.2 Copying 复制
+
+![](D:\Study\Framework\JVM\img\1577455659(1).jpg)
+
+缺点：浪费内存，4G的话只能2G能用
+
+#### 2.2.3 Mark-Compact 标记压缩
+
+![](D:\Study\Framework\JVM\img\1577456026(1).jpg)
+
+比Copy效率低些。
+
+**JVM采用分代算法**
+
+新生代中eden与survive之间使用Copy算法，存活对象少，占用内存空间也不大，效率也高
+
+老年代采用的是 Mark-Compact 算法，垃圾少
+
+
+
+
+
+
+
+JVM参数设置
+    -Xms  初始堆大小
+    -Xmx  最大堆大小
+    -Xss  线程的内存空间
+    -XX:NewSize=n 设置年轻代大小
+    -XX:NewRatio=n 设置年轻代和老年代的比值，如n为3，表示年轻代：年老代=1：3，年轻代占整个年轻代年老代和的1/4
+    -XX:SurvivorRatio=n /sə'vaɪvə/ 年轻代中Eden区与两个Survivor区的比值，注意Survivor区有两个，n=3表示Eden:Survivor=3：2，一个Survivor占年轻代的1/5
+    -XX:MaxPermSize=n 设置持久代大小
+    收集器设置
+    -XX:+UseSerialGC    设置串行收集器 
+    -XX:+UseParallelCC  设置并行收集器  高吞吐量
+    -XX:+UseParalledOldGC   设置并行年老代收集器
+    -XX:UseConcMarkSweepGC  设置并发收集器
+    垃圾回收统计信息
+    -XX:+PrintGC
+    -XX:+Printetails
+    -XX:+PrintGCTimeStamps
+    -Xloggc:filename
+    并行收集器设置
+
+调优总结
+    年轻代大小选择
+        响应时间优先的应用：尽可能设大，年轻代收集发生的频率也是最小的，同时减少到达年老代的对象
+JVM堆结构图及分代
+    JVM内存分代策略
+        Java虚拟机根据对象存活的周期不同，把堆内存划分为几块，一般分为新生代、老年代和永久代（对HotSpot而言）
+    为什么要分代？
+            堆内存是虚拟机管理的内存中最大的一块，也是垃圾回收最频繁的一块区域，我们程序所有的对象实例都存放在堆内存中。
+        给堆内存分代是为了提高对象内存分配和垃圾回收的效率。试想一下，如果堆内存没有区域划分，
+        所有的新创建的对象和生命周期很长的对象放在一起，随着程序的执行，堆内存需要频繁进行垃圾收集，
+        而每次回收都要遍历所有的对象，会严重影响我们的GC效率。
+            有了内存分代，新创建的对象会在新生代中分配内存，经过多次回收仍然存活下来的对象存放在老年代中，
+        静态属性、类信息等存放在永久代中，新生代中的对象存活时间短，只需要在新生代区域中频繁进行GC，
+        老年代中对象生命周期长，内存回收的频率相对较低，不需要频繁进行回收，永久代中回收效果太差，一般不进行垃圾回收，
+        还可以根据不同年代的特点采用合适的垃圾收集算法。分代收集大大提升了收集效率，这些都是内存分代带来的好处。
+    新生代
+        新生对象优先存放新生代，常规应用进行一次垃圾回收一般会回收70%-95%，回收率很高。
+        默认比例   Eden：Survivor0：Survivor1=8:1:1 
+        HotSpot 采用复制算法来回收新生代，由于热点探测技术替代之前的虚拟机
+
+
+​        
+
+    Java HotSpot Client VM (-client),为在客户端环境中减少启动时间而优化;
+    Java HotSpot Server VM (-server),为在服务器环境中最大程度提高执行速度而设计；
+
+垃圾回收机制
+    寻找需要回收的对象，垃圾回收算法
+        1.引用计数器
+            比较古老的回收算法，原理是此对象增加一个引用，即增加一个计数，减少一个引用，计数器减一，垃圾回收时只收集计数器为0的对象，此算法无法处理循环引用的对象
+        2.复制算法
+            类似于新生代的处理，将内存空间划为两个相等的区域，每次只使用其中一个区域，垃圾回收时，将正在使用的对象复制到另一区域，复制过去可以进行内存整理，不会出现碎片问题
+        3.标记清除法(Mark-Sweep)
+            此算法分两阶段，第一阶段从引用根节点开始标记所有被引用的对象，第二阶段，把未被标记的对象清除，此算法需要暂停应用，且会产生内存碎片
+        4.标记整理算法
+
+    通用的分代垃圾回收机制：
+        根据不同的生命周期将对象划分为 年轻代，年老代，持久代。
+        JVM将堆内存划分为 Eden Survivor Tenured/Old空间
+        年轻代在 Eden Survivor1 Survivor2   年老代在 Tenured/Old   持久代在方法区
+    垃圾回收过程：
+        1.新创建的对象，绝大多数都会存储在Eden中
+        2.当Eden满了(达到一定比例)不能创建新对象，则触发垃圾回收，通过算法将无用对象清理掉
+          然后剩余对象复制到某个Survivor，如Survivor1，同时清空Eden区
+        3.当Eden再次满了，会对Survivor1进行清理，然后将剩余的对象存到另一个Survivor中，如Survivor2
+          同时将Eden区中不能清空的对象，也复制到Survivor2中，保证Eden和Survivor1,均被清空
+        4.重复多次（默认15次）Survivor中没有被清理的对象，则会复制到老年代Tenured/Old
+        5.当Tenured/Old满了，则会触发一个一次完整地垃圾回收（FullGC），清理年轻代，老年代，成本较高，会对系统性能产生影响
+
+
+​    
+
+
+
+## 2.G1
+
+garbage first
+
+STW：垃圾回收需要的停顿，G1可以使垃圾回收可控。可以使内存不连续
+
+![](D:\study\Framework\JVM\img\1577526717.jpg)
+
+追求响应时间：
+
+-  XX：MaxGCPauseMillis 200  将GC的时间控制在200毫秒
+-  可以对STW进行控制
+
+灵活：
+
+- 分Region回收
+- 优先回收花费时间少、垃圾比例高的Region
+
+每个Region多大
+
+- 取值 
+
+  ​	1，2，4，8，16，32 单位m
+
+- 手工指定 `-XX：G1HeapRegionSize` 
+
+对象何时进入老年代
+
+1. 超过 `XX:MaxTenuringThreshold` 指定次数（YGC）
+
+   `- Parallel Sacvenge 15`
+
+   `- CMS 6`
+
+   `- G115`
+
+2. 动态年龄
+
+   s1 -> s2 超过50%
+
+   把年龄最大的放入
+
+​	
+
+
+
+### 判断对象存活的算法
+
+- 引用计数法
+
+- 根搜索算法（GC Root Trace）
+
+  从GC Root出发去寻找能被追踪到的对象，可作为GC Root的对象有：
+
+  - 方法区：类静态属性引用的对象
+  - 方法区：常量引用的对象
+  - 虚拟机栈（本地变量表）中引用的对象
+  - 本地方法栈JNI（Java Native Interface）中引用的对象
+
+
+
+### 四种类型的引用
+
+- 强引用 StrongReference
+
+  Ojbect obj=new Object();
+
+- 软引用 SoftReference
+
+  一些有用但是非必须，用软引用关联，在系统将要发生OOM之前，这些对象就会被回收
+
+- 弱引用 WeakReference
+
+  程度比软引用更低，在下一次GC发生时会被回收
+
+- 虚引用 PhantomReference
+
+  幽灵引用，最弱，无法通过该引用访问到指向的对象，只能在该对象被回收时受到一个通知
+
+  
+
+
+
+### 分代收集
+
+![](D:\Study\Framework\JVM\img\1581950850(1).jpg)
+
+**垃圾收集中的并发和并行**：
+
+- 并行：多个线程同时进行垃圾收集
+- 并发：垃圾收集线程和应用线程同时进行
+
+**新生代收集器**
+
+- **Serial**
+  复制算法，单线程，简单高效，适合内存不大的单核CPU
+
+- **ParNew**
+
+  复制算法，并行多线程收集器，ParNew是Serial的多线程版本，搭配CMS垃圾收集器的首选，更关注响应时间
+
+- **Parallel Scavenge**
+
+  复制算法，并行多线程收集器，类似于ParNew，更加关注吞吐量，达到一个可控制的吞吐量，本身是Server级别多核机器的默认GC方式，适合后台运算不需要太多交互任务
+
+**老年代收集器**
+
+- **Serial Old**
+
+  标记整理算法，单线程，Client模式下虚拟机
+
+- **Parallel Old**
+
+  标记整理算法，并行的多线程收集器，配合Parallel Scavenge的面向吞吐量的特性而开发的对应组合，注重吞吐量以及CPU资源敏感的场景适用
+
+- **CMS**
+
+  标记清除算法，并行与并发收集器，尽可能的缩短垃圾收集时用户线程的停止时间，
+
+  缺点：
+
+  - 内存碎片
+  - 需要更多的CPU资源
+  - 浮动垃圾问题，需要更大的堆空间
+
+  重视服务的响应速度、系统停顿时间和用户体验的互联网网站或者B/S系统
+
+  -XX:+UseConcMarkSweepGC，表示新生代使用ParaNew，老年代使用CMS
+
+  -XX:CMSlnitialOccupyFraction，当老年代空间使用超过这个值的时候启动收集默认为92%
+
+  出现错误: "Concurrent Mode Failure",启动Serial old收集器。
+
+  -XX:UseCMSCompactAtFullcollection，(默认开启)需要进行FullGC的时候开启内存碎片的整理,无法并发。
+
+  -XX:CMSFullGCsBeforeCompaction，（默认为0）设置多少次不压缩的FullGC后来一次压缩的Full GC
+
+  
+
+  ![](D:\Study\Framework\JVM\img\1581953695(1).jpg)
+
+![](D:\Study\Framework\JVM\img\1581953930(1).jpg)
+
+**G1**
+
+G1收集器，会对新生代和老年代都进行垃圾收集，标记整理+复制算法，没有空间碎片，并行与并发收集器，JDK7引入，JDK9采用为默认收集器，采用分区回收的思想，在不牺牲吞吐量的前提先完成低停顿的内存回收，可指定预计的停顿时间，面向服务端的垃圾收集器，目标为取代CMS
+
+![](D:\Study\Framework\JVM\img\1581954828(1).jpg)
+
+![](D:\Study\Framework\JVM\img\1.png)
+
+**G1 并发标记周期**？？
+
+- 初始标记：时间很短暂，仅仅标记一下GC Roots，能直接关联到的对象，速度很快，会产生STW（全局停顿），都会有一次新生代的GC
+- 根区域扫描：扫描survivor区可以直接到达的老年代区域
+- 并发标记阶段：
+- 重新标记阶段：
+- 独占清理：
+- 并发清理：
+
+-XX:MaxGCPauseMills	指定目标最大停顿时间，G1会尝试调整新生代和老年代region的比例
+
+-XX:ParllerGCThreads	指定GC的工作线程数
+
+
+
+**ZGC**
+
+JDK11中提供的一种可扩展的低延迟垃圾收集器
+
+处理TB级别的堆
+
+GC时间不超过10ms
+
+与G1相比，应用吞吐量的降低不超过15%
+
+有色指针和加载屏障
+
+
+
+### 内存分配与回收策略
+
+- 对象优先在Eden区分配
+- 大对象直接进入老年代，-XX:PretenureSizeThreshold  超过该参数则直接在老年代分配，缺省为0 ，表示不会直接分配在老年代
+- 长期存活的对象将进入老年代	-XX:MaxTenuringThreshold 设定Eden区进入老年代的年龄
+- 动态对象年龄判断	动态检查Survivor区域中的对象年龄，发现该区对象年龄的中位数大于指定值时，会在对象到达默认进入老年代的年龄之前，提前晋升老年代。
+- 空间分配担保	
+
+## 3.JVM配置参数
+
+### 3.1 Trace追踪参数
+
+`-XX:+PrintGC`
+
+![](D:\Study\Framework\JVM\img\1577605259(1).jpg)
+
+`-Xloggc:D:/gc.log` 
+
+`-XX:+PrintGCDetails` 这个是每次gc都会打印的，只是程序结束后才打印详细的堆信息
+
+`-XX:+PrintHeapAtGC`  打印GC前后的堆详细信息
+
+`-XX:+TraceClassLoading`  监控类的加载
+
+![](D:\Study\Framework\JVM\img\1577610632(1).jpg)
+
+`-XX:+PrintClassHistogram`  在程序运行中，按下Ctrl+Break，打印各个类的信息
+
+![](D:\Study\Framework\JVM\img\1577610846(1).jpg)
+
+### 3.2 堆的分配参数
+
+`-Xms  -Xmx`  最小堆和最大堆
+
+-Xms和-Xmx应该保持多少比例，使系统性能最佳?
+
+![](D:\Study\Framework\JVM\img\1577610976(1).jpg)
+
+`-Xmn` 	设置新生代大具体大小
+
+`-XX:NewRatio` 	新生代比老年代的比例
+
+- 年轻代（eden+survivor×2）：老年代（tenured，不含永久区）的比值
+
+- -XX:NewRatio=4 年轻代：老年代 = 1：4 ，年轻代占堆的1/5
+
+`-XX:SurvivorRatio`    表示一个eden区和Survivor区的比值
+
+- -XX:SurvivorRatio=8，eden：一个Survivor：=8：1，所以两个Survivor占新生代的20%
+
+`-XX:+HeapDumpOnOutOfMemoryError`	OOM时导出堆到文件
+
+`-XX:HeapDumpPath`		导出OOM的路径  -XX:HeapDumpPath=d:/
+
+![](D:\Study\Framework\JVM\img\1577613097(1).jpg)
+
+
+
+`-XX:OnOutOfMemoryError` 		在OOM时，执行一个脚本
+
+![](D:\Study\Framework\JVM\img\1577613232(1).jpg)
+
+**堆参数设置小结**
+
+![](D:\Study\Framework\JVM\img\1577613314(1).jpg)
+
+### 3.3 永久区分配参数
+
+`-XX:PermSize` 	`-XX:MaxPermSize`
+
+设置永久区的初始空间和最大空间
+
+JDK1.8后失效，采用-XX:MaxMetaspaceSize=10m来设定最大元空间大小
+
+
+
+### 3.4 栈大小分配
+
+- -Xss256k
+
+- 通常只有几百k
+- 决定了函数调用的深度
+- 每个线程都有独立的栈空间
+- 局部变量、参数分配在栈上
+
+
+
+## 4.GC算法与种类
+
+### GC概念
+
+Garbage Collection 垃圾回收，防止内存泄漏
+
+GC对象是堆空间和永久区
+
+
+
+### GC算法
+
+**引用可达计数法**
+
+- 引用和去引用伴随加法和减法，影响性能
+- 很难处理循环引用
+
+**标记-清除**
+
+从根节点开始对可达对象做一次标记，清除阶段同一清除
+
+**复制算法**
+
+- 将内存分为两块，每次只能使用其中一块，算法执行时，会将存活对象复制到另外一端空间
+- 浪费了一半空间
+
+**标记-压缩**
+
+从根节点开始对可达对象做一次标记，将所有存活对象复制到内存的一段，清除这个区域外的垃圾对象。
+
+
+
+### 分代思想
+
+根据对象的存活周期长短分为新生代和老年代。
+
+少量对象存活，适合复制算法。
+
+大量对象存活，适合标记清理或标记压缩
+
+
+
+### 可触及性
+
+- 可触及的
+
+  从根节点可以触及到这个对象
+
+- 可复活的
+
+  一旦所有引用被释放，就是可复活状态
+
+  因为在finalize()方法中可能复活该对象，在finalize方法中对其进行引用的指向。
+
+  ![](D:\Study\Framework\JVM\img\1577620326(1).jpg)
+
+- 不可触及的
+
+  早finalize()后，可能会进入不可触及的状态
+
+  不可触及的对象不可能复活，可以被回收
+
+**对于可触及性经验**
+
+避免使用finalize()，操作不慎可能导致错误，可以使用try-catch-finally来替代
+
+**根**
+
+- 栈中引用的对象
+- 方法区中静态成员或者常量引用的对象（全局对象）
+- JNI方法栈中的对象
+
+### Stop-The-World
+
+- 简称STW，是Java中一种全局暂停的现象
+
+- 所有Java代码停止，native代码还可以继续运行，可以理解为JVM中除GC外都处于挂起状态，不能再执行应用层面的事情，只进行GC。
+
+- 多半由GC引起，也可能有其他原因：
+
+  - Dump线程
+  - 死锁检查
+  - 堆Dump
+
+  危害
+
+  - 老年代的GC比较耗时，可能导致服务停止，没有响应，
+  - 遇到HA系统，可能引起主备切换，严重危害生产环境。
+
+## 5.GC参数
+
+### 5.1 垃圾收集器选择
+
+1. **Serial Collector（串行收集器）**
+
+   -XX ：+UserSerialGC
+
+   最古老，最稳点，单线程，可能会产生较长的停顿
+
+   新生代、老年代使用串行回收
+
+   新生代使用复制算法，老年代使用标记-压缩算法
+
+   ![](D:\Study\Framework\JVM\img\1577628866(1).jpg)
+
+   上边的GC是新生代的垃圾回收，FullGC是老年代的垃圾回收。
+
+   
+
+2. **ParNew Collector（并行收集器）**
+
+   -XX:+UseParNewGC
+
+   - 新生代并行
+   - 老年代串行
+
+   在串行收集器的基础上，将新生代的回收通过多线程来实现，多个线程执行复制算法，需要多核的支持老年代不变还是单线程串行。
+
+   -XX:ParallelGCThreads 限制线程数量
+
+   ![](D:\Study\Framework\JVM\img\1577629337(1).jpg)
+
+3. **Paralle Collector（并行收集器）**
+
+  类似于ParNew收集器
+
+  新生代复制算法，老年代标记-压缩算法
+
+  更加关注吞吐量。不过无论是串行还是并行都会有STW发生，JVM都会停下来。
+
+  -XX:+UseParallelGC	使用ParallelGC收集器，新生代并行，老年代串行
+
+  -XX:UseParallelOldGC	新生代和老年代都并行
+
+  ![](D:\Study\Framework\JVM\img\1577629681(1).jpg)
+
+  -XX:MaxGCPauseMills
+
+  - 最大停顿时间，单位毫秒
+  - GC尽量保证不超过
+
+  停顿时间和吞吐量，就像时间和空间一样，尽量根据程序选择一个平衡点。
+
+4. **CMS Collector（CMS收集器）**
+
+  -XX:+UseConcMarkSweepGC
+
+  Concurrent Mark Sweep 并发标记清除
+
+  老年代使用标记-清除算法，与标记-压缩算法相比，少了将堆空间压缩的步骤，可以在JVM运行的时，与用户线程一起执行，并发阶段会占用系统资源，因此会降低吞吐量，且容易内存碎片化，好处是停顿时间短。  
+
+  CMS运行过程比较复杂，着重实现了标记的过程，尽可能将全局停顿减小，但是无法消除。
+
+  - 初始标记
+    - 根可以直接关联到的对象
+    - 速度快，但也会产生停顿
+  - 并发标记（和用户线程一起）
+    - 主要标记过程，会扫描全部对象
+  - 重新标记
+    - 由于并发标记时，用户线程仍然运行，因此在正式清理前，再做修正
+    - 独占CPU，会产生全局停顿
+  - 并发清除（和用户线程一起）
+    - 基于标记结果，直接清理对象
+
+  ![](D:\Study\Framework\JVM\img\1577631382(1).jpg)
+
+CMS收集器特点：	
+
+​		尽可能降低停顿
+
+​		会影响系统整体吞吐量和性能，如分一半CPU时间去GC，在GC期间，系统反应速度就下降一半。
+
+​		清理不彻底，因为在清理的时候，用户线程还在运行，会产生新的垃圾。
+
+​		因为和用户线程一起运行，不能在内存空间快慢时再清理，-XX:CMSInitiatingOccupancyFraction设置触发GC的阀值，如果不幸内存预留空间不足，会引发concurrent mode failure。
+
+​	![](D:\Study\Framework\JVM\img\1577631921(1).jpg)
+
+使用：
+
+-XX:+UseCMSCompactAtFullCollection 	Full GC后,进行一次整理整理过程是独占的,会引起停顿时间变长
+
+-XX:+CMSFullGCsBeforeCompaction	 设置进行几次Full GC后,进行一次碎片整理
+
+-XX:ParallelCMSThreads	设定CMS的线程数量，约等于cpu核数
+
+
+
+5. **G1**
+
+- 不仅停顿短，同时并发大，不过没CMS短，没Parallel并发量大，是一个均衡点
+
+### 5.2 GC参数小结
+
+- -XX:+ UseSerialGC	在新生代和老年代使用串行收集器
+- -XX:SurvivorRatio	设置eden区大小和survivior区大小的比例
+- -XX:NewRatio	新生代和老年代的比
+- -XX:+UseParNewGC	:在新生代使用并行收集器
+- -XX: +UseParallelGC 	新生代使用并行回收收集器
+- -xx:+UseParalleloldGC 	老年代使用并行回收收集器
+- -XX:ParallelGCThreads 	设置用于垃圾回收的线程数
+- -xx:+UseConcMarkSweepGC	:新生代使用并行收集器,老年代使用CMS+串行收集器
+- -XX:ParallelCMSThreads 	设定CMS的线程数量
+- -XX:CMSInitiatingOccupancyFraction 	设置CMS收集器在老年代空间被使用多少后触发
+- -XX:+UseCMSCompactAtFulICollection 	设置CMS收集器在完成垃圾收集后是否要进行一次内存碎片的整理
+- -XX:CMSFullGCsBeforeCompaction 	设定进行多少次CMS垃圾回收后,进行一次内存压缩
+- -xx:+CMSClassUnloadingEnabled 	允许对类元数据进行回收
+- -XX:CMSInitiatingPermOccupancyFraction 	当永久区占用率达到这一百分比时,启动CMS回收
+- -XX:UseCMSInitiatingOccupancyOnly 	表示只在到达阀值的时候,才进行CMS回收 
+
+### 5.3 Tomcat优化实例
+
+**Jmeter**：
+
+​	性能测试工具
+
+**第一次：**
+
+set CATALINA_OPTS--server-Xloggc:gc.log -XX:+PrintGCDetails-Xmx32M-Xms32M XX:+HeapDumpOnOutOfMemoryError -XX:+UseSerialGC -XX:PermSize=32M
+
+![](D:\Study\Framework\JVM\img\1577633036(1).jpg)
+
+**第二次：**
+
+![](D:\Study\Framework\JVM\img\1577633088(1).jpg)
+
+**第三次：**
+
+![](D:\Study\Framework\JVM\img\1577633250(1).jpg)
+
+**第四次：**
+
+JDK版本的升级，也会带来JVM性能的提高
+
+
+
+
+
+## 

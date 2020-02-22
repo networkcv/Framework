@@ -9,6 +9,10 @@ import java.io.IOException;
  * create by lwj on 2020/2/18
  */
 public class Test1 {
+
+    static void aa(){
+        OutOfMemoryError
+    }
     public static void main(String[] args) throws IOException {
         merge();
     }
