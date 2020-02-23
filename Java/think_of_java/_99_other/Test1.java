@@ -10,9 +10,6 @@ import java.io.IOException;
  */
 public class Test1 {
 
-    static void aa(){
-        OutOfMemoryError
-    }
     public static void main(String[] args) throws IOException {
         merge();
     }
