@@ -1,28 +1,19 @@
-
-
 [toc]
 
-分析工具：IDEA + Jclasslib + WinHex（IDEA 中可以使用 HexView 代替）
+分析工具：IDEA + Jclasslib 
 
-------
+​		字节码（ByteCode），是构成 **平台无关性** 和 **语言无关性** 的基石，是一个承上启下的部分，“承上” 是指不关注语言本身，只关注其编译后的产物——字节码，只要符合JVM规范的，就可以在虚拟机上执行，如Java、Kotlin、Scala和Groovy；”启下“是指不关注操作系统，就像那句非常著名的口号：“一次编写，到处运行”，虚拟机厂商提供运行在各种不同平台上的虚拟机，这些虚拟机都可以运行与平台无关的字节码。
 
-- ==Java 虚拟机不和包括 java 在内的任何语言绑定，它只与 “Class” 特定的二进制文件格式关联==，实现 JVM 与语言无关系，例如 Groovy、Scala 等均可以在 JVM 上运行，虚拟机并不关心 Class 的来源为何种语言，因此 Java 规范拆分为： Java 编程规范和 Java 虚拟机规范，Class 文件中包含Java 虚拟机指令集和符号表以及若干其他辅助信息。
-- 代码编译的结果不在是二进制本地机器码（Native Code），而是字节码文件。（其与操作系统、机器指令集无关）
-- 字节码命令提供的语义比 Java 语言本身更加强大，因此字节码可以支撑 Java 语言本身无法支持的语言特性，因此可以为其他语言提供支持；
-- **任何一个 Class 文件都对应着唯一一个类或者接口的定义信息，但是类或者接口并不一定都得定义在文件中（例如可以通过类加载器直接生成）**，因此这里的 Class 文件格式不一定是以磁盘文件形式存在。
-- Class 文件是一组以 8 位字节为基础单位的二进制流；
+----
 
-------
 
-## 一、字节码组成部分
 
-- Java 跨平台的原因是 JVM 不跨平台
-- 下面将从该程序编译生成的字节码文件和其对应的十六进制进行分析
+下面将从该程序编译生成的字节码文件和其对应的十六进制进行分析
 
-```
-package com.gjxaiou.bytecode;
+```java
+package com.lwj.bytecode;
 
-public class MyTest1{
+public class Test1{
     private int a=1;
     public int getA(){
         return a;
@@ -33,163 +24,34 @@ public class MyTest1{
 }
 ```
 
-### （一）反编译
+通过 javac Test1.java  编译生成 Test1.class 文件，直接打开的内容如下：
 
-- 使用对通过 Build 编译生成 MyTest1.class 文件，然后使用反编译命令：`javap` ，对文件进行反编译：`E:\Program\Java\JVM\DemoByMyself\out\production\DemoByMyself\com\gjxaiou\bytecode>javap MyTest1` 后面不要加 `.class`，因为它本质上是会找 MyTest1.java 类，生成以下数据
+![](D:\study\Framework\JVM\img\字节码.jpg)
 
-```
-警告: 二进制文件MyTest1包含com.gjxaiou.bytecode.MyTest1
-Compiled from "MyTest1.java"
-public class com.gjxaiou.bytecode.MyTest1 {
-   // 因为没有指定构造器，所以编译器会自动为我们提供一个构造器 
-  public com.gjxaiou.bytecode.MyTest1();
-  public int getA();
-  public void setA(int);
-}
-```
+​		这些十六进制的数字其实就是Class 文件的真面目，第一次看可能有些不适应，毫无头绪。毕竟字节码需要能在机器识别的前提下做到最精简，因此各个数据部分严格按照顺序紧凑的排列在Class文件中，中间没有添加任何分隔符。其实这些数字都是有规律可循的，当然我们需要参考一些资料。
 
-- 为了看到更加详细的 Class 文件结构，使用`javap -c` 会打印出包括助记符在内的更加详尽的信息，生成以下数据：
+​		上面是按照十六进制的单字节格式进行显示，每两个字节之间使用空格隔开，一个字节是8位，一个16进制数（就是上面一个字母或者一个数，0～f对应0～15）占据四位，所以两个在一起正好是一个字节；
 
-```
-Compiled from "MyTest1.java"
-public class com.gjxaiou.bytecode.MyTest1 {
-  public com.gjxaiou.bytecode.MyTest1();
-  // Code: 表示方法执行的代码
-    Code:
-       0: aload_0
-       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-       4: aload_0
-       5: iconst_1
-       6: putfield      #2                  // Field a:I
-       9: return
+​		备注：二进制，是计算机为了快速方便而采用的一种记数方式，十六进制也是一种常用的记数方式。位（bit）就是一个二进制位，即可表示0和1，而字节(Byte)是计算机更通用的计算单位，1字节等于8位，可以代表256个数字（在编程中可以通过这些数字作为判断），int类型一般为4字节，即32位。一个十六进制数，如0xf，代表16个数字，2的4次方，即4位，所以两个十六进制数如0xff就是一个字节。
 
-  public int getA();
-    Code:
-       0: aload_0
-       1: getfield      #2                  // Field a:I
-       4: ireturn
+​		接下来就让我们来一探究竟，看看这些字节码是如何表示Java代码的。
 
-  public void setA(int);
-    Code:
-       0: aload_0
-       1: iload_1
-       2: putfield      #2                  // Field a:I
-       5: return
-}
-```
+## 1. 字节码整体结构
 
-- **一般使用这个命令**：使用反编译命令：`javap -verbose`打印更多东西 ：`E:\Program\Java\JVM\DemoByMyself\out\production\DemoByMyself\com\gjxaiou\bytecode>javap -verbose MyTest1`，生成以下数据
+#### 1.1 概述
 
-```
-Classfile /E:/Program/Java/JVM/DemoByMyself/out/production/DemoByMyself/com/gjxaiou/bytecode/MyTest1.class
-  Last modified 2019-12-6; size 487 bytes
-  MD5 checksum b323038a82fa26c3db2caeef3f5f3dea
-  Compiled from "MyTest1.java"
-public class com.gjxaiou.bytecode.MyTest1
-  minor version: 0
-  major version: 52
-  flags: ACC_PUBLIC, ACC_SUPER
-Constant pool:
-   #1 = Methodref          #4.#20         // java/lang/Object."<init>":()V
-   #2 = Fieldref           #3.#21         // com/gjxaiou/bytecode/MyTest1.a:I
-   #3 = Class              #22            // com/gjxaiou/bytecode/MyTest1
-   #4 = Class              #23            // java/lang/Object
-   #5 = Utf8               a
-   #6 = Utf8               I
-   #7 = Utf8               <init>
-   #8 = Utf8               ()V           // 没有任何参数，返回值为 void
-   #9 = Utf8               Code
-  #10 = Utf8               LineNumberTable
-  #11 = Utf8               LocalVariableTable
-  #12 = Utf8               this
-  #13 = Utf8               Lcom/gjxaiou/bytecode/MyTest1;
-  #14 = Utf8               getA
-  #15 = Utf8               ()I        // 不接受任何参数，返回值为 int
-  #16 = Utf8               setA
-  #17 = Utf8               (I)V
-  #18 = Utf8               SourceFile//这个和下面两个常量值表示该class文件是由什么源文件编译得到
-  #19 = Utf8               MyTest1.java
-  #20 = NameAndType        #7:#8          // "<init>":()V
-  #21 = NameAndType        #5:#6          // a:I
-  #22 = Utf8               com/gjxaiou/bytecode/MyTest1
-  #23 = Utf8               java/lang/Object
-{
-  public com.gjxaiou.bytecode.MyTest1();
-    descriptor: ()V
-    flags: ACC_PUBLIC
-    Code:
-      stack=2, locals=1, args_size=1
-         0: aload_0
-         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-         4: aload_0
-         5: iconst_1
-         6: putfield      #2                  // Field a:I
-         9: return
-      LineNumberTable:
-        line 3: 0
-        line 4: 4
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-            0      10     0  this   Lcom/gjxaiou/bytecode/MyTest1;
+**Class 字节码中有两种数据类型**：
 
-  public int getA();
-    descriptor: ()I
-    flags: ACC_PUBLIC
-    Code:
-      stack=1, locals=1, args_size=1
-         0: aload_0
-         1: getfield      #2                  // Field a:I
-         4: ireturn 
-      LineNumberTable:
-        line 6: 0
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-            0       5     0  this   Lcom/gjxaiou/bytecode/MyTest1;
-
-  public void setA(int);
-    descriptor: (I)V
-    flags: ACC_PUBLIC
-    Code:
-      stack=2, locals=2, args_size=2
-         0: aload_0
-         1: iload_1
-         2: putfield      #2                  // Field a:I
-         5: return
-      LineNumberTable:
-        line 9: 0
-        line 10: 5
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-            0       6     0  this   Lcom/gjxaiou/bytecode/MyTest1;
-            0       6     1     a   I
-}
-SourceFile: "MyTest1.java"
-```
-
-- 使用 WinHex 打开 MyTest1.class 二进制文件： [![image-20191206222429551](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191206222429551.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191206222429551.png)
-
-上面是按照十六进制的单字节格式进行显示，每个字节之间使用空格隔开，一个字节是8位，一个16进制数（就是上面一个字母或者一个数）占据四位，所以两个在一起正好是一个字节；
-
-备注：二进制，是计算机为了快速方便而采用的一种记数方式，十六进制也是一种常用的记数方式。位（bit）就是一个二进制位，即可表示0和1，而字节(Byte)是计算机更通用的计算单位，1字节等于8位，可以代表256个数字（在编程中可以通过这些数字作为判断），int类型一般为4字节，即32位。一个十六进制数，如0xf，代表16个数字，2的4次方，即4位，所以两个十六进制数如0xff就是一个字节。
-
-### （二）字节码整体结构
-
-#### 1.概述
-
-- 使用 `javap -verbose`命令分析一个字节码文件时，将会分析该字节码文件的魔数，版本号，常量池，类信息，类的构造方法，类中的方法信息，类变量与成员变量的信息。
-
-- **Class 字节码中有两种数据类型**：
-
-  - 字节数据直接量（无符号数）：这是基本的数据类型。共细分为u1、u2、u4、u8四种，分别代表连续的1个字节、2个字节、4个字节、8个字节组成的无符号数据，可以用来描述数字、索引引用、数量值或者按照 UTF-8 编码构成的字符串值。
-  - 表/数组（无符号表）：表是由多个基本数据或其他表，按照既定顺序组成的大的数据集合。表都以 “_info" 结尾，表是有结构的，它的结构体表现在：组成表的成分所在的位置和顺序都是已经严格定义好的。**整个 class 文件本质上就是一张表**
-
-- 无论是无符号数还是表，当需要描述同一类型但是数量不定的多个数据的时候，会使用一个前置的容量计数器加上若干连续的数据项的形式，该连续的数据称为集合；
+- 字节数据直接量（无符号数）：这是基本的数据类型。共细分为u1、u2、u4、u8四种，分别代表连续的1个字节、2个字节、4个字节、8个字节组成的无符号数据，可以用来描述数字、索引引用、数量值或者按照 UTF-8 编码构成的字符串值。
+- 表/数组（无符号表）：表是由多个基本数据或其他表，按照既定顺序组成的大的数据集合。表都以 “_info" 结尾，表是有结构的，它的结构体表现在：组成表的成分所在的位置和顺序都是已经严格定义好的。**整个 class 文件本质上就是一张表**
 
 - 字节码文件的结构图：
 
   [![字节码文件整体结构](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/20190823162350340.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/20190823162350340.png)
 
-  更加详细的结构为： Class 文件格式
+  
+
+- 更加详细的结构为： Class 文件格式
 
   | **类型**       | **名称**                          | **数量**                |
   | -------------- | --------------------------------- | ----------------------- |
@@ -210,100 +72,130 @@ SourceFile: "MyTest1.java"
   | u2             | attribute_count（附加属性的个数） | 1                       |
   | attribute_info | attributes（附加属性的表）        | attributes_count        |
 
-### （三）字节码文件具体分析
+  字节码的排列也是严格按照这个顺序来的。
 
-#### 1. 魔数（magic）
+## 2. 字节码文件具体分析
 
-- 所有的 .class 文件的前四个字节都是魔数，魔数值为固定值：0xCAFEBABE（咖啡宝贝）(前面 0x 表示十六进制)
+#### 2.1 魔数（magic）
+
+- Class文件格式表中第一项就是就是magic，是u4类型，代表占用4个字节，对应.class文件中的前四个字节`cafebabe`
+
 - 用于确定这个文件是否为一个能被虚拟机接受的 Class 文件（相比文件后缀名更加安全）。
+
+  
 
 #### 2.版本号（version）
 
 - 魔数后面 4 个字节是版本信息，前两个字节表示 minor_version（次版本号），后两个字节表示major_version（主版本号），因此这里值 `00 00 00 34 `对应十进制为 `00 00 00 52`，表示次版本号为 0，主版本号为 1.8（ 52对应 jdk 1.8）。**低版本的编译器编译的字节码可以在高版本的JVM下运行，反过来则不行**。
 
+  ```doc
+  // 主版本号：1.8，次版本号为：0，更新号为：144
+  $ java -version
+  java version "1.8.0_144"
+  Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
+  Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed mode)
   ```
-  // 在终端中测试版本号进行验证
-  C:\Users\gjx16>java -version
-  // 主版本号：1.8，次版本号为：0，更新号为：221
-  java version "1.8.0_221"
-  Java(TM) SE Runtime Environment (build 1.8.0_221-b11)
-  Java HotSpot(TM) 64-Bit Server VM (build 25.221-b11, mixed mode)
-  ```
+
+
 
 #### 3.常量池（constant pool）：
 
-- 主版本号之后的就是常量池入口，**一个 Java 类定义的很多信息都是由常量池来维护和描述的**，可以将常量池看作是 Class 文件的资源仓库，包括 Java 类定义的方法和变量信息（包括类的和方法的变量），**常量池中主要存储两类常量：字面量和符号引用**。==常量池不是里面只有常量（即不变的量），可以有变量、方法等==
+​	为了方便在解释概念的时候举例，这里先贴出一份使用`javap -v `反编译后的常量池截图：
 
-  - 字面量（Literal）：如文本字符串、Java 中声明的 final 常量值等；
-  - 符号引用（Symbolic References）：如类和接口的全局限定名，字段的名称和描述符，方法的名称和描述符（注：这里的描述符不是像源代码中的 public void 这样的，而是各种源代码中描述符的一种对应的映射，不同 JVM 中同样表示 public 含义不同修饰值的对应描述符是一致的）等。
-    - 原因：因为使用 Javac 编译的时候不会连接，是 JVM 加载 Class 文件时候进行动态连接，因此如果**不经过运行期的转换，字段和方法的符号引用就找不到真正的内存地址，则无法被 JVM 使用**，因此需要当 JVM 运行的时候从常量池中获取对应的符号引用，然后在类创建或者运行时候解析获取到真正的内存地址。
+​	![](D:\study\Framework\JVM\img\常量池截图.jpg)
 
-- 常量池数量紧跟在主版本号后面，占据两个字节；常量池的整体结构：Java 类对应的常量池主要由**常量池数量**和**常量池数组**（又称为表结构）两部分共同构成，其中常量池数组紧跟在常量池数量之后。
+​		主版本号之后的就是常量池部分，**一个 Java 类定义的很多信息都是由常量池来维护和描述的**，可以将常量池看作是 Class 文件的资源仓库，包括 Java 类定义的方法和变量信息，**常量池中主要存储两类常量：字面量和符号引用**。
 
-  - 常量池数组与一般数组不同的是：常量池数组中元素的类型、结构都是不同的，长度当然也就不同，但是每一种元素的第一个数据都是一个 u1 类型标志位，占据一个字节，JVM 在解析常量池时，就会根据这个u1 类型的来获取对应的元素的具体类型。 值得注意的是，**常量池数组中元素的个数=常量池数-1**,（因为其中 0 暂时不使用）上面字节码 16 进制中常量池数目为：`00 18`表示 10 进制的 24，正好从上面代码反编译结果看出 `Constant pool`中一共 23 个元素。**常量池的容量计数器从 1 开始**
+- 字面量（Literal）：如文本字符串、Java 中声明的 final 常量值等，如上图中Utf8类型的内容，如`a`、`I`、`<init>`等。
 
-  - 为什么减一：目的是满足某些指向常量池的索引值的数据在特定的情况下需要表达不引用任何常量池的含义。根本原因在于索引为 0 也是一个常量，它是 JVM 的保留常量，它不位于常量表（常量池数组）中。这个常量就对应 null，所以**常量池的索引从 1 而非 0 开始**，其他接口索引集合、字段表集合、方法表集合等均从 0 开始。
+- 符号引用（Symbolic References）：如类和接口的全局限定名（包名加类名，如#4  com/lwj/bytecode/Test1），字段的名称和描述符，方法的名称和描述符（注：这里的描述符不是像源代码中的 public void 这样的，而是各种源代码中描述符的一种对应的映射，不同 JVM 中同样表示 public 含义不同修饰值的对应描述符是一致的，简单来说就是描述这个方法的参数类型及返回值类型 或者是 字段的类型，如#6就是int类型，#12是无参方法返回int类型，#14是一个int类型参数方法且无返回值）。
+  
+  原因：因为使用 Javac 编译的时候不会连接，是 JVM 加载 Class 文件时候进行动态连接，因此如果**不经过运行期的转换，字段和方法的符号引用就找不到真正的内存地址，则无法被 JVM 使用**，因此需要当 JVM 运行的时候从常量池中获取对应的符号引用，然后在类创建或者运行时候解析获取到真正的内存地址。
 
-  - 常量池中每一项常量都是一个表，下面是 14 种不同的表结构，后三种为 1.7 之后增加了支持动态语言调用：`CONSTANT_MethodHandle_info、CONSTANT_MethodType_info、CONSTANT_InvokeDynamic_info`，**14 种表中所有的表的第一位都是一个 u1 类型的标志位（tag），具体取值看下面对应的描述**；
+​		常量池部分主要由**常量池数量**和**常量池数组**（又称为表结构）两部分共同构成，u2类型的常量池数量紧跟在主版本号后面，占据两个字节；接着就是常量池表中的一个个常量了。
 
-    [![img](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/595137-20181219204338051-305022474.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/595137-20181219204338051-305022474.png)
+- 示例中的常量池数量为`0x0015`，对应十进制就是21，意味着常量池中有21个常量，但是编译后的常量池截图中确是从#1到#20，一个20个常量，这是由于在Class文件格式规范制定之时，设计者将第#0项常量空出来表达“不引用任何一个常量池项目”的含义，所以常量池中的索引都是从1开始，对于其他的集合类型，如接口索引集合、字段表集合、方法表集合等均从 0 开始。
 
-    以 CONSTANT_UTF-8_info 型常量结构为例，bytes 中是一个长度为 length 字节的连续数据是一个使用 UTF-8 缩略编码表示的字符串，UTF-8 缩略编码和普通 UTF-8 编码的区别：`\u0001` 到 `\u007f`之间字符（相当于 1- 127 ASCII 码）的缩略编码使用一个字节表示，`\u0080` 到 `\u07ff`，使用 2 个字符，`\u0800` 到 `\uffff` 之间和普通编码一样使用三个字节表示。（该类型常量最大值为 65535，应为 Class 文件中方法、字段都是引用该类型常量，因此变量名和方法名最大长度Wie 64KB）
+- 常量池数组与一般数组不同的是：常量池数组中元素的类型、结构都是不同的，长度当然也就不同，但是每一种元素的第一个数据都是一个 u1 类型标志位，占据一个字节，JVM 在解析常量池时，就会根据这个u1 类型的来获取对应的元素的具体类型。 
 
-  解释测试：
+  常量池中每一项常量都是一个表，下面是 14 种不同的表结构，后三种为 1.7 之后增加了支持动态语言调用：`CONSTANT_MethodHandle_info、CONSTANT_MethodType_info、CONSTANT_InvokeDynamic_info`，**14 种表中所有的表的第一位都是一个 u1 类型的标志位（tag），具体取值看下面对应的描述**；
 
-  - 第一个常量为 ：`0A`表示十进制的 10，通过查表得到对应的常量类型是：`CONSTANT_Methodref_info` 然后向后查找两个字节：`00 04`（对应于4）表示指向声明方法的类描述符的索引项为常量池中的 4 号，在查找两个字节`00 14`（对应于 20）表示指向名称即类型描述符的索引项为常量池中的 20 号；至此这五个字节：`0A 00 04 00 14`就描述了常量池中的第一个常量；从反编译结果可以看出：`#1 = Methodref #4.#20 `是正确的；
-  - 第二个常量为：`09`对应类型为 `CONSTANT_Fieldref_info`，后面四个字节对应的索引分别指向十进制的 3 和 21的常量；
-  - 第三个常量为：`07`对应于 `CONSTANT_Class_info`，后面两个字节 `00 16` 表示类的全限定类名对应常量池中 22 号常量。
-  - 第四个常量为：`07`对应于 `CONSTANT_Class_info`，后面两个字节 `00 17` 表示类的全限定类名对应常量池中 23 号常量。
-  - 第五个常量为：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `00 01` 表示字符串长度为 1，后面一个字节 `61` 对应值为 97，则表示字符串值为 `a`。
-  - 第六个常量为：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `00 01` 表示字符串长度为 1，后面一个字节 `49` 对应值为 73，则表示字符串值为 `I`。
-  - 第七个常量为：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `00 06` 表示字符串长度为 6，后面六个字节 `3C 69 6E 69 74 3E` 对应值为 `60 105 110 105 116 62`，则表示字符串值为 `< i n i t >`。
-  - 。。。其他的分析方法同上；
+[![img](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/595137-20181219204338051-305022474.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/595137-20181219204338051-305022474.png)
 
-- 在JVM规范中，**每个变量/字段都有描述信息，描述信息主要的作用是描述字段的数据类型，方法的参数列表（包括数量、类型和顺序）与返回值**。
+以 CONSTANT_UTF-8_info 型常量结构为例，bytes 中是一个长度为 length 字节的连续数据是一个使用 UTF-8 缩略编码表示的字符串，UTF-8 缩略编码和普通 UTF-8 编码的区别：`\u0001` 到 `\u007f`之间字符（相当于 1- 127 ASCII 码）的缩略编码使用一个字节表示，`\u0080` 到 `\u07ff`，使用 2 个字符，`\u0800` 到 `\uffff` 之间和普通编码一样使用三个字节表示。（该类型常量最大值为 65535，应为 Class 文件中方法、字段都是引用该类型常量，因此变量名和方法名最大长度Wie 64KB）
 
-  - 根据描述符规则，**基本数据类型和代表无返回值的 void 类型都用一个大写字符来表示，而对象类型使用字符 `L+对象的全限定名称来表示（用 `/`标识）`**，这样主要为了压缩字节码文件的体积。
-    - 基本数据类型：`B-byte，C-char，D-double，F-float，I-int，J-long，S-short，Z-boolean，V-void，L-对象类型`
-    - 对象类型：如字符串对应：`Ljava/lang/String;`
-  - 对于数组类型来说，每一个维度使用一个前置的`[` 来表示，如`int[]`表示为`[I` ，`String[][]`被记录为`[[Ljava/lang/String;`
-  - 用描述符描述方法的时候，**用先参数列表后返回值的方式来描述**(方法名是作为一个常量放在常量池中的)。参数列表按照参数的严格顺序放在一组`()`之内，如方法`String getNameByID(int id ,String name)` 对应于： `(I,Ljava/lang/String;)Ljava/lang/String;`
+----
+
+有了上面的知识储备，现在我们可以来看看有哪些常量了。
+
+- #1 ：`0a`表示十进制的 10，通过查表得到对应的常量类型是：`CONSTANT_Methodref_info` ，这个常量类型包含两个指向常量池的索引项，分别指向声明该方法的 **类描述符** 和该方法的 **名称及类型描述符**，这两个index各占两个字节，分别对应字节码中的`0x0004`和`0x0011`。指向 #4 和 #17，可以通过常量池截图验证我们的答案是正确的。
+
+- #2：`09`对应类型为 `CONSTANT_Fieldref_info`，其两个索引，**声明该字段的类或接口的描述符** 、**字段描述符** 分别指向常量池中 #3 和 #18。
+
+- #3：`07`对应常量类型是 `CONSTANT_Class_info`，**全限定名常量项** 指向 `0x0013` 也就是 #19。
+
+- #4：`07`还是一个 `CONSTANT_Class_info`，指向 #20。
+
+- #5：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `0x0001` 表示字符串长度为 1，后面一个字节 `0x61` 十进制的值为 97，对应ASCLL表中的 `a` ,常量 #5 表示字符串值为 `a`。
+
+  附上ASCLL码表：
+
+  ![](D:\study\Framework\JVM\img\ASCLL码表.jpg)
+
+- #6：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `0x0001` 表示字符串长度为 1，后面一个字节 `0x49` 十进制的为 73，则表示字符串值为 `I`。
+
+- #7：`01`对应于 `CONSTANT_UTF-8_info`，后面两个字节 `0x0006` 表示字符串长度为 6，后面六个字节 `0x 3C 69 6E 69 74 3E` 对应值为 `60 105 110 105 116 62`，则表示字符串值为 `< i n i t >`。
+
+剩下的常量可以参考常量池截图对照。
+
+在JVM规范中，**每个变量/字段都有描述信息，描述信息主要的作用是描述字段的数据类型，方法的参数列表（包括数量、类型和顺序）与返回值**。
+
+- 根据描述符规则，**基本数据类型和代表无返回值的 void 类型都用一个大写字符来表示，而对象类型使用字符 `L+对象的全限定名称来表示（用 `/`标识）`**，这样主要为了压缩字节码文件的体积。
+  - 基本数据类型：`B-byte，C-char，D-double，F-float，I-int，J-long，S-short，Z-boolean，V-void，L-对象类型`
+  - 对象类型：如字符串对应：`Ljava/lang/String;`
+  
+- 对于数组类型来说，每一个维度使用一个前置的`[` 来表示，如`int[]`表示为`[I` ，`String[][]`被记录为`[[Ljava/lang/String;`
+
+- 用描述符描述方法的时候，**用先参数列表后返回值的方式来描述**(方法名是作为一个常量放在常量池中的)。参数列表按照参数的严格顺序放在一组`()`之内，如方法`String getNameByID(int id ,String name)` 对应于： `(I,Ljava/lang/String;)Ljava/lang/String;`
+
+  
 
 #### 4.访问标志信息（Access Flags）
 
-**class文件中用两个字节共 16 位代表访问标志（access flags），用于表明该类或接口被访问时能提供的一些信息**
+​		常量池部分结束后，紧接着的两个字节表示访问标志，用于表明该类或接口被访问时能提供的一些信息。该标志用于识别一些类或者接口层次的访问信息，访问标志信息包括了该 class 文件是类还是接口，是否被定义成 public，是否是 abstract，如果是类，是否被定义成 final 等信息。
 
-该标志用于识别一些类或者接口层次的访问信息，访问标志信息包括了该 class 文件是类还是接口，是否被定义成 public，是否是 abstract，如果是类，是否被定义成 final 等信息。
-
-| 标志名称       | 标志值   | 含义                                                         |
-| -------------- | -------- | ------------------------------------------------------------ |
-| ACC_PUBLIC     | 0x00 01  | 是否为Public类型                                             |
-| ACC_FINAL      | 0x00 10  | 是否被声明为final，只有类可以设置                            |
-| ACC_SUPER      | 0x00 20  | 是否允许使用invokespecial字节码指令的新语义．                |
-| ACC_INTERFACE  | 0x02 00  | 标志这是一个接口                                             |
-| ACC_ABSTRACT   | 0x04 00  | 是否为abstract类型，对于接口或者抽象类来说，次标志值为真，其他类型为假 |
-| ACC_SYNTHETIC  | 0x10 00  | 标志这个类并非由用户代码产生                                 |
-| ACC_ANNOTATION | 0x20 00  | 标志这是一个注解                                             |
-| ACC_ENUM       | ０x40 00 | 标志这是一个枚举                                             |
+| 标志名称       | 标志值  | 含义                                                         |
+| -------------- | ------- | ------------------------------------------------------------ |
+| ACC_PUBLIC     | 0x00 01 | 是否为Public类型                                             |
+| ACC_FINAL      | 0x00 10 | 是否被声明为final，只有类可以设置                            |
+| ACC_SUPER      | 0x00 20 | 是否允许使用invokespecial字节码指令的新语义．                |
+| ACC_INTERFACE  | 0x02 00 | 标志这是一个接口                                             |
+| ACC_ABSTRACT   | 0x04 00 | 是否为abstract类型，对于接口或者抽象类来说，次标志值为真，其他类型为假 |
+| ACC_SYNTHETIC  | 0x10 00 | 标志这个类并非由用户代码产生                                 |
+| ACC_ANNOTATION | 0x20 00 | 标志这是一个注解                                             |
+| ACC_ENUM       | 0x40 00 | 标志这是一个枚举                                             |
 
 这里 16 进制为：`00 21` 是 0x0020 和 0x0001 的并集，表示 ACC_PUBLIC 和 ACC_SUPER 两标志位为真，其他为假。 注释：`0x0002` 表示：private
 
-**补充知识点**：
 
-- **类、父类、接口都是索引**，索引的含义是指对应真正的值存储在常量池中； 类索引（确定该类的全限定名）和父类索引（确定该类的父类全限定名，除了 Object 类其它类该项均不为 0）都是一个 u2 类型的数据，接口索引集合（描述该类继承了哪些接口）是一组 u2 类型的数据的集合，**Class 文件中由这三项数据来确定这个类的继承关系**。
-- 类、父类索引使用的两个 u2 类型的索引值表示，它们各自指向一个类型为 `CONSTANT_Class_info`的类描述符常量，通过该索引值可以找到定义在 `CONSTANT_Class_info` 类型的常量中的全限定名字符串。
 
-#### 5.类名称（class Name）
+#### 5.类名称（this class）
 
-占两个字节，对应：`00 03`这是一个索引，指向常量池中的 3 号常量，从上得知 3 号也是一个引用，指向常量池中 22 号常量，22号常量为一个 `CONSTANT_Utf-8_info` 类型，对应的值为 `com/gjxaiou/bytecode/MyTest1`，所以最终得到：` #3 = Class #22 // com/gjxaiou/bytecode/MyTest1`
+占两个字节，对应：`0x0003`这是一个索引，指向#3，3号常量又指向常量池中 19 号常量，19号常量为一个 `CONSTANT_Utf-8_info` 类型，对应的值为 `com/lwj/bytecode/Test1`，所以最终得到：` #3 = Class #19 // com/lwj/bytecode/Test1`
+
+
 
 #### 6.父类名称（super Class）
 
-对应：`00 04`,得到：` #4 = Class #23 // java/lang/Object`，过程同上；
+占两个字节，对应：`0x0004`,得到：` #4 = Class #20 // java/lang/Object`。
+
+
 
 #### 7.接口（interface）
 
-因为根据上面 Class 文件接口可以得到接口由两部分组成：接口计数器（表示索引表的容量）和接口名，分别都占两个字节，这里接口个数为：`00 00`，说明没有实现接口，然后接口索引表就不再出现（只有接口个数 >= 1，后面才会出现）
+因为根据上面 Class 文件接口可以得到接口由两部分组成：接口数和接口名，分别都占两个字节，这里接口个数为：`0x0000`，说明没有实现接口，然后接口索引表就不再出现，只有接口个数 不为0，后面才会出现接口的全限定名索引。
+
+
 
 #### 8.字段表（Fields）
 
@@ -1409,4 +1301,3 @@ astrore_1	将内存地址的引用赋给一个局部变量
 2. 基于栈的指令集主要的操作有入栈和出栈两种
 3. 基于栈的指令集的优势在于可以在不同平台之间移植，而基于寄存器的指令集是与硬件架构密切相关的，无法做到可移植
 4. 基于栈的指令集的缺点在于完成相同的操作，指令数量要比基于寄存器的指令集要多；基于栈的指令集是直接在内存完成操作的，而基于寄存器的指令集是直接由CPU来执行的，它是在高速缓冲区中执行的，速度要比基于栈的执行速度快很多
-

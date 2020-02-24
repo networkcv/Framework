@@ -47,6 +47,8 @@
     }
 ```
 
+​		上边代码对应的局部变量表（LocalVariableTable）：
+
 ![](D:\Study\Framework\JVM\img\局部变量表1.jpg)
 
 ​		

@@ -2748,10 +2748,24 @@ GC时间不超过10ms
 ### 内存分配与回收策略
 
 - 对象优先在Eden区分配
-- 大对象直接进入老年代，-XX:PretenureSizeThreshold  超过该参数则直接在老年代分配，缺省为0 ，表示不会直接分配在老年代
-- 长期存活的对象将进入老年代	-XX:MaxTenuringThreshold 设定Eden区进入老年代的年龄
-- 动态对象年龄判断	动态检查Survivor区域中的对象年龄，发现该区对象年龄的中位数大于指定值时，会在对象到达默认进入老年代的年龄之前，提前晋升老年代。
-- 空间分配担保	
+
+  当Eden区没用足够空间进行分配时，虚拟机将发起一次Minor GC，
+
+- 大对象直接进入老年代，-XX:PretenureSizeThreshold  超过该参数则直接在老年代分配，缺省为0 ，表示不会直接分配在老年代，这个参数值对Serial和ParNew两款收集器有效。
+
+- 长期存活的对象将进入老年代	-XX:MaxTenuringThreshold 设定新生代进入老年代的年龄，默认15
+
+- 动态对象年龄判断	
+
+  虚拟机并不要求对象年龄必须达到最大值才能晋升老年代，JVM会动态检查Survivor区域中的对象年龄，如果Survivor区中相同年龄的所有对象的大小总占比超过Survivor空间的一半，那么该年龄及以上的对象就可以直接进入老年代了。
+
+- 空间分配担保
+
+  当Eden区满的时候，要发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象的总空间，因为在最坏的情况下新生代的所有对象都不会被回收，需要全部复制到老年代。如果老年代的空间足够，那么执行Minor GC不会出任何问题；在不够的情况下，并不一定会触发Full GC，因为新生代可能会回收一部分对象，剩余的对象，刚好能被老年代所容纳（这样本次Minor GC就不会引发Full GC），当然也有容纳不下剩余对象的可能，这个就存在一定概率。设置空间分配担保（-XX:+HandlePromotionFailure）就允许这个概率的发生，不然在老年代连续空间不足的情况下直接进行Full GC。
+
+  空间分配担保的方式是通过计算之前每次晋升到老年代对象平均大小，如果大于当前老年代的连续空间，那么会尝试着进行一次Minor GC；小于的话重新发起Full GC。在JDK6 Update24 之后的规则变为只要老年代的连续空间大于新生代对象总大小或者历次晋升的平均年龄大小就会进行Minor GC，否则进行Full GC。
+
+  
 
 ## 3.JVM配置参数
 
@@ -3042,32 +3056,3 @@ CMS收集器特点：
 - -XX:CMSInitiatingPermOccupancyFraction 	当永久区占用率达到这一百分比时,启动CMS回收
 - -XX:UseCMSInitiatingOccupancyOnly 	表示只在到达阀值的时候,才进行CMS回收 
 
-### 5.3 Tomcat优化实例
-
-**Jmeter**：
-
-​	性能测试工具
-
-**第一次：**
-
-set CATALINA_OPTS--server-Xloggc:gc.log -XX:+PrintGCDetails-Xmx32M-Xms32M XX:+HeapDumpOnOutOfMemoryError -XX:+UseSerialGC -XX:PermSize=32M
-
-![](D:\Study\Framework\JVM\img\1577633036(1).jpg)
-
-**第二次：**
-
-![](D:\Study\Framework\JVM\img\1577633088(1).jpg)
-
-**第三次：**
-
-![](D:\Study\Framework\JVM\img\1577633250(1).jpg)
-
-**第四次：**
-
-JDK版本的升级，也会带来JVM性能的提高
-
-
-
-
-
-## 
