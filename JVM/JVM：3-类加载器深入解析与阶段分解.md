@@ -328,8 +328,9 @@ public class MyTest6{
          public static void main(String[] args){
          // 首先调用类 Singleton 的静态方法，表示对该类的主动使用
             Singleton Singleton=Singleton.getInstance();
-            System.out.println(Singleton.counter1);     //输出1，1
+            System.out.println(Singleton.counter1);     
             System.out.println(Singleton.counter2);
+             //输出1，1
          }
     }
 }

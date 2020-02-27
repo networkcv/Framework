@@ -1,4 +1,4 @@
-package com.lwj.java8;
+package com.lwj.java8.lambda;
 
 import org.junit.Test;
 
@@ -11,28 +11,18 @@ import java.util.function.Supplier;
 
 /**
  * create by lwj on 2020/2/26
- * 方法引用
+ * java内置的4种函数式接口
  */
-public class LambdaTest3 {
+public class LambdaTest2 {
 
     //消费型接口 Consumer<T>	void accept(T t)
-    public void getInteger(Integer i) {
-        System.out.println("i: " + i);
-    }
-    public static void printInteger(Integer i) {
-        System.out.println("i: " + i);
+    public void consumer(Integer integer, Consumer<Integer> consumer) {
+        consumer.accept(integer);
     }
 
     @Test
     public void test() {
-        Consumer<String> consumer = (s) -> System.out.println(s);
-        consumer.accept("a");
-        Consumer<String> consumer1 = System.out::println;
-        consumer1.accept("b");
-        Consumer<Integer> consumer2 = new LambdaTest3()::getInteger;
-        consumer2.accept(1);
-        Consumer<Integer> consumer3 = LambdaTest3::printInteger;
-        consumer2.accept(2);
+        consumer(100, s -> System.out.println("花费" + s));
     }
 
     //供给型接口 Supplier<T> T get()
@@ -42,7 +32,7 @@ public class LambdaTest3 {
 
     @Test
     public void test2() {
-        System.out.println(getTime(() -> 2));
+        System.out.println(getTime(()->2));
 
         Supplier<String> sp = () -> "1";
         System.out.println(sp.get());
