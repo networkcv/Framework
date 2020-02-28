@@ -1,7 +1,7 @@
-package com.lwj.java8.lambda;
+package lambda;
 
-import com.lwj.java8.util.Student;
 import org.junit.Test;
+import util.Student;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

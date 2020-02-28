@@ -1,4 +1,4 @@
-package com.lwj.java8.util;
+package util;
 
 import java.util.Objects;
 

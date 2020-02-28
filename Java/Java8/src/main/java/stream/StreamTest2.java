@@ -1,7 +1,7 @@
-package com.lwj.java8.stream;
+package stream;
 
-import com.lwj.java8.util.Student;
 import org.junit.Test;
+import util.Student;
 
 import java.util.ArrayList;
 import java.util.Comparator;

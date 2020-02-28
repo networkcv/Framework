@@ -1,4 +1,5 @@
-package com.lwj.java8.lambda;
+package lambda;
+
 
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ public class LambdaTest1 {
             }
         };
         System.out.println(comparator0.compare(0, 1));
-        Comparator<Integer> comparator1 = (o1, o2) ->  Integer.compare(o1, o2);
+        Comparator<Integer> comparator1 = (o1, o2) -> Integer.compare(o1, o2);
         System.out.println(comparator1.compare(0, 1));
         Comparator<Integer> comparator2 = Integer::compare;
         System.out.println(comparator2.compare(0, 1));
@@ -45,7 +46,7 @@ public class LambdaTest1 {
 
     @Test
     public void test2() {
-        Consumer<String> consumer1 =new Consumer<String>() {
+        Consumer<String> consumer1 = new Consumer<String>() {
             @Override
             public void accept(String s) {
                 System.out.println(s);

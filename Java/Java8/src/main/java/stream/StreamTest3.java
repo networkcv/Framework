@@ -1,4 +1,4 @@
-package com.lwj.java8.stream;
+package stream;
 
 import org.junit.Test;
 

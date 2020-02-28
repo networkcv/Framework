@@ -4,9 +4,9 @@
 
 ### 1.1 Lambda的基础语法
 
-- 举例：（o1，o2）->	Integer.compare(o1,o2);
+- 举例：（o1，o2）`->` Integer.compare(o1,o2);
 - 格式：
-  - ​	 `->` lambda操作符
+  - `->` lambda操作符
   - 左边：lambda形参列表，其实就是接口中的抽象方法的形参列表
   - 右边：lambda体，重写抽象方法的方法体
 - Lambda表达式本质：作为一个函数式接口（@FunctionalInterface）的实例
