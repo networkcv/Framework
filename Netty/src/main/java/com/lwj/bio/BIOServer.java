@@ -3,10 +3,8 @@ package com.lwj.bio;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,7 +34,7 @@ public class BIOServer {
             inputStream = socket.getInputStream();
             int len;
             while ((len = inputStream.read(bytes)) != -1) {
-                System.out.println("currentThread ID: "+Thread.currentThread().getId());
+                System.out.println("currentThread ID: "+Thread.currentThread().getId()+"wait  read ");
                 String str = new String(bytes, 0, len);
                 if ("exit".equals(str)) {
                     break;
