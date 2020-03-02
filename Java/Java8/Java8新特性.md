@@ -453,8 +453,8 @@ Stream.generate(Math::random).limit(10).forEach(System.out::println);
 //        findAny()   返回任意元素
 
 //        count()     返回元素中的总个数
-//        Max(Consumer c)   返回流中最大元素
-//        Min(Consumer c)   返回流中最小元素
+//        Max(Comparator c)   返回流中最大元素
+//        Min(Comparator c)   返回流中最小元素
 //        forEach(Consumer c)   使用集合的遍历操作
     }
 ```

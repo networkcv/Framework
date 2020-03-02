@@ -11,8 +11,9 @@ import java.nio.channels.SocketChannel;
 public class SelectorClient {
     public static void main(String[] args) throws IOException {
 
+        SocketChannel socketChannel = null;
         //得到一个网络通道
-        SocketChannel socketChannel = SocketChannel.open();
+        socketChannel = socketChannel.open();
         //设置非阻塞
         socketChannel.configureBlocking(false);
         //提供服务器的IP和端口
