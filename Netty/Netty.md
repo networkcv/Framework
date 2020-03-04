@@ -478,7 +478,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 
 
-### Netty 心跳检测机制
+### Netty 应用实例 -心跳检测机制
 
 1. )编写一个 Netty心跳检测机制案例, 当服务器超过3秒没有读时，就提示读空闲
 2. 当服务器超过5秒没有写操作时，就提示写空闲
@@ -490,9 +490,91 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 
 
-### Netty 通过WebSocket 编程实现服务器和客户端长连接
+### Netty 应用实例 -通过WebSocket 编程实现服务器和客户端长连接
 
 1. Http协议是无状态的, 浏览器和服务器间的请求响应一次，下一次会重新创建连接.
 2. 要求：实现基于webSocket的长连接的全双工的交互
 3. 改变Http协议多次请求的约束，实现长连接了， 服务器可以发送消息给浏览器
 4. 客户端浏览器和服务器端会相互感知，比如服务器关闭了，浏览器会感知，同样浏览器关闭了，服务器会感知
+
+### 编码和解码的基本介绍
+
+1. 编写网络应用程序时，因为数据在网络中传输的都是二进制字节码数据，在发送数据时就需要编码，接收数据时就需要解码 
+2. codec(编解码器) 的组成部分有两个：decoder(解码器)和 encoder(编码器)。encoder 负责把业务数据转换成字节码数据，decoder 负责把字节码数据转换成业务数据
+
+**Netty 本身的编码解码的机制和问题分析**
+
+1. Netty 自身提供了一些 codec(编解码器)
+2. Netty 提供的编码器
+   - StringEncoder，对字符串数据进行编码
+   - ObjectEncoder，对 Java 对象进行编码
+3. Netty 提供的解码器
+   - StringDecoder, 对字符串数据进行解码
+   - ObjectDecoder，对 Java 对象进行解码
+4. Netty 本身自带的 ObjectDecoder 和 ObjectEncoder 可以用来实现 POJO 对象或各种业务对象的编码和解码，底层使用的仍是 Java 序列化技术 , 而Java 序列化技术本身效率就不高，存在如下问题
+   - 无法跨语言
+   - 序列化后的体积太大，是二进制编码的 5 倍多
+   - 序列化性能太低
+5. 引出 新的解决方案 Google 的 **Protobuf**
+
+### Protobuf
+
+1. Protobuf 是 Google 发布的开源项目，全称 Google Protocol Buffers，是一种轻便高效的结构化数据存储格式，可以用于结构化数据串行化，或者说序列化。它很适合做数据存储或 RPC（远程过程调用 remote procedure call）数据交换格式。 目前很多公司 tcp+protobuf 代替 http+json 。
+2. 参考文档 : https://developers.google.com/protocol-buffers/docs/proto  语言指南。
+3. Protobuf 是以 message 的方式来管理数据的。
+4. 支持跨平台、**跨语言**，即[客户端和服务器端可以是不同的语言编写的] （**支持目前绝大多数语言**，例如 C++、C#、Java、python 等）
+5. 高性能，高可靠性
+6. 使用 protobuf 编译器能自动生成代码，Protobuf 是将类的定义使用.proto 文件进行描述。说明，在idea 中编写 .proto 文件时，会自动提示是否**下载** **.****ptotot** **编写插件**. 可以让**语法高亮**。
+7. 然后通过 protoc.exe 编译器根据.proto 自动生成.java 文件
+8. protobuf 使用示意图
+
+<img src="img/image-20200304150112311.png" alt="image-20200304150112311" style="zoom: 80%;" />
+
+### **Protobuf快速入门实例**1
+
+1. 客户端可以发送一个Student PoJo 对象到服务器 (通过 Protobuf 编码) 
+2. 服务端能接收Student PoJo 对象，并显示信息(通过 Protobuf 解码)
+
+### Protobuf快速入门实例2
+
+1. 客户端可以随机发送Student PoJo/ Worker PoJo 对象到服务器 (通过 Protobuf 编码) 
+2. 服务端能接收Student PoJo/ Worker PoJo 对象(需要判断是哪种类型)，并显示信息(通过 Protobuf 解码)
+
+
+
+## Netty核心组件
+
+1. netty的组件设计：Netty的主要组件有Channel、EventLoop、ChannelFuture、ChannelHandler、ChannelPipe等
+2. ChannelHandler充当了处理入站和出站数据的应用程序逻辑的容器。例如，实现ChannelInboundHandler接口（或ChannelInboundHandlerAdapter），你就可以接收入站事件和数据，这些数据会被业务逻辑处理。当要给客户端发送响应时，也可以从ChannelInboundHandler冲刷数据。业务逻辑通常写在一个或者多个ChannelInboundHandler中。ChannelOutboundHandler原理一样，只不过它是用来处理出站数据的
+3. ChannelPipeline提供了ChannelHandler链的容器。以客户端应用程序为例，**如果事件的运动方向是从客户端到服务端的，那么我们称这些事件为出站的**，即客户端发送给服务端的数据会通过pipeline中的一系列ChannelOutboundHandler，并被这些Handler处理，反之则称为入站的
+
+![image-20200304172132567](img/image-20200304172132567.png)
+
+### 编码解码器
+
+1. 当Netty发送或者接受一个消息的时候，就将会发生一次数据转换。入站消息会被解码：从字节转换为另一种格式（比如java对象）；如果是出站消息，它会被编码成字节。
+
+2. Netty提供一系列实用的编解码器，他们都实现了ChannelInboundHadnler或者ChannelOutboundHandler接口。在这些类中，channelRead方法已经被重写了。以入站为例，对于每个从入站Channel读取的消息，这个方法会被调用。随后，它将调用由解码器所提供的decode()方法进行解码，并将已经解码的字节转发给ChannelPipeline中的下一个ChannelInboundHandler。
+
+3. 出站与入站对比表
+
+   |       入站        |       出站        |
+   | :---------------: | :---------------: |
+   |       解码        |       编码        |
+   | Socket =》Channel | Channel =》Socket |
+   |  InBoundHandler   |  OutBoundHandler  |
+
+   
+
+**解码器-ByteToMessageDecoder**
+
+1. 关系继承图
+
+   ![image-20200304172655905](img/image-20200304172655905.png)
+
+2. 由于不可能知道远程节点是否会一次性发送一个完整的信息，tcp有可能出现粘包拆包的问题，这个类会对入站数据进行缓冲，直到它准备好被处理.
+
+3. 一个关于ByteToMessageDecoder实例分析
+
+   ![image-20200304173522316](img/image-20200304173522316.png)
+
