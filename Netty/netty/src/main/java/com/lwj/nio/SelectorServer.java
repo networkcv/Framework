@@ -31,8 +31,8 @@ public class SelectorServer {
         // 当有关心的事件发生时，会返回这个SelectionKey，通过SelectionKey可以拿到Channel
         while (true) {
             // Selector监听，等于0说明此时没有事件发生。
-            if (selector.select(5000) == 0) {
-                System.out.println("server monitor 1s");
+            if (selector.select(10000) == 0) {
+                System.out.println("server monitor 10s");
                 continue;
             }
             Set<SelectionKey> keys = selector.selectedKeys();   //获取所有已注册的Channel中发生事件的SelectionKey，
