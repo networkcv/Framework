@@ -568,13 +568,85 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 **解码器-ByteToMessageDecoder**
 
-1. 关系继承图
+- 关系继承图
 
    ![image-20200304172655905](img/image-20200304172655905.png)
 
-2. 由于不可能知道远程节点是否会一次性发送一个完整的信息，tcp有可能出现粘包拆包的问题，这个类会对入站数据进行缓冲，直到它准备好被处理.
+- 由于不可能知道远程节点是否会一次性发送一个完整的信息，tcp有可能出现粘包拆包的问题，这个类会对入站数据进行缓冲，直到它准备好被处理.
 
-3. 一个关于ByteToMessageDecoder实例分析
+- 一个关于ByteToMessageDecoder实例分析
 
    ![image-20200304173522316](img/image-20200304173522316.png)
 
+   上图中有个需要注意的地方是 **decod（）使用的是 If  而不是while** ，每次调用该handler后只会取4个字节进行解码，解码后再传给后面的handler做处理，所以这个handler在一次请求过来时，会被调用很多次。
+
+**Netty的handler链的调用机制**
+
+1. 使用自定义的编码器和解码器来说明Netty的handler 调用机制
+    客户端发送 long类型的数据 -> 服务器
+    服务端发送 long类型的数据 -> 客户端
+2. 结论
+   - 不论解码器handler 还是 编码器handler 即接收的消息类型必须与待处理的消息类型一致，否则该handler不会被执行
+   - 在解码器 进行数据解码时，需要判断 缓存区(ByteBuf)的数据是否足够 ，否则接收到的结果会期望结果可能不一致
+
+![image-20200304225704326](img/image-20200304225704326.png)
+
+**解码器-ReplayingDecoder**
+
+1. public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder
+
+2. ReplayingDecoder扩展了ByteToMessageDecoder类，使用这个类，我们不必调用readableBytes()方法。参数S指定了用户状态管理的类型，其中Void代表不需要状态管理
+
+3. 应用实例：使用ReplayingDecoder 编写解码器，对前面的案例进行简化 [案例演示]
+
+   ![image-20200304235611348](img/image-20200304235611348.png)
+
+4. ReplayingDecoder使用方便，但它也有一些局限性：
+
+   - 并不是所有的 ByteBuf 操作都被支持，如果调用了一个不被支持的方法，将会抛出一个 UnsupportedOperationException。
+   - ReplayingDecoder 在某些情况下可能稍慢于 ByteToMessageDecoder，例如网络缓慢并且消息格式复杂时，消息会被拆成了多个碎片，速度变慢
+
+**其它解码器**
+
+1. LineBasedFrameDecoder：这个类在Netty内部也有使用，它使用行尾控制字符（\n或者\r\n）作为分隔符来解析数据。
+2. DelimiterBasedFrameDecoder：使用自定义的特殊字符作为消息的分隔符。
+3. HttpObjectDecoder：一个HTTP数据的解码器
+4. LengthFieldBasedFrameDecoder：通过指定长度来标识整包消息，这样就可以自动的处理黏包和半包消息。
+
+### Log4j整合到Netty
+
+1. 添加maven依赖
+
+```
+	    <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.25</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.25</version>
+            <scope>test</scope>
+        </dependency>
+
+```
+
+2.配置log4j.properties
+
+![image-20200305001146323](img/image-20200305001146323.png)
+
+
+
+### TCP 粘包拆包原理

@@ -836,6 +836,3 @@ NIO的直接内存是由`MappedByteBuffer`实现的。核心即是`map()`方法�
 另外，**直接内存**的大小可通过jvm参数来设置：`-XX:MaxDirectMemorySize`。
 
 NIO的MappedByteBuffer还有一个兄弟叫做`HeapByteBuffer`。顾名思义，它用来在堆中申请内存，本质是一个数组。由于它位于堆中，因此可受GC管控，易于回收。
-
-
-
