@@ -705,4 +705,89 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
    ![](img/Netty详尽版.jpg)
 
-2. 
+2. IdleStateHandler 中的AbstractIdleTask 使用了模板方法设计模式，其中AQS中也使用到了这个设计模式。
+
+3. Piepleline 作为管道，其中维系一个由ChannelHandlerContext组成的双向链表，每个ChannelHandlerContext 中都包含一个 Handler，这些Handler 的调用采用了 过滤器模式。
+
+### 心跳检测机制源码分析
+
+1. Netty 提供了 IdleStateHandler ，ReadTimeoutHandler，WriteTimeoutHandler 三个**Handler** 检测连接的有效性，重点分析 **IdleStateHandler** .
+
+   ![image-20200306094833808](img/image-20200306094833808.png)
+
+2. IdleStateHandler会根据对其配置的读、写、读写时间来判别，当前连接有多久没有进行上述操作了，**如果超出设置的时间，将会生成对应的 IdleStateEvent 传递给下一个 handler** 。后面的Handler 再实现 **userEventTriggerd（）**进行相应处理。
+
+3. 附上代码：
+
+   ```java
+   public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+       @Override
+       public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+           if (evt instanceof IdleStateEvent) {
+               IdleStateEvent event = (IdleStateEvent) evt;
+               String eventType = null;
+               switch (event.state()) {
+                   case READER_IDLE:
+                       eventType = "读空闲";
+                       break;
+                   case WRITER_IDLE:
+                       eventType = "写空闲";
+                       break;
+                   case ALL_IDLE:
+                       eventType = "读写空闲";
+                       break;
+               }
+               System.out.println(ctx.channel().remoteAddress() + " : " + eventType);
+               System.out.println("服务器做相应处理");
+           }
+       }
+   }
+   
+   ```
+
+   
+
+## RPC（Remote Procedure）
+
+1. RPC（Remote Procedure Call）— 远程过程调用，是一个计算机通信协议。该协议允许运行于一台计算机的程序调用另一台计算机的子程序，而程序员无需额外地为这个交互作用编程
+
+2. 两个或多个应用程序都分布在不同的服务器上，它们之间的调用都像是本地方法调用一样(如图)
+
+   ![image-20200306142019142](img/image-20200306142019142.png)
+
+3. 常见的 RPC 框架有: 比较知名的如阿里的Dubbo、google的gRPC、Go语言的rpcx、Apache的thrift， Spring 旗下的 Spring Cloud。
+
+### **RPC调用流程**
+
+![image-20200306142050333](img/image-20200306142050333.png)
+
+### **PRC调用流程说明**
+
+1. 服务消费方 (client) 以本地调用方式调用服务
+2. client stub 接收到调用后负责将方法、参数等封装成能够进行网络传输的消息体
+3. client stub 将消息进行编码并发送到服务端
+4. server stub 收到消息后进行解码
+5. server stub 根据解码结果调用本地的服务
+6. 本地服务执行并将结果返回给 server stub
+7. server stub 将返回导入结果进行编码并发送至消费方
+8. client stub 接收到消息并进行解码
+9. 服务消费方(client)得到结果
+
+小结：RPC 的目标就是将 2-8 这些步骤都封装起来，用户无需关心这些细节，可以像调用本地方法一样即可完成远程服务调用。
+
+
+
+### **需求说明**
+
+1. dubbo 底层使用了 Netty 作为网络通讯框架，要求用 Netty 实现一个简单的 RPC 框架
+2. 模仿 dubbo，消费者和提供者约定接口和协议，消费者远程调用提供者的服务，提供者返回一个字符串，消费者打印提供者返回的数据。底层网络通信使用 Netty 4.1.20
+
+### **设计说明**
+
+1. 创建一个接口，定义抽象方法。用于消费者和提供者之间的约定。
+
+2. 创建一个提供者，该类需要监听消费者的请求，并按照约定返回数据。
+
+3. 创建一个消费者，该类需要透明的调用自己不存在的方法，内部需要使用 Netty 请求提供者返回数据
+
+   ![image-20200306142823059](img/image-20200306142823059.png)
