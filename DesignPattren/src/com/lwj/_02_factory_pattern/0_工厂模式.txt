@@ -1,0 +1,50 @@
+工厂模式
+    不使用设计模式:
+        Car byd = new BYD();
+        Car bmw = new BWM();
+        如果想要获取一辆车的话,通过自己建造(也就是new的方式)需要知道Car接口,还需要知道具体的构造图纸(BYD构造函数),可能还
+        需要向构造方法传入很多的参数,如果想换宝马了,则还需要相同的步骤,每次都需要详细的知道制造一辆车的具体参数和图纸,这
+        在现实中根本行不通,你想要拥有一辆车,肯定是去工厂直接提一辆最便宜,而你去提车,只需要知道告诉工厂你要什么车就可以了.
+
+    静态工厂/简单工厂模式:
+        Car bwm=CarFactory.createCar("宝马");
+        Car byd=CarFactory.createCar("比亚迪");
+        CarFactory就是你去要提车的工厂,告诉他你想要什么车就可以了,然后让他自己去找图纸,去传入默认参数,等他建造完成后将车
+        返回给你,你只需要知道Car接口和你想要的车型.
+        该模式不满足OCP原则 对扩展开放,对修改关闭.
+        如果该工厂没有你要的车型,则只能对工厂类进行代码上的修改,不支持动态扩展
+
+    工厂方法模式:
+        为了避免简单工厂模式的缺点,不完全满足(OCP)open close principle(喷森抛)
+        工厂方法模式和简单工厂模式最大的不同在于,简单工厂模式只有一个(对于一个项目或者一个独立模块而言)工厂类(CarFactory)
+        该工厂类可以制造不同的Car对象，但是如果想要扩展的话就需要在源代码上进行更改。
+        而工厂方法模式有一组实现了相同接口(CarFactory接口)的工厂类(BMWFactory、BYDFactory).，每一个Car都必须对应一个工厂
+        类，虽然扩展只需要实现CarFactory接口，十分方便，但是类的数量也会递增。
+
+    抽象工厂模式：
+        这里的抽象更多的是对于产品的抽象，比如一个生产鼠标的鼠标工厂接口(MouseFactory)，有两个具体的实现类(
+        DellMouseFactory和HpMouserFactory),鼠标接口(Mouse)有两个实现类(DellMouse,HpMouse).
+        MouseFactory中定义鼠标工厂的共同方法createMouse().
+        MouseFactory  dellMouseFactory = new DellMouseFactory();
+        Mouse  dellMouse = dellMouseFactory.createMouser();
+        需求升级：现在要求鼠标和键盘配套生产，那么鼠标工厂就要改名为 PCFactory,其中不光要有创建鼠标的抽象方法createMouse
+        还要有创建键盘的抽象方法 createKeybo()，其实现类，也需要改名为对应的 DellPCFactory和 HpPCFactory,相应的,两个工厂
+        也要推出实现键盘接口 Keybo 的实现类( DellKeybo , HpKeybo).
+        PCFactory hpPCFactory =new HpPCFactory();
+        Mouse hpMouser = hpPCFactory.createMouse();
+        Keybo hpKeybo = hpPCFactory.createKeybo();
+
+
+    总结：
+        简单工厂模式  简单、便于管理，在实际中使用的多一些
+        工厂方法模式  不修改已有类的前提下，通过增加新的工厂类实现扩展，可以看作简单工厂的升级版。
+        抽象工厂模式  看作为工厂方法模式的升级版，可以在工厂接口中增加定义产品，工厂方法模式返回一个产品，抽象工厂模式返
+        回一系列产品，形成一个产品族，同时也支持工厂的扩展。
+
+    应用场景：
+        JDK中Calendar的getInstance方法
+        JDBC中Connection对象的获取
+        Hibernate中SessionFactory创建Session
+        spring中IOC容器创建管理bean对象
+        XML解析时的DocumentBuilderFactory创建解析器对象
+        反射中Class对象的newInstance()

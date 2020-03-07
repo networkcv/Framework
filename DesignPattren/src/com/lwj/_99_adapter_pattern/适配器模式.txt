@@ -1,0 +1,14 @@
+适配器模式
+    模式实现：
+        客户端需要调用目标接口(Target)的指定方法(handleReq)，该方法的功能已经被需要适配的类NeedAdapter实现,但是该类并没有
+        实现目标接口，所以没法传入，因为他并不是目标接口的实现类，改已有类的源码并不是我们所希望的，所以在此加入一个适配
+        器类Adapter由该类来实现目标接口(Target)和指定方法(handleReq),然后再持有需要适配的类NeedAdapter的引用，随后将具体
+        的需要适配的类NeedAdapter对象进行注入，然后适配器类中的指定方法调用注入对象的相关方法。
+        这样，客户端就可以通过适配器的方式实现已有类的相关方法。
+        NeedAdapter needAdapter = new NeedAdapter();
+        Adapter adapter = new Adapter(needAdapter);
+        client.test1(adapter);
+
+    应用场景：
+        java.io.InputStreamReader(InputStream)
+        java.io.OutputStreamReader(OutputStream)
