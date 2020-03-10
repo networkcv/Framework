@@ -2,12 +2,17 @@ package _03_操作符;
 
 import org.junit.Test;
 
+import java.awt.font.TextHitInfo;
 import java.util.Random;
 
 /**
  * create by lwj on 2020/3/9
  */
 public class Test1 {
+static void a(){}
+void b(){
+    a();
+}
     public static void main(String[] args) {
         Random random = new Random(1);
         System.out.println(random.nextInt(10));
@@ -53,4 +58,19 @@ public class Test1 {
     public void test4() {
         System.out.println(~(byte)-128);
     }
+
+    @Test
+    public void test11(){
+        Boolean flag = false;
+        if (flag = true)
+        {
+            System.out.println("true");
+        }
+        else
+        {
+            System.out.println("1");
+        }
+    }
 }
+
+
