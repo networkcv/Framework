@@ -189,17 +189,169 @@ System.out.println(o1);	//2.0
 
 ## 初始化与清理
 
-用构造器确保初始化
+### 构造器初始化
 
-重载和重写
+​		从概念上讲，“创建”与“初始化”是彼此独立的，创建是指对象在内存分配对象空间的过程，而初始化是在对象完成创建后，在被正式使用前的定义初始状态的过程。
 
-finalize（）
+​		但在Java中，”创建“和”初始化“是捆绑在一起的，这是为了确保每个对象在使用前都能被正确的初始化，因此设计出构造方法来完成对类的创建及初始化。
+
+​		如果代码中没有提供构造器的话，编译器会默认提供一个无参构造器，但是如果已经定义了一个构造器（无论是否有参数），编译器就不会提供默认无参构造。
+
+​		构造之间可以相互调用，但不能循环调用，可以使用this关键字，`this()`或`this(int)`，这里还要注意的是必须将this()放置在构造器的调用的最初始位置。this指的是调用方法的当前对象，作为方法的隐藏参数传入。
+
+**创建一个对象分为如下三步：**
+
+1. 分配对象的内存空间，并根据对象成员变量的类型进行相应的初始化（如整型的默认值为0，char默认值为"\u0000"（NULL空字符串），boolean默认为false，引用类型默认为null）。
+2. 执行编译后字节码中的`<init>方法`（构造方法），这个构造方法不仅仅是构造器中的内容，还包括成员变量的初始化，以及代码块初始化，这部分的内容由程序开发者来定义，对类中的成员变量进行初始化。
+3. 通过new表达式返回对新建对象的引用，构造器本身不会返回任何值，它只负责执行操作。
+
+### 构造方法
+
+​		`<init>方法`内容不仅仅局限于 **构造方法中代码**，还有对 **成员变量（非static）定义时的赋值操作** 以及 **`{}`中的初始化代码块**，编译器会以上三者的内容都编译为字节码，一起存放在`<init>`方法中。**字节码的先后顺序决定执行的先后顺序。**
+
+​		构造方法中的代码对应的字节码总是放在对应构造方法的最后。
+
+​		而定义时的初始化操作和初始化代码的先后顺序取决于源码中这两者定义的先后顺序。
+
+​		静态变量的初始化和静态代码块同理。
+
+​	示例如下：
+
+- ```java
+  public class Test3 {
+      int i = 1;	
+      { i = 0; }
+  
+      public static void main(String[] args) {
+          System.out.println(new Test3().i);		
+      }
+  }	
+  	//Output
+  	//0
+  ```
+
+- ```java
+  public class Test4 {
+      { i = 0; }	
+      int i = 1;
+  
+      public static void main(String[] args) {
+          System.out.println(new Test4().i);		
+      }
+  }	
+  	//Output
+  	//1
+  ```
+
+  
+
+### 方法重载
+
+- 方法名相同，参数类型不同。参数类型不同也可以重载。
+- 由于基本类型可以自动从一个”较小“的类型提升到一个”较大“的类型，在没有当前参数类型的重载方法时，整型的变量会逐级扩大去寻找（byte-》short-》int-》long），char类型会提升到int型，实型（float-》double）。
+- 如果想让实参的类型变小来适应形参的话，则需要手动转换。
+- 需要注意的是，无法用返回值来区分重载方法，重载其实是方法的静态分派
+
+### finalize()
+
+​		当我们不再使用某个对象时，这个对象的内存空间就需要被回收，以便分配新的对象，在Java中不需要我们手动来终结一个对象，JVM的垃圾收集线程会代替我们来做这件事。
+
+​		如果判定某个对象需要回收，会判断该对象是否重写了`finalize()`方法或者该方法是否已经被调用过了，如果没有重写或者已经被调用过了，那么本次垃圾回收会回收该对象；
+
+​		如果重写来但`finalize()`方法没被调用过，那么有必要执行该finalize方法，具体的执行过程是具体过程是将该对象放置到一个叫做 F-Queue 的队列之中，**并在稍后由一个由虚拟机自动建立的、低优先级的 Finalizer 线程去执行它，这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束**，这样做的原因是，如果一个对象在 finalize() 方法中执行缓慢或者发生了死循环，将很可能会导致 F-Queue 队列中其他对象永久处于等待，甚至导致整个内存回收系统崩溃。
+
+### 数组初始化
+
+三种数组初始化的方式：
+
+```java
+    int[] arr = new int[10];
+    int[] arr1 = new int[]{1, 2, 3};
+    int arr2[] = {1, 2, 3};
+```
+
+
 
 ## Java核心类
 
 ### Random
 
 用来生产随机数，在创建 Random 对象时，可以传入一个`seed(种子)` ，对于特定的种子总是会生成相同的随机数列，可以调用方法 `nextInt(int bound)` 获取，结果会从 `[0,bound)` 里取，包左不包右。
+
+
+
+## 枚举类型
+
+我们经常会定义一些常量来表示某些状态，如 ` int is_delete` ，用1来表示删除，0来表示未删除。
+
+但是这些规定只有我们自己知道，Java程序并不知道，因此编译器无法检查传入 `is_delete`值的合理性。
+
+因此Java 提供了枚举类，为了让编译器自动检查某个值在枚举的集合内。
+
+```java
+enum Weekday {
+    SUN, MON, TUE, WED, THU, FRI, SAT;
+}
+```
+
+首先，`enum`常量本身带有类型信息，即`Weekday.SUN`类型是`Weekday`，编译器会自动检查出类型错误，不可能引用到非枚举的值，因为无法通过编译，最后，不同类型的枚举不能互相比较或者赋值，因为类型不符
+
+### enum的比较
+
+使用`enum`定义的枚举类是一种引用类型。前面我们讲到，引用类型比较，要使用`equals()`方法，如果使用`==`比较，它比较的是两个引用类型的变量是否是同一个对象。因此，引用类型比较，要始终使用`equals()`方法，但`enum`类型可以例外。
+
+这是因为`enum`类型的每个常量在JVM中只有一个唯一实例，所以可以直接用`==`比较：
+
+```java
+if (day == Weekday.FRI) { // ok!
+}
+if (day.equals(Weekday.SUN)) { // ok, but more code!
+}
+```
+
+### enum类型
+
+通过`enum`定义的枚举类，和其他的`class`有什么区别？
+
+答案是没有任何区别。`enum`定义的类型就是`class`，只不过它有以下几个特点：
+
+- 定义的`enum`类型总是继承自`java.lang.Enum`，且无法被继承；
+- 只能定义出`enum`的实例，而无法通过`new`操作符创建`enum`的实例；
+- 定义的每个实例都是引用类型的唯一实例；
+- 可以将`enum`类型用于`switch`语句。
+
+例如，我们定义的`Color`枚举类：
+
+```
+public enum Color {
+    RED, GREEN, BLUE;
+}
+```
+
+编译器编译出的`class`大概就像这样：
+
+```
+public final class Color extends Enum { // 继承自Enum，标记为final class
+    // 每个实例均为全局唯一:
+    public static final Color RED = new Color();
+    public static final Color GREEN = new Color();
+    public static final Color BLUE = new Color();
+    // private构造方法，确保外部无法调用new操作符:
+    private Color() {}
+}
+```
+
+### 小结
+
+Java使用`enum`定义枚举类型，它被编译器编译为`final class Xxx extends Enum { … }`；
+
+通过`name()`获取常量定义的字符串，注意不要使用`toString()`；
+
+可以为`enum`编写构造方法、字段和方法
+
+`enum`的构造方法要声明为`private`，字段强烈建议声明为`final`；
+
+`enum`适合用在`switch`语句中。
 
 
 
@@ -290,6 +442,132 @@ String s1 = "152\\d{8}" //表示152开头的总共11位数字
 | [^A-F]     | 指定范围外的任意字符 | 非`A`~`F`                            |
 | AB\|CD\|EF | AB或CD或EF           | `AB`，`CD`，`EF`                     |
 
+### 分组匹配
+
+通过`()`将正则表达式进行分组，分组并不会影响匹配结果，只是方便在匹配成功后提取相关字符串，不然还要用String的`indexOf()`和`substring()`等方法。
+
+```java
+Pattern pattern = Pattern.compile("(.*)-([a-z]{4})");
+Matcher matcher = pattern.matcher("hello-java");
+if (matcher.matches()) {	//判断匹配的结果
+    System.out.println(matcher.group(0));	//获取整个字符串
+    System.out.println(matcher.group(1));	//获取第一个子串分组  .*
+    System.out.println(matcher.group(2));	//获取第二个子串分组 [a-z]{4}
+}
+/* Output
+hello-java
+hello
+java
+*/
+```
+
+### 非贪婪匹配
+
+正则表达式默认使用的是贪婪匹配，同时满足前后子串的情况下，让前边子串尽可能的多匹配。而通过在表达式后边加 `?` 可以设置为非贪婪匹配。
+
+举个例子:
+
+**贪婪匹配：** `(\d*)(\d*)`
+
+```java
+        Pattern pattern = Pattern.compile("(\\d*)(\\d*)");
+        Matcher matcher = pattern.matcher("12345");
+        if (matcher.matches()) {
+            System.out.println("group1=" + matcher.group(1));
+            System.out.println("group2=" + matcher.group(2));
+        }
+		/* Output
+			group1=12345
+			group2=
+		*/
+```
+
+**非贪婪匹配：** `(\d*?)(\d*)`
+
+```java
+        Pattern pattern = Pattern.compile("(\\d*?)(\\d*)");
+        Matcher matcher = pattern.matcher("12345");
+        if (matcher.matches()) {
+            System.out.println("group1=" + matcher.group(1));
+            System.out.println("group2=" + matcher.group(2));
+        }
+		/* Output
+			group1=
+			group2=12345
+		*/
+```
+
+这里还有一个要注意的点，在简单匹配规则中我们提过 `?` 还表示匹配0个或1个，如 `\d?` 表示0个或1个数字。
+
+那这里如何区分表达两种不同含义的 `?` ，表示非贪婪匹配的问号要放在后面。
+
+例如，`(\d??)(9*)`，`\d?`表示匹配0个或1个数字，后面第二个`?`表示非贪婪匹配，因此，给定字符串`"9999"`，匹配到的两个子串分别是`""`和`"9999"`，因为对于`\d?`来说，可以匹配1个`9`，也可以匹配0个`9`，但是因为后面的`?`表示非贪婪匹配，它就会尽可能少的匹配，结果是匹配了0个`9`。
+
+### 搜索、分割和替换
+
+使用正则表达式还可以搜索字符串。
+
+```java
+    String s = "the quick brown fox jumps over the lazy dog.";
+    Pattern p = Pattern.compile("\\wo\\w");
+    Matcher m = p.matcher(s);
+    while (m.find()) {
+        String sub = s.substring(m.start(), m.end());
+        System.out.println(sub);
+    }
+	/* Output
+        row
+        fox
+        dog
+	*/
+```
+
+Java的String类提供了 分割和替换 的支持，对应的方法是 `split()` 和 `replaceAll()`。
+
+**练习：模板引擎**
+
+模板引擎，也就是一个字符串模板，可以应用在很多方面，如动态的拼装sq。
+
+这里除了之前用的`Matcher.find()`、`Matcher.start()`、 `Matcher.end()`还需要用到Matcher的两个方法：
+
+```java
+// 对每次匹配到的字符串替换追加到sb的末尾
+public Matcher appendReplacement(StringBuffer sb, String replacement) 
+// 将最后匹配到的字符串追加到sb的末尾
+public StringBuffer appendTail(StringBuffer sb) 
+```
+
+代码如下：
+
+```java
+        HashMap<String,String> map =new HashMap<>();
+        map.put("field","name");
+        map.put("table","user");
+        String sql="select #{field} from #{table} order by id ";
+        Pattern templateEngine = Pattern.compile("\\#\\{(\\w+)}");
+        Matcher matcher = templateEngine.matcher(sql);
+        StringBuffer res = new StringBuffer();
+        while(matcher.find()){
+            //用于截取获得 "#{field}" 中的 field
+            String key=sql.substring(matcher.start() + 2, matcher.end() - 1);   //field
+            //这里第一次find到的内容是 "select #{field}"，appendReplacement方法将 #{field} 替换为map.get(key)的内容，然后将结果 "select name" 添加到res中
+            matcher.appendReplacement(res,map.get(key));
+        }
+		//第三次找到的内容是 “order by id”，但是与pattern 不符合，所以返回false，退出了while循环，因此这句“order by id” 并没有添加到res中，所以需要我们手动添加。
+        matcher.appendTail(res);	
+        System.out.println(res.toString());
+```
+
+**练习：IP地址解析**
+
+IP地址的长度为32位(共有2^32个IP地址)，分为4段，每段8位。用十进制数字表示，每段数字范围为0～255，段与段之间用句点隔开。// 0.0.0.0 ～ 255.255.255.255
+
+根据规则：每段相同，范围都在 0 ~ 255，每段对应的正则表达式为 `(2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2}`
+
+这个表达式由两部分组成，`(2(5[0-5]|[0-4]\d))` 匹配 200～255，`[0-1]?\d{1,2}` 匹配 0 ~ 199。
+
+通过 `|` 将两个子串连起来，就表示0～255，后边还有 `.255.255.255` 这里可以用`(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}`来表示。
+
 ## 其他
 
 java使用的是Unicode而不是ASCII字符集，所以标识符中的字母不仅是英文，也可以是"$" 或者 ”_“，还包括汉字（每个汉字占两个字节），但不建议使用汉字。
@@ -302,6 +580,8 @@ java使用的是Unicode而不是ASCII字符集，所以标识符中的字母不�
 
 
 
-**参考链接**
+**致谢**
 
-https://www.liaoxuefeng.com/wiki/1252599548343744
+
+
+感谢廖雪峰老师通俗易懂的 [Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)。
