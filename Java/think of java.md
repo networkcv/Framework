@@ -272,6 +272,148 @@ System.out.println(o1);	//2.0
 
 
 
+## 复用类
+
+### 继承
+
+OOP语言中有一个特性就是继承，它设面向对象程序设计的基石，继承的目标就是复用已有的类，通过 关键字 `extends`实现。
+
+Java中的类总是在继承，当我们定义一个类时，总是在继承，除非已明确指出其要继承的父类，否则就是隐式地继承Object。
+
+### 初始化
+
+​		对于继承了父类的子类，从外部来看，它好像是与父类具有了相同的接口，或许自身还会额外实现一些方法和字段。但 **继承并不是复制父类的内容** 。当创建一个子类的对象时，该对象包含了一个父类的对象，这个父类的对象和通过父类直接创建是一样的，两者的区别是，后者来自于外部，前者包装在子类对象内部。
+
+​		因此在实例化一个子类对象之前，需要先完成其父类的实例化，如果父类还有父类的话，就先实例化其父类的父类，所以最先被实例化的一定是Object类。
+
+​		我们在子类的构造器中，通过 `super` 关键字来完成对父类的实例化，由于上面的原因，所以构造父类的 `super()` 或 `super(int)` 一定要位于构造器中的顶端，否则的话会提示编译期异常。
+
+以下是 **错误示例：**
+
+```java
+public class Test1 extends Test0 {
+    Test1(){
+        System.out.println(1);
+        super();    //Call to 'super()' must be first statement in constructor body
+    }
+    Test1(int i){
+        System.out.println(1);
+        this();     //Call to 'this()' must be first statement in constructor body
+    }
+    Test1(long i){
+        super();
+        this();     //Call to 'this()' must be first statement in constructor body
+    }
+}
+```
+
+​		之前提到编译器会在我们没有定义构造器的情况下，为类提供无参构造器，同样，如果我们不主动声明`super` 语句的话，编译器会在构造器的可执行代码的顶端隐式加上 `super()` 来调用父类的无参构造，如果父类没有无参构造，则子类无法通过编译。
+
+​		在同一个构造器中，用于直接指定父类构造（super语句）或者间接指定父类构造（this）的语句一定位于构造器的顶端。这里的间接指定父类构造的意思是，通过使用 `this`关键字调用子类的其他构造器。
+
+```java
+public class Test2 {
+    public static void main(String[] args) {
+        Zi zi = new Zi();
+    }
+}
+
+class Fu {
+    Fu(int i) {
+        System.out.println("fu " + i);
+    }
+    void print(int i) {
+        System.out.println("fu " + i);
+    }
+}
+
+class Zi extends Fu {
+    Zi() {
+        this(1);
+        System.out.println("zi " + 3);
+        super.print(4);
+    }
+    Zi(int i) {
+        super(1);
+        this.print(2);
+    }
+    @Override
+    void print(int i) {
+        System.out.println("zi " + i);
+    }
+}
+	//Output
+        fu 1
+        zi 2
+        zi 3
+        fu 4
+```
+
+### 组合和代理
+
+复用类的方式不局限于继承，还有组合和代理。
+
+**组合：**只需要将对象引用定义在新类中即可，通过该引用操作目标类对外暴露的接口。那么到底是使用继承还是组合，一个最简单的判断就是，**新类是否需要向父类进行向上转型？**如果必须向上转型，则继承是必要的，否则使用组合的方式，具体可以参考阿里的Java编程手册。
+
+**代理：**这是继承和组合的中庸之道，代理类需要持有被代理对象的引用，（这就像组合），同时还需要在代理类中暴露该被代理对象的所有方法，这个通常是通过代理类实现被代理类的接口，（这里就像继承）。
+
+### final关键字
+
+**final修饰变量**
+
+被`final` 修饰的变量只能被赋值一次，修饰引用的话，则该引用不能指向其他对象，但已经指向的对象内容是可变的，如果被 `staic final ` 修饰的变量 作为编译期常量。
+
+**final修饰参数**
+
+在方法中无法修改参数引用所指向的对象，这一特征主要向匿名内部类传递数据。
+
+**final修饰方法**
+
+final方法无法被子类重写，以防继承类修改它的含义。private 权限默认就是 final的
+
+在子类中重新定义父类中的private 的方法，其实是重新定义了一个相同方法签名的方法，可以用@Override检测。
+
+**final修饰类**
+
+被final修饰的类无法被继承
+
+## 多态
+
+继承是多态的基础，多态是为了消除类型之间的耦合关系，将变化的和不变的事物分离开来。
+
+**方法调用绑定**
+
+将一个方法调用同一个方法主体关联起来被称为绑定，
+
+若在程序执行前就进行绑定（如果有的和，由编译器和连接程序实现）叫做前期绑定（静态绑定）；
+
+而后期绑定（动态绑定），便是在运行时期根据对象的类型进行绑定。
+
+这里编译期和运行期可以片面的理解为程序是否需要运用，Java中除了static和final方法之外，其他的所有方法都是后期绑定。
+
+```java
+class Fu{
+    private void f(){
+        System.out.println("fu");
+    }
+}
+class Zi extends  Fu{
+    public void f(){
+        System.out.println("zi");
+    }
+}
+public static void main(String[] args){
+    Fu zi = new Zi();
+    zi.f();
+    Zi zi2 = new Zi();
+    zi2.f();
+}
+	//Output
+	//fu
+	//zi
+
+```
+
 ## Java核心类
 
 ### Random
@@ -344,6 +486,8 @@ public final class Color extends Enum { // 继承自Enum，标记为final class
 ### 小结
 
 Java使用`enum`定义枚举类型，它被编译器编译为`final class Xxx extends Enum { … }`；
+
+默认提供用于打印的`toString()` ，以及`static values()`方法，用来按照enum常量的声明顺序，产生由这些常量值构成的数组。
 
 通过`name()`获取常量定义的字符串，注意不要使用`toString()`；
 
@@ -576,12 +720,22 @@ java使用的是Unicode而不是ASCII字符集，所以标识符中的字母不�
 
 `System.getProperties().list(System.out);` 可以提供环境信息
 
+### 静态分派和动态分派
 
+不需要运行就只能知道调用的是哪个方法的调用就是静态分派，（在IDE中用Ctrl+鼠标左键可以直接点进去的），而需要运行时才能知道的调用就是动态分派（在IDE中用Ctrl+鼠标左键会出现其实现方法列表）。
+
+那么动态绑定是如何实现的？这里需要某种机制，可以在运行时判断对象的实际类型（而不是传入的父类类型），从而调用恰当的方法，如果子类重写了该方法，那么调用子类的重写方法，否则调用父类的方法。
+
+
+
+## 最后
+
+从大二接触Java至今，近3年多的时间，一直学习Java相关的知识，工作中也在使用Java，只是时至今日才有幸读完这本书，感受颇深。之前匆匆的学完Java基础，就去学Java Web及SSH、SSM框架，后来也学习了Java虚拟机相关的知识，现在回过头来再看书中的内容，作者其实早已将Java基础、虚拟机相关及程序设计方面的内容编排在一起，呈现给我们。
 
 
 
 **致谢**
 
-
+感谢《Java编程思想》的作者及译者。
 
 感谢廖雪峰老师通俗易懂的 [Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)。
