@@ -1,4 +1,4 @@
-package _08_多态.可扩展性;
+package _08_多态;
 
 /**
  * create by lwj on 2020/3/12
