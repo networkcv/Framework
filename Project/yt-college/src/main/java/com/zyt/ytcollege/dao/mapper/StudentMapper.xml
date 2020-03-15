@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyt.ytcollege.dao.mapper.StudentMapper">
+
+    <insert id="insertStudent" useGeneratedKeys="true" keyProperty="id" parameterType="StudentDO">
+        insert into student
+        values (#{id}, #{name}, #{sex}, #{age}, #{phone}, #{phone2}
+        ,#{subjectId},#{subjectName},#{score},#{referrer})
+    </insert>
+
+    <update id="updateStudent" parameterType="StudentDO">
+        update student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">name =#{name},</if>
+            <if test="hours!=null">hours =#{hours},</if>
+            <if test="studentLevel!=null">student_level =#{studentLevel},</if>
+            <if test="state!=null">state =#{state},</if>
+            <if test="cost!=null">cost =#{cost},</if>
+        </trim>
+        where id =#{id}
+    </update>
+
+    <select id="selectStudent" parameterType="StudentDO" resultType="com.zyt.ytcollege.dao.DO.StudentDO">
+        select * from student
+        <where>
+            <if test="id!=null">
+                and id = #{id}
+            </if>
+            <if test="name!=null">
+                and name = #{name}
+            </if>
+            <if test="phone!=null">
+                and phone =#{phone}
+            </if>
+        </where>
+    </select>
+    <select id="selectAll" parameterType="StudentDO" resultType="com.zyt.ytcollege.dao.DO.StudentDO">
+        select * from student
+        <where>
+            <if test="name!=null">
+                and name like concat("%",#{name},"%")
+            </if>
+            <if test="studentLevel!=null">
+                and student_level =#{studentLevel}
+            </if>
+            <if test="state!=null">
+                and state =#{state}
+            </if>
+        </where>
+    </select>
+
+</mapper>

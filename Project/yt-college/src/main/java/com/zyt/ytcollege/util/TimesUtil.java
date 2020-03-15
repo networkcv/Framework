@@ -1,11 +1,29 @@
 package com.zyt.ytcollege.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * create by lwj on 2020/3/14
  */
-public class TimestampUtil {
+public class TimesUtil {
+    /**
+     * 格式化当前日期
+     */
+    public static String currentDate() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        return simpleDateFormat.format(new Date());
+    }
+
+    /**
+     * 格式化当前时间
+     */
+    public static String currentTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return simpleDateFormat.format(new Date());
+    }
+
     /**
      * 获得前一天零时零分零秒
      */

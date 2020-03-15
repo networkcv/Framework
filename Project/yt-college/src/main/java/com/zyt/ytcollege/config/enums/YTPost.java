@@ -1,4 +1,4 @@
-package com.zyt.ytcollege.util;
+package com.zyt.ytcollege.config.enums;
 
 /**
  * create by lwj on 2020/3/14

@@ -1,5 +1,7 @@
 package com.zyt.ytcollege.util;
 
+import com.zyt.ytcollege.config.enums.YTPost;
+
 /**
  * create by lwj on 2020/3/14
  */

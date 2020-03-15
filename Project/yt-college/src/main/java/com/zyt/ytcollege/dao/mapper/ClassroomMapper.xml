@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyt.ytcollege.dao.mapper.ClassroomMapper">
+
+    <insert id="insertClassroom" parameterType="ClassroomDO">
+        insert into classroom
+        values (#{id}, #{name}, #{max}, #{address}, #{remark}, #{state})
+    </insert>
+
+    <update id="updateClassroom" parameterType="ClassroomDO">
+        update classroom
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">name =#{name},</if>
+            <if test="max!=null">max =#{max},</if>
+            <if test="address!=null">address =#{address},</if>
+            <if test="remark!=null">remark =#{remark},</if>
+            <if test="state!=null">state =#{state},</if>
+        </trim>
+        where id =#{id}
+    </update>
+
+    <select id="selectAll" parameterType="ClassroomDO" resultType="com.zyt.ytcollege.dao.DO.ClassroomDO">
+        select * from classroom
+        <where>
+            <if test="name!=null">
+                and name like concat("%",#{name},"%")
+            </if>
+            <if test="max!=null">
+                and max >=#{max}
+            </if>
+            <if test="state!=null">
+                and state =#{state}
+            </if>
+        </where>
+    </select>
+
+</mapper>

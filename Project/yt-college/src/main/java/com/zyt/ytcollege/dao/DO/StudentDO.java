@@ -7,13 +7,14 @@ import lombok.Data;
  */
 @Data
 public class StudentDO {
-    private int id;
+    private Integer id;
     private String name;
-    private int sex;
-    private int age;
+    private Integer sex;
+    private Integer age;
     private String phone;
     private String phone2;
-    private int subjectId;
-    private int score;
-    private int referrer;
+    private Integer subjectId;  //当前学习课程id
+    private String subjectName; //当前学习课程名称
+    private Integer score;      //积分
+    private Integer referrer;   //介绍人
 }

@@ -2,9 +2,9 @@ package com.zyt.ytcollege.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.zyt.ytcollege.dao.DO.TeacherDO;
-import com.zyt.ytcollege.dao.mapper.TeacherMapper;
-import com.zyt.ytcollege.service.TeacherService;
+import com.zyt.ytcollege.dao.DO.ClassesDO;
+import com.zyt.ytcollege.dao.mapper.ClassesMapper;
+import com.zyt.ytcollege.service.ClassesService;
 import com.zyt.ytcollege.util.Paging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,13 +13,12 @@ import org.springframework.stereotype.Service;
  * create by lwj on 2020/3/14
  */
 @Service
-public class TeacherServiceImpl implements TeacherService {
+public class ClassesServiceImpl implements ClassesService {
     @Autowired
-    private TeacherMapper teacherDao;
-
+    private ClassesMapper classesDao;
     @Override
-    public Page<TeacherDO> list(Paging paging) {
+    public Page<ClassesDO> findByTid(int id, Paging paging) {
         PageHelper.startPage(paging.getPageNum(), paging.getPageSize());
-        return teacherDao.teacherList();
+        return classesDao.selectClassesByTid(id);
     }
 }
