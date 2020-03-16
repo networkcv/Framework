@@ -2,11 +2,17 @@ package com.zyt.ytcollege.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.zyt.ytcollege.config.enums.ApplyState;
+import com.zyt.ytcollege.config.enums.ApplyType;
+import com.zyt.ytcollege.config.enums.PaymentState;
 import com.zyt.ytcollege.dao.DO.ApplyDO;
+import com.zyt.ytcollege.dao.DO.PaymentDO;
 import com.zyt.ytcollege.dao.DO.StudentDO;
 import com.zyt.ytcollege.dao.DO.SubjectDO;
 import com.zyt.ytcollege.dao.mapper.ApplyMapper;
 import com.zyt.ytcollege.service.ApplyService;
+import com.zyt.ytcollege.service.DTO.ApplyDTO;
+import com.zyt.ytcollege.service.PaymentService;
 import com.zyt.ytcollege.service.StudentService;
 import com.zyt.ytcollege.service.SubjectService;
 import com.zyt.ytcollege.util.JsonMsg;
@@ -30,6 +36,8 @@ public class ApplyServiceImpl implements ApplyService {
     private StudentService studentService;
     @Autowired
     private SubjectService subjectService;
+    @Autowired
+    private PaymentService paymentService;
 
     @Override
     public JsonMsg saveApply(ApplyDO applyDO) {
@@ -45,19 +53,36 @@ public class ApplyServiceImpl implements ApplyService {
                     //不存在，则需要先录入学员基本信息
                     student.setReferrer(applyDO.getReferrer());
                     int saveRes = studentService.saveStudent(student);
-                    if (saveRes > 0){
+                    if (saveRes > 0) {
                         applyDO.setStudentId(student.getId());
                     }
+                } else {
+                    applyDO.setStudentId(res.getId());
                 }
             }
+
             //填充课程信息
             SubjectDO subject = subjectService.findSubjectById(applyDO.getSubjectId());
             applyDO.setSubjectName(subject.getName());
             applyDO.setSubjectLevel(subject.getSubjectLevel());
             applyDO.setSubjectCost(subject.getCost());
             applyDO.setDate(TimesUtil.currentDate());
-            applyDO.setState(0);
+            applyDO.setState(ApplyState.NEED_DISPOSE.state);
+            //如果是付费报名 还需要生成订单信息
+            PaymentDO paymentDO = new PaymentDO();
+            if (applyDO.getType() == ApplyType.PAYMENT.type) {
+                paymentDO.setState(PaymentState.NO_PAY.state);
+                paymentService.savePayment(paymentDO);
+                applyDO.setPaymentId(paymentDO.getId());
+                applyDO.setPaymentState(PaymentState.NO_PAY.state);
+            }
             int res = applyDao.insertApply(applyDO);
+            //更新payment记录中的apply_id
+            if (applyDO.getType() == ApplyType.PAYMENT.type) {
+                paymentDO.setApplyId(applyDO.getId());
+                paymentService.editPayment(paymentDO);
+            }
+
             if (res > 0) {
                 return new JsonMsg(200, "ok");
             } else {
@@ -105,8 +130,8 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public Page<ApplyDO> findAllApply(Paging paging, ApplyDO applyDO) {
+    public Page<ApplyDO> findAllApply(Paging paging, ApplyDTO applyDTO) {
         PageHelper.startPage(paging.getPageNum(), paging.getPageSize());
-        return applyDao.selectAll(applyDO);
+        return applyDao.selectAll(applyDTO);
     }
 }

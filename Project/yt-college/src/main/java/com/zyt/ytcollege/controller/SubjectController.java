@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class SubjectController {
     @Autowired
     private SubjectService subjectService;
+
+    /**
+     * 添加课程
+     * @param subjectDO 提供
+     */
     @PostMapping("subject")
     public JsonMsg saveSubject(SubjectDO subjectDO){
         return subjectService.saveSubject(subjectDO);

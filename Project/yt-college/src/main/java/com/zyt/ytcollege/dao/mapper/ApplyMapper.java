@@ -2,6 +2,7 @@ package com.zyt.ytcollege.dao.mapper;
 
 import com.github.pagehelper.Page;
 import com.zyt.ytcollege.dao.DO.ApplyDO;
+import com.zyt.ytcollege.service.DTO.ApplyDTO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -19,7 +20,7 @@ public interface ApplyMapper {
     @Delete("delete from apply where id=#{id}")
     int removeApplyById(int id);
 
-    Page<ApplyDO> selectAll(ApplyDO applyDO);
+    Page<ApplyDO> selectAll(ApplyDTO applyDTO);
 
     @Select("select * from apply where id=#{id}")
     ApplyDO selectApplyById(int id);

@@ -2,6 +2,7 @@ package com.zyt.ytcollege.dao.mapper;
 
 import com.github.pagehelper.Page;
 import com.zyt.ytcollege.dao.DO.TeacherDO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -11,6 +12,18 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface TeacherMapper {
 
-    @Select("select * from teacher where is_delete = 0")
-    Page<TeacherDO> teacherList();
+    int updateTeacher(TeacherDO teacherDO);
+
+    @Delete("delete from teacher where id=#{id}")
+    int removeTeacherById(int id);
+
+    @Select("select * from teacher where id=#{id}")
+    TeacherDO selectTeacherById(int id);
+
+    @Select("select * from teacher where phone=#{phone}")
+    TeacherDO selectTeacherByPhone(String phone);
+
+    Page<TeacherDO> selectAll(TeacherDO teacherDO);
+
+    int insertTeacher(TeacherDO teacherDO);
 }
