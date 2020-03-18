@@ -1,5 +1,7 @@
 package _10_内部类._06_匿名内部类;
 
+import _10_内部类._8_为什么需要内部类.demo24.A;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -8,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Test1 {
 
-   static class Inner {
+    static class Inner {
         void i() {
             test2();
         }
@@ -16,6 +18,18 @@ public class Test1 {
 
     public static void test2() {
         int i = 1;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TimeUnit.SECONDS.sleep(500);
+//                    i=2;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(i);
+            }
+        }).start();
         new Thread(new Runnable() {
             @Override
             public void run() {
