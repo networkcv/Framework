@@ -737,17 +737,37 @@ System.out.println(integers2.getClass());
 
 而容器则默认为我们实现了toString方法，这个方法属于公共逻辑，所以被定义在了公共的抽象类  `AbstractCollection` 中，方法逻辑是获取实现类的迭代器，遍历其中元素，用 `StringBuilder` 进行拼装返回。 
 
+### 容器的遍历
+
+```java
+//方法一：for
+for (int i = 0; i < list.size(); i++) {
+    Object obj = list.get(i);
+}
+//方法二：foreach
+for (Object obj :list ) {
+    System.out.println(obj.toString());
+}
+//方法三：使用容器的迭代器
+Iterator<Object> iterator = list.iterator();
+while (iterator.hasNext()){
+    Object obj = iterator.next();
+}
+```
+
 ### Iterator和Iterable
 
 **Iterator**
 
-在不知道容器底层结构的情况下，可以使用迭代器遍历并选择容器中的对象。同时，迭代器也是一种设计模式。
+Iterator 是一个迭代器接口，定义了两个要实现的方法 `hashNext()` 和 `next()`。
+
+在不知道容器底层结构的情况下，可以使用迭代器遍历并选择容器中的对象。同时，迭代器也是一种设计模式，这种设计很好的将数据与容器分离。
 
 List接口下还支持更强大的迭代器 `ListIterator`  可以双向移动。
 
 **Iterable**
 
-Iterable是JDK5引入的接口，该接口包含一个能够产生Iterator的iterator()方法。该接口的实现类对象可以被用于`foreach` 。
+Iterable是JDK5引入的接口，该接口包含一个能够产生Iterator的iterator()方法。`foreach`  底层调用的就是该方法。
 
 ```java
 public class Test1 implements Iterable<String> {
@@ -777,6 +797,48 @@ public class Test1 implements Iterable<String> {
     }
 }
 ```
+
+### 为什么foreach遍历的时候不能删除元素？
+
+在我们使用 `foreach` 的时候其实调用的是目标对象的 `iterator()` 方法来获取迭代器进行遍历。
+
+```java
+    public Iterator<E> iterator() {
+        return new Itr();
+    }
+	private class Itr implements Iterator<E> {
+        int cursor;       // cursor是下个要返回元素的索引
+        int lastRet = -1; // lastRet是上个返回元素的索引,-1代表没有这个元素
+        int expectedModCount = modCount; 
+        //modCount是ArrayList从抽象父类继承而来的成员变量，用于描述容器被修改的次数，添加或删除操作都会使modCount++
+        //expectedModCount 预期的修改次数，定义在容器实现类的迭代器中，在构建迭代器时进行赋值，执行迭代器的next()时，会首先检查expectedModCount是否等于modCount，不等则说明在构建迭代器之后，在使用之前，这段时间内有其他线程对容器进行了操作，由于ArrayList并不是线程安全的，那么此时遍历使用容器中的元素就会只出现线程安全问题,为了防止这个问题的发生，提前抛出了ConcurrentModificationException异常来提醒我们。
+
+        Itr() {}
+
+        public boolean hasNext() {
+            return cursor != size;	//size是集合的元素个数，
+        }
+
+        @SuppressWarnings("unchecked")
+        public E next() {
+            checkForComodification();
+            int i = cursor;
+            if (i >= size)
+                throw new NoSuchElementException();
+            Object[] elementData = ArrayList.this.elementData;
+            if (i >= elementData.length)
+                throw new ConcurrentModificationException();
+            cursor = i + 1;
+            return (E) elementData[lastRet = i];
+        }
+
+        final void checkForComodification() {
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }        
+```
+
+
 
 
 
