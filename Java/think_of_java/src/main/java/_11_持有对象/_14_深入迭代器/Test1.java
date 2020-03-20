@@ -10,15 +10,21 @@ import java.util.List;
 public class Test1 {
     public static void main(String[] args) {
         List<Object> list = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            Object obj = list.get(i);
-        }
-        for (Object obj :list ) {
-            System.out.println(obj.toString());
-        }
+        list.add(1);
+        list.add(2);
+//        for (int i = 0; i < list.size(); i++) {
+//            Object obj = list.get(i);
+//        }
+//        for (Object obj :list ) {
+//            System.out.println(obj.toString());
+//        }
         Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()){
-            Object obj = iterator.next();
+//            Object obj = iterator.next();
+            iterator.forEachRemaining((t)->{
+                if (t.equals(1))
+                System.out.println(t);
+            });
         }
     }
 

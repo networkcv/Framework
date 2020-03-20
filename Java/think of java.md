@@ -739,6 +739,8 @@ System.out.println(integers2.getClass());
 
 ### 容器的遍历
 
+在这里以List为例，Map的话需要获取EntrySet然后再遍历。
+
 ```java
 //方法一：for
 for (int i = 0; i < list.size(); i++) {
@@ -838,9 +840,55 @@ public class Test1 implements Iterable<String> {
         }        
 ```
 
+**那如何在遍历集合时删除元素？**
 
+- 使用for循环而不是foreach。
 
+- 使用Iterator进行遍历删除。
 
+  上面提到过foreach底层其实用的就是Iterator，那么为什么直接使用Iterator迭代器就可以，而使用foreach却不行？原因在于Iterator的实例对象额外提供了一个 `remove()` 方法。
+
+  这是迭代器提供的 remove（）方法：
+
+  ```java
+          public void remove() {
+              if (lastRet < 0)
+                  throw new IllegalStateException();
+              checkForComodification();
+  
+              try {
+                  ArrayList.this.remove(lastRet);
+                  cursor = lastRet;
+                  lastRet = -1;
+                  expectedModCount = modCount;	//重点关注的代码
+              } catch (IndexOutOfBoundsException ex) {
+                  throw new ConcurrentModificationException();
+              }
+          }
+  ```
+
+  这是ArrayList提供的 remove（）方法：
+
+  ```java
+  public boolean remove(Object o) {
+      if (o == null) {
+          for (int index = 0; index < size; index++)
+              if (elementData[index] == null) {
+                  fastRemove(index);
+                  return true;
+              }
+      } else {
+          for (int index = 0; index < size; index++)
+              if (o.equals(elementData[index])) {
+                  fastRemove(index);
+                  return true;
+              }
+      }
+      return false;
+  }
+  ```
+
+  可以看出Iterator中的remove方法 会重新给 expectedModCount 赋值，这样每次next方法检查时就不会出现ConcurrentModificationException 异常了。同时 Iterator还提供了 `public void forEachRemaining(Consumer<? super E> consumer) {}` ，这个方法传入的Lambda表达式可以对集合中所有的元素进行处理操作。
 
 ### List
 
