@@ -78,10 +78,10 @@
 
 - **主动使用**（七种）
   
-  - 使用 new 关键字创建类的实例
+  - 使用 new 关键字创建类的实例，这里也间接证明构造器也是类的静态方法。
   - 访问某个类或接口的静态变量 getstatic（助记符），或者对该静态变量赋值 putstatic（被 final 修饰，已在编译期将结果放入常量池的静态字段除外）**只有直接定义静态字段的类才会被初始化**；
   - 调用一个类的静态方法 invoke static；
-  - 使用 `java.lang.reflect` 包对类进行反射（例如使用`Class.forName(“com.test.Test”)`）；
+  - 使用 `java.lang.reflect` 包对类进行反射（例如使用`Class.forName(“com.test.Test”)`），(ClassType.class 不算主动使用)，会返回一个Class对象的引用，而一个类被加载的产物就是方法区中的Class对象；
   - 初始化一个类的子类，就会触发父类的初始化；
   - Java 虚拟机启动时被标明启动类的类 ：即包含 main 方法的类；
   - JDK1.7 开始提供的动态语言支持（了解）
@@ -355,9 +355,61 @@ class Singleton{
 
 - Class 对象封装类在方法区内的数据结构，并且向 Java 程序员提供了访问方法区内的数据结构的接口；
 
+- 这里要区分开加载和初始化，在类初始化之前就已经有对应的Class对象了，通过ClassType.class 获取Class对象的方式不算主动使用，因此也不会引起类的初始化。
+
+  ```java
+  public class Person {
+      static{
+          System.out.println("Person");
+      }
+  }
+  public class Test1 {
+      public static void main(String[] args) throws ClassNotFoundException {
+          Class<Person> personClass = Person.class;
+      }
+  }
+  ```
+
+  ![image-20200320110831891](img/image-20200320110831891.png)
+
+上图可以看出加载了Person类，但没有进行初始化。
+
+```java
+    public static void main(String[] args) throws ClassNotFoundException {
+        //Person person = new Person();
+        Class.forName("_14_类型信息._02_反射.Person");
+    }
+```
+
+![image-20200320111014140](img/image-20200320111014140.png)
+
+```java
+    public static Class<?> forName(String className)
+                throws ClassNotFoundException {
+        Class<?> caller = Reflection.getCallerClass();
+        return forName0(className, true, ClassLoader.getClassLoader(caller), caller);
+    }
+	private static native Class<?> forName0(String name, boolean initialize,
+                                            ClassLoader loader,
+                                            Class<?> caller)
+    		    throws ClassNotFoundException;
+```
+
+通过设置initialize的boolean值来决定在加载的时候要不要初始化。
+
+```java
+    public static void main(String[] args) throws ClassNotFoundException {
+        ClassLoader classLoader = Test1.class.getClassLoader();
+        Class.forName("_14_类型信息._02_反射.Person",false,classLoader );
+        //不会初始化Person
+    }
+```
+
+
+
 类初始化：为新的对象分配内存，为实例变量赋默认值，为实例变量赋正确的初始值
 
-Java编译器在它编译的每一个类都至少生成一个实例化的方法，在Java的class文件中，这个实例化方法被称为“”。针对源代码中每一个类的构造方法，Java编译器都会产生一个“”方法。
+Java编译器在它编译的每一个类都至少生成一个实例化的方法，在Java的class文件中，这个实例化方法被称为`<init>`。针对源代码中每一个类的构造方法，Java编译器都会产生一个`<init>`方法。
 
 ## （二）类的连接详解
 
