@@ -383,7 +383,7 @@ final方法无法被子类重写，以防继承类修改它的含义。private �
 
 ## 8.多态
 
-继承是多态的基础，多态是为了消除类型之间的耦合关系，将变化的和不变的事物分离开来，比如父类及其接口是不变的，子类及具体的接口实现是变化的。
+继承是多态的基础，多态是为了消除类型之间的耦合关系，将变化的和不变的事物分离开来，比如父类及其接口是不变的，子类及具体的接口实现是变化的。接口中定义的方法都需在实现类中实现，并且由于它是被动态绑定的，所以通过泛化的父类引用来调用，也能产生正确的行为，称之为多态。
 
 **方法调用绑定**
 
@@ -919,6 +919,76 @@ public class Test1 implements Iterable<String> {
 - TreeMap
 
   
+
+## 14.类型信息
+
+### RTTI 和 反射
+
+Java在运行时识别对象和类信息的，主要有两种方式：
+
+- 传统的RTTI（Run-Time Type Identification 运行时类型识别），在运行时识别一个对象的类型，前提是类型在编译期已知。
+
+  ```java
+  Student stu = new Student();
+  List<Person> list = new ArrayList<>();
+  list.add(stu);
+  ```
+
+  在上例中，将stu对象放入list中时会进行向上转型，在向上转型时，stu也丢失了自己的具体类型，对集合而言，它们都是Person类的对象，当从集合中取出元素时，本质上其实是去集合持有的Object数组中去取元素，取出的元素是Object类型，然后会自动的转型为Person，就是RTTI的最基本的使用形式，Java中所有的类型转换的正确性检查都是在运行时期进行。
+
+  虽然进行了RTTI，但并不彻底，因为Object被转型为Person，而不是Student。这是因为我们只知道`List<Person>` 中保存的是Person，在编译时，由容器和泛型系统来强制确保这一点，而在运行时，由类型转换操作来确保这一点。
+
+  转型到Person时，后边就是多态机制的事情了。
+
+- 反射机制，允许我们在运行时发现和使用类的信息。
+
+  这是对RTTI的一种补充，假设获取了一个指向某个不在你的程序空间的对象引用，例如在程序运行期间，需要通过网络连接或者数据库读取某个由字节码组成的字节流，这个字节流代表一个需要被动态加载的类，在你的程序编译时，无法感知这个类的存在，更无法获知这个对象所属的类。这时就需要反射机制了。
+
+  Class类与java.lang.reflect类库对反射进行了支持，在对某个对象使用反射之前，必须加载那个类的Class对象。
+
+**RTTI 和 反射的区别**
+
+
+
+
+
+### Class对象
+
+**如何获取**
+
+```java
+//方法一：通过实例的 getClass()
+Class clazz1 = person.getClass();
+//方法二：通过类字面常量（不会初始化类）
+Class clazz2 = Person.class;
+//方法三：通过Class的静态方法forName（默认会加载初始化）
+Class clazz3 = Class.forName("_14_类型信息._02_反射.Person");
+```
+
+**Class的常用方法**
+
+```java
+//true if {@code obj} is an instance of this class
+public native boolean isInstance(Object obj);
+//判断cls的对象是否可以被分配给当前调用者类型
+public native boolean isAssignableFrom(Class<?> cls);
+```
+
+### 动态代理
+
+
+
+
+
+
+
+
+
+
+
+## 
+
+## 
 
 ## Java核心类
 
@@ -1488,7 +1558,101 @@ public class MultiplyAdapter2 implements Operator {
 
 ### 迭代器模式
 
-### 工厂模式
+```java
+public class Test1 implements Iterable<String> {
+
+    private String[] arr = "abcdef".split("");
+
+    @Override
+    public Iterator<String> iterator() {
+        return new Iterator<String>() {
+            private int index=0;
+            @Override
+            public boolean hasNext() {
+                return index<arr.length;
+            }
+
+            @Override
+            public String next() {
+                return arr[index++];
+            }
+        };
+    }
+
+    public static void main(String[] args){
+        for (String  s:new Test1()){
+            System.out.println(s);
+        }
+    }
+}
+```
+
+### 工厂方法模式
+
+```java
+public class Part {
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
+    static List<Class<? extends Part>> partFactories = new ArrayList<>();
+
+    static {
+        partFactories.add(AFilter.class);
+        partFactories.add(BFilter.class);
+    }
+
+    private static Random rand = new Random(47);
+
+    public static Part createRandom() {
+        int n = rand.nextInt(partFactories.size());
+        try {
+            return partFactories.get(n).newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(Part.createRandom());
+        }
+    }
+}
+
+interface Factory<T> {
+    T create();
+}
+
+class Filter extends Part {
+}
+
+class AFilter extends Filter {
+    public static class Factory implements _97_设计模式._03_工厂模式.demo14.Factory {
+        @Override
+        public Object create() {
+            return new AFilter();
+        }
+    }
+}
+
+class BFilter extends Filter {
+    public static class Factory implements _97_设计模式._03_工厂模式.demo14.Factory {
+        @Override
+        public Object create() {
+            return new BFilter();
+        }
+    }
+}
+```
+
+### 代理模式
+
+跟踪RealObject中的方法调用，如日志的记录，又或者是统计方法调用的开销。
+
+
 
 ## 其他
 
