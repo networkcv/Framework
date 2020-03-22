@@ -976,9 +976,13 @@ public native boolean isAssignableFrom(Class<?> cls);
 
 ### 动态代理
 
+代理对象（或者InvocationHandler的实现类 ）需持有真实对象的引用。
 
+具体创建代理对象的方式：`Proxy.newProxyInstance(ClassLoader,interface.class[],handler)`
 
-
+```java
+BuyInterface proxy = (BuyInterface) Proxy.newProxyInstance(ProxyDemo.class.getClassLoader(), new Class[]{BuyInterface.class}, buyHandler);
+```
 
 
 
