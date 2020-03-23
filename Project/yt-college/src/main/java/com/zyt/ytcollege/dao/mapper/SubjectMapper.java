@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * create by lwj on 2020/3/14
  */
@@ -19,7 +21,7 @@ public interface SubjectMapper {
     @Delete("delete from subject where id=#{id}")
     int removeSubjectById(int id);
 
-    Page<SubjectDO> selectAll(SubjectDO subjectDO);
+    List<SubjectDO> selectAll(SubjectDO subjectDO);
 
     @Select("select * from subject where id=#{id}")
     SubjectDO selectSubjectById(int id);

@@ -2,6 +2,7 @@ package com.zyt.ytcollege.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.zyt.ytcollege.dao.DO.SubjectDO;
 import com.zyt.ytcollege.dao.mapper.SubjectMapper;
 import com.zyt.ytcollege.service.SubjectService;
@@ -10,6 +11,8 @@ import com.zyt.ytcollege.util.Paging;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * create by lwj on 2020/3/14
@@ -71,8 +74,9 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
-    public Page<SubjectDO> findAllSubject(Paging paging, SubjectDO subjectDO) {
+    public PageInfo<SubjectDO> findAllSubject(Paging paging, SubjectDO subjectDO) {
         PageHelper.startPage(paging.getPageNum(), paging.getPageSize());
-        return subjectDao.selectAll(subjectDO);
+        List<SubjectDO> subjectDOS = subjectDao.selectAll(subjectDO);
+        return new PageInfo<>(subjectDOS);
     }
 }

@@ -1,6 +1,6 @@
 package com.zyt.ytcollege.service;
 
-import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.zyt.ytcollege.dao.DO.SubjectDO;
 import com.zyt.ytcollege.util.JsonMsg;
 import com.zyt.ytcollege.util.Paging;
@@ -17,5 +17,5 @@ public interface SubjectService {
 
     SubjectDO findSubjectById(int id);
 
-    Page<SubjectDO> findAllSubject(Paging paging, SubjectDO subjectDO);
+    PageInfo<SubjectDO> findAllSubject(Paging paging, SubjectDO subjectDO);
 }

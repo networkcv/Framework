@@ -1,7 +1,7 @@
 package com.zyt.ytcollege.service.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.zyt.ytcollege.config.enums.ApplyState;
 import com.zyt.ytcollege.config.enums.ApplyType;
 import com.zyt.ytcollege.config.enums.PaymentState;
@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * create by lwj on 2020/3/14
@@ -130,8 +132,9 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public Page<ApplyDO> findAllApply(Paging paging, ApplyDTO applyDTO) {
+    public PageInfo<ApplyDO> findAllApply(Paging paging, ApplyDTO applyDTO) {
         PageHelper.startPage(paging.getPageNum(), paging.getPageSize());
-        return applyDao.selectAll(applyDTO);
+        List<ApplyDO> applyDOS = applyDao.selectAll(applyDTO);
+        return new PageInfo<>(applyDOS);
     }
 }

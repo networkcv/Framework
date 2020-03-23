@@ -1,6 +1,7 @@
 package com.zyt.ytcollege.controller;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.zyt.ytcollege.dao.DO.ApplyDO;
 import com.zyt.ytcollege.service.ApplyService;
 import com.zyt.ytcollege.service.DTO.ApplyDTO;
@@ -38,7 +39,7 @@ public class ApplyController {
     }
 
     @GetMapping("applys")
-    public Page<ApplyDO> list(Paging paging, ApplyDTO applyDTO,ApplyDO applyDO){
+    public PageInfo<ApplyDO> list(Paging paging, ApplyDTO applyDTO, ApplyDO applyDO){
         applyDTO.setApplyDO(applyDO);
         return applyService.findAllApply(paging,applyDTO);
     }
