@@ -1,6 +1,7 @@
 package com.zyt.ytcollege.service;
 
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.zyt.ytcollege.dao.DO.ApplyDO;
 import com.zyt.ytcollege.service.DTO.ApplyDTO;
 import com.zyt.ytcollege.util.JsonMsg;
@@ -18,5 +19,5 @@ public interface ApplyService {
 
     ApplyDO findApplyById(int id);
 
-    Page<ApplyDO> findAllApply(Paging paging, ApplyDTO applyDTO);
+    PageInfo<ApplyDO> findAllApply(Paging paging, ApplyDTO applyDTO);
 }

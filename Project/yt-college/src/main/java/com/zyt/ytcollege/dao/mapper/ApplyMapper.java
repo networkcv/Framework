@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * create by lwj on 2020/3/14
  */
@@ -20,7 +22,7 @@ public interface ApplyMapper {
     @Delete("delete from apply where id=#{id}")
     int removeApplyById(int id);
 
-    Page<ApplyDO> selectAll(ApplyDTO applyDTO);
+    List<ApplyDO> selectAll(ApplyDTO applyDTO);
 
     @Select("select * from apply where id=#{id}")
     ApplyDO selectApplyById(int id);
