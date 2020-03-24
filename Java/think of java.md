@@ -1087,7 +1087,7 @@ public class Test1<T> {
 }
 ```
 
-该方法是用来处理Number的，因此在使用的时候，具体的参数类型也一定要为Number的实现类，那我们如何让编译器知道这一点。
+disposeNumber 方法是用来处理Number的，因此在使用的时候，具体的参数类型也一定要为Number的实现类，那我们如何让编译器知道这一点。
 
 ```java
 class Test2<T extends Number> {	//注意这里使用了 extends 关键字
@@ -1117,7 +1117,26 @@ final class F{}
 class FF extends F{}	//error 无法继承 final修饰的 F类
 ```
 
+### PECS原则
 
+何时使用`extends`，何时使用`super`？为了便于记忆，我们可以用PECS原则：Producer Extends Consumer Super。
+
+即：如果需要返回`T`，它是生产者（Producer），要使用`extends`通配符；如果需要写入`T`，它是消费者（Consumer），要使用`super`通配符。
+
+还是以`Collections`的`copy()`方法为例：
+
+```
+public class Collections {
+    public static <T> void copy(List<? super T> dest, List<? extends T> src) {
+        for (int i=0; i<src.size(); i++) {
+            T t = src.get(i); // src是producer
+            dest.add(t); // dest是consumer
+        }
+    }
+}
+```
+
+需要返回`T`的`src`是生产者，因此声明为`List`，需要写入`T`的`dest`是消费者，因此声明为`List`。
 
 **上面说到使用 Object 来达到复用，会失去泛型在安全性和直观表达性上的优势，那为什么 ArrayList 等源码中的还能看到使用 Object 作为类型？**
 
