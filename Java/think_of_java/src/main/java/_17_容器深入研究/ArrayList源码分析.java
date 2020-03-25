@@ -20,13 +20,16 @@ public class ArrayList源码分析 {
         list.indexOf(1);
         ArrayList<Integer> clone = (ArrayList<Integer>) ((ArrayList<Integer>) list).clone();
         System.out.println(clone);
+        char ch='a';
+        System.out.println(ch*1);
 
 
     }
 
     @Test
     public void test() {
-        int i = Integer.MAX_VALUE + 1;
-        System.out.println(i);
+        List<Integer> list = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+        boolean b = list.retainAll(Arrays.asList(1, 2,3,44,4,4));
+        System.out.println(list);
     }
 }
