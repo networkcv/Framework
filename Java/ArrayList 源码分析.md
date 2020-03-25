@@ -235,7 +235,7 @@ public void clear() {
 
 ```java
 public void trimToSize() {
-	// 去除数组中冗余的空间，返回一个size和length相等的数组
+	// 去除数组中冗余的空间，返回一个length和size相等的数组
     modCount++;
     if (size < elementData.length) {
         elementData = (size == 0)

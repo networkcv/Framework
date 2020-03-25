@@ -21,6 +21,8 @@ public class ArrayList源码分析 {
         list.indexOf(1);
         ArrayList<Integer> clone = (ArrayList<Integer>) ((ArrayList<Integer>) list).clone();
         System.out.println(clone);
+        char ch='a';
+        System.out.println(ch*1);
 
 
     }
@@ -54,5 +56,8 @@ public class ArrayList源码分析 {
     @Test
     public void test2() {
         new Inner().test2();
+        List<Integer> list = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+        boolean b = list.retainAll(Arrays.asList(1, 2,3,44,4,4));
+        System.out.println(list);
     }
 }

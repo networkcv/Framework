@@ -1,4 +1,6 @@
-几个注意的点：
+[HashMap 源码详细分析(JDK1.8)](https://segmentfault.com/a/1190000012926722)
+
+[HashMap 的 hash 方法原理](https://www.jianshu.com/p/9096a7f929b8)
 
 - HashMap允许key和value为null，但只能有一个key为null，是因为hash(null)返回结果为0。
 
@@ -56,6 +58,3 @@
 
 ## 
 
-
-
-https://segmentfault.com/a/1190000012926722
