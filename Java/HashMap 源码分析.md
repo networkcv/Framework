@@ -4,7 +4,7 @@
 
 - 构造中只对一些字段初始化，如initialCapacity（初始容量）、loadFactor（负载因子）、threshold（阈值），并没有真正创建存储键值对的容器，在执行插入操作的时候，才会去初始化该容器，阈值是由容量乘以负载因子计算而来，即`threshold = capacity * loadFactor`。
 
-- threshold 其实是通过 `tableSizeFor(int cap)` 来定义的，该方法是找到大于或等于 cap 的最小2的多少次方
+- threshold 其实是通过 `tableSiz1eFor(int cap)` 来定义的，该方法是找到大于或等于 cap 的最小2的多少次方
 
   ```java
   static final int tableSizeFor(int cap) {
@@ -111,44 +111,48 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
         // Node<K,V> newNode(int hash, K key, V value, Node<K,V> next)
         tab[i] = newNode(hash, key, value, null);
     else {
-        /// 这里是对应数组下标位置不为空的情况，保存的可能是链表也可能是红黑树
+        // 这里是对应数组下标位置不为空的情况，保存的可能是链表也可能是红黑树
         Node<K,V> e; K k;
         // hash不相等，则equals一定不等，hash值相等，equals不一定相等，equals相等 hash值一定相等
+        // 这里单独判断对应桶的第一个节点
         if (p.hash == hash &&
             ((k = p.key) == key || (key != null && key.equals(k))))
             e = p;
         else if (p instanceof TreeNode)
             e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
         else {
-            //链表的情况
+            // 链表的情况，遍历链表，如果找到key相同则break退出，否则添加节点到链表最后
+            // 添加完成后判断节点个数是否超过树化的阈值(8)，超过则对链表树化
             for (int binCount = 0; ; ++binCount) {
-                //对应数组下标位置只有一个键值对
+                // 循环找到对应下标的最后一个节点，用e来指向
                 if ((e = p.next) == null) {
                     //新建节点并添加到该节点后面
                     p.next = newNode(hash, key, value, null);
+                    // 当添加了第九个节点后树化该链表
                     if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
-                        //树化该链表
                         treeifyBin(tab, hash);
                     break;
                 }
+                // 用于定位链表
                 if (e.hash == hash &&
                     ((k = e.key) == key || (key != null && key.equals(k))))
                     break;
                 p = e;
             }
         }
-        // 用于返回旧值
+        // 用于返回旧值和修改已有的值
         if (e != null) { // existing mapping for key
             V oldValue = e.value;
             if (!onlyIfAbsent || oldValue == null)
-                e.value = value;
+                // 对定位的键值对赋新值
+                e.value = value 
             afterNodeAccess(e);
             return oldValue;
         }
     }
 	// 修改次数递增    
     ++modCount;
-    // 判断已添加的键值对数量是否大于扩容的阈值
+    // 判断已添加的键值对数量是否大于扩容的阈值，阈值为12时，添加了第13个元素后才会进行扩容
     if (++size > threshold)
         // 重新计算size，进行扩容
         resize();
@@ -165,10 +169,12 @@ final Node<K,V>[] resize() {
     int oldThr = threshold;
     int newCap, newThr = 0;
     if (oldCap > 0) {
+        // 超出了可容纳的最大容量
         if (oldCap >= MAXIMUM_CAPACITY) {
             threshold = Integer.MAX_VALUE;
             return oldTab;
         }
+        // 容量扩大一倍，阈值也随着扩大一倍
         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                  oldCap >= DEFAULT_INITIAL_CAPACITY)
             newThr = oldThr << 1; // double threshold
@@ -191,13 +197,17 @@ final Node<K,V>[] resize() {
     // 创建新的数组大小
     Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
     table = newTab;
-    // 如果之前的数组不为空的话，需要将键值对从老数组迁移到新数组
+    // 如果之前的数组不为空的话，需要将键值对从旧数组迁移到新数组
     if (oldTab != null) {
         for (int j = 0; j < oldCap; ++j) {
             Node<K,V> e;
+            // 每次循环开始e都指向数组下标的位置
             if ((e = oldTab[j]) != null) {
+                // 清空对应数组下标的引用，help GC
                 oldTab[j] = null;
+                //对应数组下标只有一个元素
                 if (e.next == null)
+                    //将hash值与新的数组数量进行 & 操作，定位到桶的位置
                     newTab[e.hash & (newCap - 1)] = e;
                 else if (e instanceof TreeNode)
                     ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
@@ -242,14 +252,18 @@ final Node<K,V>[] resize() {
 
 
 ```java
-// 树化链表
+// 树化链表 将普通节点链表转换成成树形节点链表
 final void treeifyBin(Node<K,V>[] tab, int hash) {
     int n, index; Node<K,V> e;
+    // 虽然进入树化方法，但还是会根据数组长度EIFY_CAPACITY（64）来判断是否树化
+    // 优先进行扩容而不是树化，只有当数组长度大于64时才需要树化
     if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
         resize();
     else if ((e = tab[index = (n - 1) & hash]) != null) {
+        // hd 为头节点（head），tl 为尾节点（tail）
         TreeNode<K,V> hd = null, tl = null;
         do {
+            // 将普通节点替换成树形节点
             TreeNode<K,V> p = replacementTreeNode(e, null);
             if (tl == null)
                 hd = p;
@@ -258,9 +272,26 @@ final void treeifyBin(Node<K,V>[] tab, int hash) {
                 tl.next = p;
             }
             tl = p;
-        } while ((e = e.next) != null);
+        } while ((e = e.next) != null);	// 将普通链表转成树形节点链表
         if ((tab[index] = hd) != null)
+            // 将树形链表转换成红黑树
             hd.treeify(tab);
     }
 }
 ```
+
+在扩容过程中，树化要满足两个条件：
+
+1. 链表长度大于等于 TREEIFY_THRESHOLD
+2. 桶数组容量大于等于 MIN_TREEIFY_CAPACITY
+
+第一个条件比较好理解，这里就不说了。这里来说说加入第二个条件的原因，参考原因如下：
+
+当桶数组容量比较小时，键值对节点 hash 的碰撞率可能会比较高，进而导致链表长度较长。这个时候应该优先扩容，而不是立马树化。毕竟高碰撞率是因为桶数组容量较小引起的，这个是主因。容量小时，优先扩容可以避免一些列的不必要的树化过程。同时，桶容量较小时，扩容会比较频繁，扩容时需要拆分红黑树并重新映射。所以在桶容量比较小的情况下，将长链表转成红黑树是一件吃力不讨好的事。
+
+小结：
+
+1. 当桶数组 table 为空时，通过扩容的方式初始化 table
+2. 查找要插入的键值对是否已经存在，存在的话根据条件判断是否用新值替换旧值
+3. 如果不存在，则将键值对链入链表中，并根据链表长度8及数组长度64决定是否将链表转为红黑树
+4. 判断键值对数量是否大于阈值，大于的话则进行扩容操作

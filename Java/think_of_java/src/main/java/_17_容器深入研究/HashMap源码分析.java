@@ -8,8 +8,9 @@ import java.util.HashMap;
 public class HashMap源码分析 {
     public static void main(String[] args) {
         HashMap<Integer, String> map = new HashMap<>();
-        map.put(1,"1");
-        map.put(17,"17");
+        for (int i = 0, count = 0;count<110 ; i += 16,count++) {
+        map.put(i, i + "");
+        }
         System.out.println(map);
     }
 }
