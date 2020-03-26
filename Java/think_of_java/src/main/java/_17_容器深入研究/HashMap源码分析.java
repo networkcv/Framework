@@ -7,12 +7,9 @@ import java.util.HashMap;
  */
 public class HashMap源码分析 {
     public static void main(String[] args) {
-        HashMap<Object, Number> map = new HashMap<>();
-        map.put(3, 1);
-        Integer key=3;
-        System.out.println(key.hashCode());
-        int h;
-        h=( h = key.hashCode()) ^ (h >>> 16);
-        System.out.println(h);
+        HashMap<Integer, String> map = new HashMap<>();
+        map.put(1,"1");
+        map.put(17,"17");
+        System.out.println(map);
     }
 }
