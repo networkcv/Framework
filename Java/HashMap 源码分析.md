@@ -10,6 +10,8 @@ int threshold;	//阈值 存放键值对的最大值，超过阈值就会扩容 t
 int initialCapacity;	//HashMap 初始容量
 ```
 
+### 构造方法
+
 ```java
 public HashMap() {
     this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
@@ -43,48 +45,7 @@ static final int tableSizeFor(int cap) {
 }
 ```
 
-### get（）
-
-HashMap 的查找操作比较简单，查找步骤与原理篇介绍一致，即先定位键值对所在的桶的位置，然后再对链表或红黑树进行查找。通过这两步即可完成查找，该操作相关代码如下：
-
-```java
-public V get(Object key) {
-    Node<K,V> e;
-    return (e = getNode(hash(key), key)) == null ? null : e.value;
-}
-
-static final int hash(Object key) {
-    int h;
-     //高16位与低16位，进行异或运算，以此增大低位的随机性
-    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
-}
-
-final Node<K,V> getNode(int hash, Object key) {
-    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
-    // 1. 定位键值对所在桶的位置
-    if ((tab = table) != null && (n = tab.length) > 0 &&
-        (first = tab[(n - 1) & hash]) != null) {
-        if (first.hash == hash && // always check first node
-            ((k = first.key) == key || (key != null && key.equals(k))))
-            return first;
-        if ((e = first.next) != null) {
-            // 2. 如果 first 是 TreeNode 类型，则调用黑红树查找方法
-            if (first instanceof TreeNode)
-                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
-                
-            // 2. 对链表进行查找
-            do {
-                if (e.hash == hash &&
-                    ((k = e.key) == key || (key != null && key.equals(k))))
-                    return e;
-            } while ((e = e.next) != null);
-        }
-    }
-    return null;
-}
-```
-
-### put（）
+### 插入
 
 ```java
 public V put(K key, V value) {
@@ -142,27 +103,34 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
     else {
         // 这里是对应数组下标位置不为空的情况，保存的可能是链表也可能是红黑树
         Node<K,V> e; K k;
-        // hash不相等，则equals一定不等，hash值相等，equals不一定相等，equals相等 hash值一定相等
-        // 这里单独判断对应桶的第一个节点
+       /*
+        * 这里单独判断对应桶的首节点，可以理解为桶位置的首节点是存在数组中，该节点后续的节点存在链表中
+        * hash不相等，则equals一定不等，hash值相等，equals不一定相等，equals相等 hash值一定相等
+        * 这里的判断也很有意思，充分应用了 && 和 || 的特性，首先判断hash值是否相等，在hash值相等的基础上
+        * 再去通过key的地址和equals去判断，因为我们在使用HashMap的时候，务必要将作为键的实体hashcode和
+        * equals方法,如果不重写hashcode方法，换个对象则会导致无法取出存入map的键值对，因为通过hash计算
+        * 桶的位置不对，而不重写equals方法也会导致无法取值对应的键值对。
+        */
         if (p.hash == hash &&
             ((k = p.key) == key || (key != null && key.equals(k))))
             e = p;
+        // 如果桶中的节点类型是TreeNode，则调用红黑树的插入方法
         else if (p instanceof TreeNode)
             e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
         else {
             // 链表的情况，遍历链表，如果找到key相同则break退出，否则添加节点到链表最后
-            // 添加完成后判断节点个数是否超过树化的阈值(8)，超过则对链表树化
+            // 添加完成后判断链表节点个数（含数组桶的第一个节点）是否超过树化的阈值(8)，超过则对链表树化
             for (int binCount = 0; ; ++binCount) {
                 // 循环找到对应下标的最后一个节点，用e来指向
                 if ((e = p.next) == null) {
                     //新建节点并添加到该节点后面
                     p.next = newNode(hash, key, value, null);
-                    // 当添加了第九个节点后树化该链表
+                    // 当某一个桶位置添加了第八个节点后树化该链表的方法
                     if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                         treeifyBin(tab, hash);
                     break;
                 }
-                // 用于定位链表
+                // 用于判断对应节点是否已存在，详细内容参考上面的介绍
                 if (e.hash == hash &&
                     ((k = e.key) == key || (key != null && key.equals(k))))
                     break;
@@ -190,6 +158,15 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 }
 ```
 
+小结：
+
+1. 当桶数组 table 为空时，通过扩容的方式初始化 table
+2. 查找要插入的键值对是否已经存在，存在的话根据条件判断是否用新值替换旧值
+3. 如果不存在，则将键值对链入链表中，并根据链表长度8及数组长度64决定是否将链表转为红黑树
+4. 判断键值对数量是否大于阈值，大于的话则进行扩容操作
+
+###  扩容
+
 ```java
 // 重新计算大小，扩容
 final Node<K,V>[] resize() {
@@ -209,9 +186,10 @@ final Node<K,V>[] resize() {
             newThr = oldThr << 1; // double threshold
     }
     else if (oldThr > 0) // initial capacity was placed in threshold
+        //调用HashMap(int initialCapacity) 当时
         newCap = oldThr;
     else {
-        // 初始化数组的时候会走到这里，DEFAULT_INITIAL_CAPACITY 默认为16
+        // 调用HashMap的无参构造后，初始化数组的时候会走到这里，DEFAULT_INITIAL_CAPACITY 默认为16
         newCap = DEFAULT_INITIAL_CAPACITY;	
         // DEFAULT_LOAD_FACTOR默认为0.75 所以newThr（新阈值）为12
         newThr = (int)( DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
@@ -239,11 +217,13 @@ final Node<K,V>[] resize() {
                     //将hash值与新的数组数量进行 & 操作，定位到桶的位置
                     newTab[e.hash & (newCap - 1)] = e;
                 else if (e instanceof TreeNode)
+                    // 重新映射时，需要对红黑树进行拆分
                     ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                 else { // preserve order
                     Node<K,V> loHead = null, loTail = null;
                     Node<K,V> hiHead = null, hiTail = null;
                     Node<K,V> next;
+                    // 遍历链表，并将链表节点按原顺序进行分组
                     do {
                         next = e.next;
                         if ((e.hash & oldCap) == 0) {
@@ -254,13 +234,14 @@ final Node<K,V>[] resize() {
                             loTail = e;
                         }
                         else {
-                            if (hiTail == null)
+                            if (hiTail == null) 
                                 hiHead = e;
                             else
                                 hiTail.next = e;
                             hiTail = e;
                         }
                     } while ((e = next) != null);
+                    // 将分组后的链表映射到新桶中
                     if (loTail != null) {
                         loTail.next = null;
                         newTab[j] = loHead;
@@ -278,7 +259,13 @@ final Node<K,V>[] resize() {
 }
 ```
 
+小结：
 
+1. 计算新桶数组的容量 newCap 和新阈值 newThr
+2. 根据计算出的 newCap 创建新的桶数组，桶数组 table 也是在这里进行初始化的
+3. 将键值对节点重新映射到新的桶数组里。如果节点是 TreeNode 类型，则需要拆分红黑树。如果是普通节点，则节点按原顺序进行分组。
+
+### 树化
 
 ```java
 // 树化链表 将普通节点链表转换成成树形节点链表
@@ -318,9 +305,52 @@ final void treeifyBin(Node<K,V>[] tab, int hash) {
 
 当桶数组容量比较小时，键值对节点 hash 的碰撞率可能会比较高，进而导致链表长度较长。这个时候应该优先扩容，而不是立马树化。毕竟高碰撞率是因为桶数组容量较小引起的，这个是主因。容量小时，优先扩容可以避免一些列的不必要的树化过程。同时，桶容量较小时，扩容会比较频繁，扩容时需要拆分红黑树并重新映射。所以在桶容量比较小的情况下，将长链表转成红黑树是一件吃力不讨好的事。
 
-小结：
+### 查询
 
-1. 当桶数组 table 为空时，通过扩容的方式初始化 table
-2. 查找要插入的键值对是否已经存在，存在的话根据条件判断是否用新值替换旧值
-3. 如果不存在，则将键值对链入链表中，并根据链表长度8及数组长度64决定是否将链表转为红黑树
-4. 判断键值对数量是否大于阈值，大于的话则进行扩容操作
+HashMap 的查找操作比较简单，查找步骤与原理篇介绍一致，即先定位键值对所在的桶的位置，然后再对链表或红黑树进行查找。通过这两步即可完成查找，该操作相关代码如下：
+
+```java
+public V get(Object key) {
+    Node<K,V> e;
+    return (e = getNode(hash(key), key)) == null ? null : e.value;
+}
+
+static final int hash(Object key) {
+    int h;
+     //高16位与低16位，进行异或运算，以此增大低位的随机性
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    // 1. 定位键值对所在桶的位置
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+        if (first.hash == hash && // always check first node
+            ((k = first.key) == key || (key != null && key.equals(k))))
+            return first;
+        if ((e = first.next) != null) {
+            // 2. 如果 first 是 TreeNode 类型，则调用黑红树查找方法
+            if (first instanceof TreeNode)
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+                
+            // 2. 对链表进行查找
+            do {
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
+```
+
+
+
+### 总结
+
+HashMap是基于拉链法实现的一个散列表，内部由数组、链表和红黑树实现。
+
+数组的默认初始容量为16，默认的负载因子（loadFactor）是0.75，默认阈值为12，threshold = capacity * loadFactor，负载因子是用来描述HashMap的最大存放比率，长度为16的散列表也可以插入无限个节点，会对所有节点的hash值与桶的个数（16）取模，来将它们插入到不同桶位置的链表中，但这样的做法会使得HashMap效率低下，定位到具体桶的时间复制度为O(1)，但是后续查找长链表的时间复制度就变成了O(n)，因此使用负载因子这个比率来确定决定数组是否扩容的阈值（threshold），这样数组的长度随着插入节点数动态的增长，理想的情况下，每个数组桶均匀的存储，如160个节点保存在16个桶中，每个保存10个节点，但实际由于hashcode的不确定性，有的桶可能一个都没有，有的桶可能存放了20个（比较极端的例子），为了保证HashMap整体能保持O（1）的时间复杂度，因此会在达到一个比例时进行扩容，因此如果查询频繁的情况下，可以适当的牺牲空间，将负载因子调小。
+
