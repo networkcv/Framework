@@ -1,56 +1,87 @@
 [HashMap 源码详细分析(JDK1.8)](https://segmentfault.com/a/1190000012926722)
 
-- JDK8之前，底层为数组+链表，JDK8之后，底层为数组+链表+红黑树。
-
-- 构造中只对一些字段初始化，如initialCapacity（初始容量）、loadFactor（负载因子）、threshold（阈值），并没有真正创建存储键值对的容器，在执行插入操作的时候，才会去初始化该容器，阈值是由容量乘以负载因子计算而来，即`threshold = capacity * loadFactor`。
-
-- threshold 其实是通过 `tableSiz1eFor(int cap)` 来定义的，该方法是找到大于或等于 cap 的最小2的多少次方
-
-  ```java
-  static final int tableSizeFor(int cap) {
-      int n = cap - 1;
-      n |= n >>> 1;
-      n |= n >>> 2;
-      n |= n >>> 4;
-      n |= n >>> 8;
-      n |= n >>> 16;
-      return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-  }
-  ```
-
-- 查找，hash%n=hash & (n-1)
-
-  ```java
-      final Node<K,V> getNode(int hash, Object key) {
-          Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
-          if ((tab = table) != null && (n = tab.length) > 0 &&
-              (first = tab[(n - 1) & hash]) != null) {
-              if (first.hash == hash && // always check first node
-                  ((k = first.key) == key || (key != null && key.equals(k))))
-                  return first;
-              if ((e = first.next) != null) {
-                  if (first instanceof TreeNode)
-                      return ((TreeNode<K,V>)first).getTreeNode(hash, key);
-                  do {
-                      if (e.hash == hash &&
-                          ((k = e.key) == key || (key != null && key.equals(k))))
-                          return e;
-                  } while ((e = e.next) != null);
-              }
-          }
-          return null;
-      }
-  ```
-
-  
-
 
 ## HashMap 源码解析
 
 ```java
-final float loadFactor;		//负载因子
+final float loadFactor;		//负载因子，用来反应HashMap数组桶的使用情况
 transient Node<K,V>[] table;	//存放键值对的散列表
-int threshold;	//存放键值对的阈值，超过阈值就会扩容
+int threshold;	//阈值 存放键值对的最大值，超过阈值就会扩容 threshold = capacity * loadFactor。
+int initialCapacity;	//HashMap 初始容量
+```
+
+```java
+public HashMap() {
+    this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
+}
+
+public HashMap(int initialCapacity, float loadFactor) {
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal initial capacity: " +
+                                           initialCapacity);
+    if (initialCapacity > MAXIMUM_CAPACITY)
+        initialCapacity = MAXIMUM_CAPACITY;
+    if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal load factor: " +
+                                           loadFactor);
+    this.loadFactor = loadFactor;
+    this.threshold = tableSizeFor(initialCapacity);
+}
+```
+
+自定义容量的阈值 threshold 其实是通过 `tableSiz1eFor(int cap)` 来定义的，该方法是找到大于或等于 cap （容量）的最小2次幂。
+
+```java
+static final int tableSizeFor(int cap) {
+    int n = cap - 1;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+```
+
+### get（）
+
+HashMap 的查找操作比较简单，查找步骤与原理篇介绍一致，即先定位键值对所在的桶的位置，然后再对链表或红黑树进行查找。通过这两步即可完成查找，该操作相关代码如下：
+
+```java
+public V get(Object key) {
+    Node<K,V> e;
+    return (e = getNode(hash(key), key)) == null ? null : e.value;
+}
+
+static final int hash(Object key) {
+    int h;
+     //高16位与低16位，进行异或运算，以此增大低位的随机性
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    // 1. 定位键值对所在桶的位置
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+        if (first.hash == hash && // always check first node
+            ((k = first.key) == key || (key != null && key.equals(k))))
+            return first;
+        if ((e = first.next) != null) {
+            // 2. 如果 first 是 TreeNode 类型，则调用黑红树查找方法
+            if (first instanceof TreeNode)
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+                
+            // 2. 对链表进行查找
+            do {
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
 ```
 
 ### put（）
@@ -59,9 +90,7 @@ int threshold;	//存放键值对的阈值，超过阈值就会扩容
 public V put(K key, V value) {
     return putVal(hash(key), key, value, false, true);
 }
-```
 
-```java
 static final int hash(Object key) {
     int h;
      //高16位与低16位，进行异或运算，以此增大低位的随机性
@@ -174,7 +203,7 @@ final Node<K,V>[] resize() {
             threshold = Integer.MAX_VALUE;
             return oldTab;
         }
-        // 容量扩大一倍，阈值也随着扩大一倍
+        // 容量扩大一倍，阈值也随着扩大一倍，每次容量都是2的幂指数个
         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                  oldCap >= DEFAULT_INITIAL_CAPACITY)
             newThr = oldThr << 1; // double threshold
