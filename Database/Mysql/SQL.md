@@ -17,7 +17,7 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
 from  user u left join report r on 【u.uid =r.uid 】group by u.uid;
 ```
 
-![](D:\study\Framework\Database\Mysql\img\1583202054(1).jpg)
+![](./img\1583202054(1).jpg)
 
 - 使用 on 对右边表进行过滤，可以看到相对应的字段的值都变成了null。
 
@@ -26,7 +26,7 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
 from  user u left join report r on 【u.uid =r.uid and r.uid!=4 】group by u.uid;
 ```
 
-![](D:\study\Framework\Database\Mysql\img\1583201828(1).jpg)
+![](./\img\1583201828(1).jpg)
 
 - 在使用 on 对右边表进行过滤的基础上，同时也对左边表进行过滤，发现并没有什么效果。
 
@@ -35,7 +35,7 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
     from  user u left join report r on 【u.uid =r.uid and r.uid!=4 and u.uid!=4 】group by u.uid;
 ```
 
-![](D:\study\Framework\Database\Mysql\img\1583201828(1).jpg)
+![](./\img\1583201828(1).jpg)
 
 - 在前边使用left join 的基础上，再加上 where 进行过滤。
 
@@ -44,4 +44,4 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
     from  user u left join report r on 【u.uid =r.uid  and r.uid!=4 where u.uid=4 】group by u.uid;
 ```
 
-![](D:\study\Framework\Database\Mysql\img\1583202935(1).jpg)
+![](./\img\1583202935(1).jpg)
