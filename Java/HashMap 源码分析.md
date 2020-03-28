@@ -186,7 +186,7 @@ final Node<K,V>[] resize() {
             newThr = oldThr << 1; // double threshold
     }
     else if (oldThr > 0) // initial capacity was placed in threshold
-        //调用HashMap(int initialCapacity) 当时
+        //调用HashMap(int initialCapacity) ,当时没有创建数组，也没有用成员变量保存initialCapacity，而是调用一个tableSizeFor()方法来根据传入的容量计算出大于等于该容量的最小二次幂，并保存到threshold中，这里的oldThr就是之前的计算结果，这里将其直接用作新数组的初始大小，并在后面创建数组
         newCap = oldThr;
     else {
         // 调用HashMap的无参构造后，初始化数组的时候会走到这里，DEFAULT_INITIAL_CAPACITY 默认为16
