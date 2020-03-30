@@ -947,15 +947,27 @@ public class Test1 implements Iterable<String> {
 
 # 12.异常处理
 
-  非检查异常（unckecked exception）：Error 和 RuntimeException 以及他们的子类。javac在编译时，不会提示和发现这样的异常，
-    不要求在程序处理这些异常。所以如果愿意，我们可以编写代码处理（使用try…catch…finally）这样的异常，也可以不处理。对于这些异常，
-    我们应该修正代码，而不是去通过异常处理器处理 。这样的异常发生的原因多半是代码写的有问题。如除0错误ArithmeticException，
-    错误的强制类型转换错误ClassCastException，数组索引越界ArrayIndexOutOfBoundsException，使用了空对象NullPointerException等等。
+Exception 和 Error 都是继承了 Throwable类，只有 Throwable 类型的实例才可以被抛出 throw 或者被捕获 catch，它是异常处理机制的基本组成类型。
 
-检查异常（checked exception）：除了Error 和 RuntimeException的其它异常。javac强制要求程序员为这样的异常做预备处理工作（使用
-try…catch…finally或者throws）。    在方法中要么用try-catch语句捕获它并处理，要么用throws子句声明抛出它，否则编译不会通过。
-这样的异常一般是由程序的运行环境导致的。因为程序可能被运行在各种未知的环境下，而程序员无法干预用户如何使用他编写的程序，
-于是程序员就应该为这样的异常时刻准备着。如SQLException , IOException,ClassNotFoundException 等。
+## 异常的概念
+
+### Error 
+
+Error 是在正常情况下，不大可能出现的情况，绝大部分Error都会导致程序处于非正常状态、不可恢复状态，不需要捕获，如 OutOfMemoryError 之类，都是 Error 的子类。
+
+### Exception
+
+Exception 可以分 可检查（check）异常 和 不检查（unchecked）异常。
+
+**可检查异常 **在源代码中需要显示的进行捕获处理，编译器强制要求程序员为这样的异常做预备处理工作（使用
+try…catch…finally或者throws）。在方法中要么用try-catch语句捕获它并处理，要么用throws子句声明抛出它，否则编译不会通过，这是编译期检查的一部分，这样的异常一般是由程序的运行环境导致的。因为程序可能被运行在各种未知的环境下，而我们需要考虑到在这种情况下会发生的一些异常。如SQLException 、IOException、ClassNotFoundException 等。Error是 Throwable 但不是 Exception。
+
+**不检查异常** 就是所谓的运行时异常，javac在编译时，不会提示和发现这样的异常，同样也不要求在程序处理这些异常。所以如果愿意，我们可以编写代码处理（使用try…catch…finally），也可以选择不处理。
+    例如  ClassCastException（错误的强制类型转换异常），ArrayIndexOutOfBoundsException（数组索引越界），NullPointerException（空指针异常）等等。
+
+## 从JVM角度看异常
+
+## 日常开发中的异常处理
 
 # 14.类型信息
 
