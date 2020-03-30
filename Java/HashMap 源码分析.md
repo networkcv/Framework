@@ -551,7 +551,7 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
             ((k = p.key) == key || (key != null && key.equals(k))))
             node = p;
         else if ((e = p.next) != null) {  
-            // 如果是 TreeNode 类型，调用红黑树的查找逻辑定位待删除节点
+            // 2. 如果是 TreeNode 类型，调用红黑树的查找逻辑定位待删除节点
             if (p instanceof TreeNode)
                 node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
             else {

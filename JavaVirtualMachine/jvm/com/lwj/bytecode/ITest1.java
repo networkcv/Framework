@@ -7,6 +7,6 @@ public interface ITest1 {
     public static int a=1;
 }
 
-class Test3 implements  ITest1{
+class Test11 implements  ITest1{
     public static int b=a;
 }

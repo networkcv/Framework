@@ -951,23 +951,133 @@ Exception 和 Error 都是继承了 Throwable类，只有 Throwable 类型的实
 
 ## 异常的概念
 
-### Error 
+**Error** 
 
 Error 是在正常情况下，不大可能出现的情况，绝大部分Error都会导致程序处于非正常状态、不可恢复状态，不需要捕获，如 OutOfMemoryError 之类，都是 Error 的子类。
 
-### Exception
+**Exception**
 
 Exception 可以分 可检查（check）异常 和 不检查（unchecked）异常。
 
-**可检查异常 **在源代码中需要显示的进行捕获处理，编译器强制要求程序员为这样的异常做预备处理工作（使用
-try…catch…finally或者throws）。在方法中要么用try-catch语句捕获它并处理，要么用throws子句声明抛出它，否则编译不会通过，这是编译期检查的一部分，这样的异常一般是由程序的运行环境导致的。因为程序可能被运行在各种未知的环境下，而我们需要考虑到在这种情况下会发生的一些异常。如SQLException 、IOException、ClassNotFoundException 等。Error是 Throwable 但不是 Exception。
+1. **可检查异常 **在源代码中需要显示的进行捕获处理，编译器强制要求程序员为这样的异常做预备处理工作（使用
+   try…catch…finally或者throws）。在方法中要么用try-catch语句捕获它并处理，要么用throws子句声明抛出它，否则编译不会通过，这是编译期检查的一部分，这样的异常一般是由程序的运行环境导致的。因为程序可能被运行在各种未知的环境下，而我们需要考虑到在这种情况下会发生的一些异常。如SQLException 、IOException、ClassNotFoundException 等。Error是 Throwable 但不是 Exception。
+2. **不检查异常** 就是所谓的运行时异常，javac在编译时，不会提示和发现这样的异常，同样也不要求在程序处理这些异常。所以如果愿意，我们可以编写代码处理（使用try…catch…finally），也可以选择不处理。例如  ClassCastException（错误的强制类型转换异常），ArrayIndexOutOfBoundsException（数组索引越界），NullPointerException（空指针异常）等等。
 
-**不检查异常** 就是所谓的运行时异常，javac在编译时，不会提示和发现这样的异常，同样也不要求在程序处理这些异常。所以如果愿意，我们可以编写代码处理（使用try…catch…finally），也可以选择不处理。
-    例如  ClassCastException（错误的强制类型转换异常），ArrayIndexOutOfBoundsException（数组索引越界），NullPointerException（空指针异常）等等。
+![image-20200330152821100](img/image-20200330152821100.png)
 
-## 从JVM角度看异常
+## 从JVM角度看异常处理
+
+1. JVM采用异常表的方式来对异常进行处理，而不是简单的跳转命令来实现Java异常及finally处理机制。
+2. 当异常处理存在finally语句块时，编译器会自动在每一段可能的分支路径之后都将finally语句块的内容冗余生成一遍来实现finally语义。
+3. 在我们Java代码中，finally语句块是在最后的，但编译器在生成字节码时候进行了指令重排序，将finally语句块的执行指令移到了return指令之前，这样就从字节码角度解释了finally为什么总是会执行。
+4. finally语句块中对返回值的修改并不会影响之前return语句的返回结果，因为编译器将要返回值单独保留了一个副本，如果在finally中重新返回则会影响之前的返回结果。
 
 ## 日常开发中的异常处理
+
+### try-with-resources
+
+try-with-resources是Java 1.7 中新增的语法糖来打开资源，而无需手动资源关闭代码，具体使用如下：
+
+```java
+try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File("test.txt")));
+     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File("test.txt")));
+) {
+    int b;
+    while ((b = bis.read()) != -1) {
+        bos.write(b);
+    }
+} catch (IOException e) {
+    e.printStackTrace();
+}
+```
+
+为了配合try-with-resources，资源必须实现 AutoClosable 接口，底层还是在编译器做的优化，帮我们自动生成了finally块，并在里边调用了close（）方法。并且使用了 `addSuppressed`来解决之前异常屏蔽的问题。
+
+### 异常屏蔽问题
+
+```java
+private static class Connection implements AutoCloseable {
+    void sendData() throws Exception {
+        throw new Exception("sendData() exception ");
+    }
+
+    public void close() throws Exception {
+        throw new Exception("close() exception ");
+    }
+}
+	
+public static void main(String[] args) {
+    try {
+        Connection connection = new Connection();
+        try {
+		   // ...  其他的业务逻辑
+            connection.sendData();
+        } finally {
+            connection.close();
+        }
+    } catch (Exception e) {
+        e.printStackTrace();	// 查看最终的异常信息
+    }
+}
+java.lang.Exception: call close exception 
+	at _12_异常处理.Test1$Connection.close(Test1.java:33)
+	at _12_异常处理.Test1.main(Test1.java:43)
+```
+
+`sendData()` 和 `conn.close()` 都发生了错误，在 finally块 中首先会将 try块 抛出的异常保存到局部变量表中，然后执行自己的逻辑，如果在执行过程中没有发生异常，则会将之前保存的异常，从局部变量表加载到操作数栈顶然后抛出，以上是正常关闭资源的情况，如果关闭资源发生异常，也就是finally块 中的代码出错，则会重新抛出位于操作数栈顶的 新异常，看起来就像是新异常将老异常覆盖了，因此我们无法得知问题的根源。
+
+要解决这个问题也很简单，只需要将新老异常关联起来即可，可以使用 initCause（Throwable exception）或者 addSuppressed（Throwable exception），try-with-resources 使用的是 addSuppressed() 的方式。
+
+```java
+public static void main(String[] args) {
+    try {
+        // try-with-resources 方式 不仅美观，美观而且简洁
+        try (Connection connection = new Connection()) {
+            // ...  其他的业务逻辑
+            connection.sendData();
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+java.lang.Exception: sendData() exception 
+	at _12_异常处理.Test1$Connection.sendData(Test1.java:29)
+	at _12_异常处理.Test1.main(Test1.java:40)
+	Suppressed: java.lang.Exception: close() exception 
+		at _12_异常处理.Test1$Connection.close(Test1.java:33)
+		at _12_异常处理.Test1.main(Test1.java:41)
+```
+
+Java编译后的部分代码如下：
+
+```java
+try {
+    int var5;
+    try {
+        while((var5 = var1.read()) != -1) {
+            var3.write(var5);
+        }
+    } catch (Throwable var29) {
+        var4 = var29;
+        throw var29;
+    }
+} finally {
+    if (var3 != null) {
+        if (var4 != null) {
+            try {
+                var3.close();
+            } catch (Throwable var28) {
+                var4.addSuppressed(var28);	//
+            }
+        } else {
+            var3.close();
+        }
+    }
+}
+```
+
+
 
 # 14.类型信息
 

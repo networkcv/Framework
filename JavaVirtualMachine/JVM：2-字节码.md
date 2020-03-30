@@ -36,9 +36,9 @@ public class Test1{
 
 ​		接下来就让我们来一探究竟，看看这些字节码是如何表示Java代码的。
 
-## 1. 字节码整体结构
+# 1. 字节码整体结构
 
-#### 1.1 概述
+## 1.1 概述
 
 **Class 字节码中有两种数据类型**：
 
@@ -47,7 +47,7 @@ public class Test1{
 
 - 字节码文件的结构图：
 
-  [![字节码文件整体结构](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/20190823162350340.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/20190823162350340.png)
+  [![字节码文件整体结构](./img//20190823162350340.png)](./img/20190823162350340.png)
 
   
 
@@ -74,9 +74,9 @@ public class Test1{
 
   字节码的排列也是严格按照这个顺序来的。
 
-## 2. 字节码文件具体分析
+# 2. 字节码文件具体分析
 
-#### 2.1 魔数（magic）
+## 2.1 魔数（magic）
 
 - Class文件格式表中第一项就是就是magic，是u4类型，代表占用4个字节，对应.class文件中的前四个字节`cafebabe`
 
@@ -84,7 +84,7 @@ public class Test1{
 
   
 
-#### 2.版本号（version）
+## 2.版本号（version）
 
 - 魔数后面 4 个字节是版本信息，前两个字节表示 minor_version（次版本号），后两个字节表示major_version（主版本号），因此这里值 `00 00 00 34 `对应十进制为 `00 00 00 52`，表示次版本号为 0，主版本号为 1.8（ 52对应 jdk 1.8）。**低版本的编译器编译的字节码可以在高版本的JVM下运行，反过来则不行**。
 
@@ -98,7 +98,7 @@ public class Test1{
 
 
 
-#### 3.常量池（constant pool）：
+## 3.常量池（constant pool）：
 
 ​	为了方便在解释概念的时候举例，这里先贴出一份使用`javap -v `反编译后的常量池截图：
 
@@ -120,7 +120,7 @@ public class Test1{
 
   常量池中每一项常量都是一个表，下面是 14 种不同的表结构，后三种为 1.7 之后增加了支持动态语言调用：`CONSTANT_MethodHandle_info、CONSTANT_MethodType_info、CONSTANT_InvokeDynamic_info`，**14 种表中所有的表的第一位都是一个 u1 类型的标志位（tag），具体取值看下面对应的描述**；
 
-[![img](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/595137-20181219204338051-305022474.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/595137-20181219204338051-305022474.png)
+[![img](./img//595137-20181219204338051-305022474.png)](./img/595137-20181219204338051-305022474.png)
 
 以 CONSTANT_UTF-8_info 型常量结构为例，bytes 中是一个长度为 length 字节的连续数据是一个使用 UTF-8 缩略编码表示的字符串，UTF-8 缩略编码和普通 UTF-8 编码的区别：`\u0001` 到 `\u007f`之间字符（相当于 1- 127 ASCII 码）的缩略编码使用一个字节表示，`\u0080` 到 `\u07ff`，使用 2 个字符，`\u0800` 到 `\uffff` 之间和普通编码一样使用三个字节表示。（该类型常量最大值为 65535，应为 Class 文件中方法、字段都是引用该类型常量，因此变量名和方法名最大长度Wie 64KB）
 
@@ -160,7 +160,7 @@ public class Test1{
 
   
 
-#### 4.访问标志信息（Access Flags）
+## 4.访问标志信息（Access Flags）
 
 ​		常量池部分结束后，紧接着的两个字节表示访问标志，用于表明该类或接口被访问时能提供的一些信息。该标志用于识别一些类或者接口层次的访问信息，访问标志信息包括了该 class 文件是类还是接口，是否被定义成 public，是否是 abstract，如果是类，是否被定义成 final 等信息。
 
@@ -179,25 +179,25 @@ public class Test1{
 
 
 
-#### 5.类名称（this class）
+## 5.类名称（this class）
 
 占两个字节，对应：`0x0003`这是一个索引，指向#3，3号常量又指向常量池中 19 号常量，19号常量为一个 `CONSTANT_Utf-8_info` 类型，对应的值为 `com/lwj/bytecode/Test1`，所以最终得到：` #3 = Class #19 // com/lwj/bytecode/Test1`
 
 
 
-#### 6.父类名称（super Class）
+## 6.父类名称（super Class）
 
 占两个字节，对应：`0x0004`,得到：` #4 = Class #20 // java/lang/Object`。
 
 
 
-#### 7.接口（interface）
+## 7.接口（interface）
 
 因为根据上面 Class 文件接口可以得到接口由两部分组成：接口数和接口名，分别都占两个字节，这里接口个数为：`0x0000`，说明没有实现接口，然后接口索引表就不再出现，只有接口个数 不为0，后面才会出现接口的全限定名索引。
 
 
 
-#### 8.字段表（Fields）
+## 8.字段表（Fields）
 
 - 字段表用于**描述类和接口中声明的变量**。这里的字段包含了类级别变量和实例（成员）变量，但是不包括方法内部声明的局部变量。字段的修饰符在上面的访问修饰符（access flags）中。
 - 也是分成两部分，第一部分为：成员变量个数占2 字节的长度；然后是具体的字段表。
@@ -234,11 +234,11 @@ public class Test1{
 **注：补充区分简单名称、描述符、全限定名**
 
 - 简单名称：没有类型和参数修饰的方法或者字段名称，例如 MyTest 类中的 gc() 方法和 m 字段的简单名称为：`gc` 和 `m`;
-- 类的全限定名：`com/gjxaiou/MyTest1`，为了区分多个全限定名，最后加上 `;` 表示该全限定名结束。
-- 类全名：`com.gjxaiou.MyTest1`
+- 类的全限定名：`com/lwj/MyTest1`，为了区分多个全限定名，最后加上 `;` 表示该全限定名结束。
+- 类全名：`com.lwj.MyTest1`
 - 方法和字段的描述符：用于描述字段的数据类型、方法的参数列表（包括数量、类型以及顺序）和返回值；描述符规则见上。
 
-#### 9.方法表（Methods）
+## 9.方法表（Methods）
 
 - 方法的属性结构：方法数量（占两个字节）和方法表
 
@@ -348,7 +348,7 @@ Java 程序中的信息可以分为代码（方法体里面的 Java 代码） �
 
 接下来四个字节`00 00 00 0A`即为 10，表示该方法所包含的字节码的字节数为 10；即表示后面这十个字节代表了这个方法真正执行的内容,每个字节码都是单字节数，十个分别为：`2A B7 00 01 2A 04 B5 00 02 B1` 对应的十进制为：`42 183 0 1 42 4 181 0 2 177`,对应使用 JClasslib 的值为：
 
-[![image-20191207145527272](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207145527272.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207145527272.png)
+[![image-20191207145527272](./img//image-20191207145527272.png)](./img/image-20191207145527272.png)
 
 这里之所以可以每个 16进制可以和助记符进行对应，是因为以及设置好了对应的映射，在工具中点击该助记符就可以查看（Java Virtual Machine Specification中），上面仅仅是一个实例，其他的可以自己点开，当然有的带参数有的不带参数，如果带参数则后面两字节就是参数对应常量池中的引用；
 
@@ -375,7 +375,7 @@ Java 程序中的信息可以分为代码（方法体里面的 Java 代码） �
 package chapter6;
 
 /**
- * @Author GJXAIOU
+ * @Author lwj
  * @Date 2019/12/22 10:59
  */
 public class Code6_5 {
@@ -465,9 +465,9 @@ LineNumbeTable_attribute 结构为：
 
 解析：接下来是4个字节的表示该属性的长度`00 00 00 0A`表示该属性占 10 个字节，即接下来的 10 个字节`00 02 00 00 00 03 04 00 04`表示真正的 LineNumbe 信息，十个字节中前两个字节表示有几对映射关系，这里是：`00 02`两队映射，前面四个字节`00 00 00 03`表示字节码的偏移量为0 映射到源代码偏移量为3，接下来四个自字节 `00 04 00 04 `表示字节码的偏移量为 4 映射到源代码偏移量为 4。
 
-[![image-20191207152447316](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207152447316.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207152447316.png)
+[![image-20191207152447316](./img//image-20191207152447316.png)](./img/image-20191207152447316.png)
 
-然后就是第二个属性，值为`00 0B`表示`#11 = Utf8 LocalVariableTable`，局部变量表结构和上面结构类似；首先长度为：`00 00 00 0c`为 12 ，然后首先是局部变量的个数`00 01`，然后是局部变量的开始位置：`00 00 `，然后是局部变量的结束位置：`00 0A`，然后是局部变量的位置：`00`，然后是局部变量对应常量池中的映射`0C`，即为`#12 = Utf8 this` 所以这里只有一个局部变量即为本身的 this，接下来是局部变量的描述：`00 0D`，即` #13 = Utf8 Lcom/gjxaiou/bytecode/MyTest1;`最后两个字节是校验可以不看；
+然后就是第二个属性，值为`00 0B`表示`#11 = Utf8 LocalVariableTable`，局部变量表结构和上面结构类似；首先长度为：`00 00 00 0c`为 12 ，然后首先是局部变量的个数`00 01`，然后是局部变量的开始位置：`00 00 `，然后是局部变量的结束位置：`00 0A`，然后是局部变量的位置：`00`，然后是局部变量对应常量池中的映射`0C`，即为`#12 = Utf8 this` 所以这里只有一个局部变量即为本身的 this，接下来是局部变量的描述：`00 0D`，即` #13 = Utf8 Lcom/lwj/bytecode/MyTest1;`最后两个字节是校验可以不看；
 
 局部变量表结构为：描述栈中局部变量表中的变量与Java源码中定义的变量之间的关系。
 
@@ -494,7 +494,7 @@ LineNumbeTable_attribute 结构为：
 
 start_pc 和 length 结合表示这个局部变量在字节码之中的作用域范围。
 
-[![image-20191207153409732](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207153409732.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207153409732.png)
+[![image-20191207153409732](./img//image-20191207153409732.png)](./img/image-20191207153409732.png)
 
 **为什么会有 This**：对于 Java 中任意一个非静态方法（即实例方法）（如果是 static 方法 就没有了），因此方法的局部变量表中至少会有一个指向当前对象实例的局部变量this；**Javac 编译器编译的时候把对 this 关键字的访问转变成对一个普通方法参数的访问，然后在虚拟机调用实例方法时候自动传入此参数即可**。Java 中每一个方法中都可以访问this，该this 表示对当前方法的引用，作为字节码角度，该 this 是作为方法的第一个参数传递进来的，这里编译器在编译过程中会隐式的传递进来。
 
@@ -504,7 +504,7 @@ start_pc 和 length 结合表示这个局部变量在字节码之中的作用域
 - 测试2 -------自己反编译分析MyTest2.class static变量会导致出现static代码块
 
 ```
-package com.gjxaiou.bytecode;
+package com.lwj.bytecode;
 
 public class MyTest2 {
     String str = "Welcome";
@@ -526,26 +526,26 @@ public class MyTest2 {
 反编译之后结果，因为这里有私有的方法（或者变量）需要增加参数值才能在字节码文件中显示结果：`javap - verbose -p`
 
 ```
-E:\Program\Java\JVM\DemoByMyself\out\production\DemoByMyself\com\gjxaiou\bytecode>javap -verbose -p MyTest2
-警告: 二进制文件MyTest2包含com.gjxaiou.bytecode.MyTest2
-Classfile /E:/Program/Java/JVM/DemoByMyself/out/production/DemoByMyself/com/gjxaiou/bytecode/MyTest2.class
+E:\Program\Java\JVM\DemoByMyself\out\production\DemoByMyself\com\lwj\bytecode>javap -verbose -p MyTest2
+警告: 二进制文件MyTest2包含com.lwj.bytecode.MyTest2
+Classfile /E:/Program/Java/JVM/DemoByMyself/out/production/DemoByMyself/com/lwj/bytecode/MyTest2.class
   Last modified 2019-12-7; size 838 bytes
   MD5 checksum 6c83f559cb7f10ca47860e58f3a6a485
   Compiled from "MyTest2.java"
-public class com.gjxaiou.bytecode.MyTest2
+public class com.lwj.bytecode.MyTest2
   minor version: 0
   major version: 52
   flags: ACC_PUBLIC, ACC_SUPER
 Constant pool:
    #1 = Methodref          #10.#34        // java/lang/Object."<init>":()V
    #2 = String             #35            // Welcome
-   #3 = Fieldref           #5.#36         // com/gjxaiou/bytecode/MyTest2.str:Ljava/lang/String;
-   #4 = Fieldref           #5.#37         // com/gjxaiou/bytecode/MyTest2.x:I
-   #5 = Class              #38            // com/gjxaiou/bytecode/MyTest2
-   #6 = Methodref          #5.#34         // com/gjxaiou/bytecode/MyTest2."<init>":()V
-   #7 = Methodref          #5.#39         // com/gjxaiou/bytecode/MyTest2.setX:(I)V
+   #3 = Fieldref           #5.#36         // com/lwj/bytecode/MyTest2.str:Ljava/lang/String;
+   #4 = Fieldref           #5.#37         // com/lwj/bytecode/MyTest2.x:I
+   #5 = Class              #38            // com/lwj/bytecode/MyTest2
+   #6 = Methodref          #5.#34         // com/lwj/bytecode/MyTest2."<init>":()V
+   #7 = Methodref          #5.#39         // com/lwj/bytecode/MyTest2.setX:(I)V
    #8 = Methodref          #40.#41        // java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
-   #9 = Fieldref           #5.#42         // com/gjxaiou/bytecode/MyTest2.in:Ljava/lang/Integer;
+   #9 = Fieldref           #5.#42         // com/lwj/bytecode/MyTest2.in:Ljava/lang/Integer;
   #10 = Class              #43            // java/lang/Object
   #11 = Utf8               str
   #12 = Utf8               Ljava/lang/String;
@@ -559,7 +559,7 @@ Constant pool:
   #20 = Utf8               LineNumberTable
   #21 = Utf8               LocalVariableTable
   #22 = Utf8               this
-  #23 = Utf8               Lcom/gjxaiou/bytecode/MyTest2;
+  #23 = Utf8               Lcom/lwj/bytecode/MyTest2;
   #24 = Utf8               main
   #25 = Utf8               ([Ljava/lang/String;)V
   #26 = Utf8               args
@@ -574,7 +574,7 @@ Constant pool:
   #35 = Utf8               Welcome
   #36 = NameAndType        #11:#12        // str:Ljava/lang/String;
   #37 = NameAndType        #13:#14        // x:I
-  #38 = Utf8               com/gjxaiou/bytecode/MyTest2
+  #38 = Utf8               com/lwj/bytecode/MyTest2
   #39 = NameAndType        #29:#30        // setX:(I)V
   #40 = Class              #44            // java/lang/Integer
   #41 = NameAndType        #45:#46        // valueOf:(I)Ljava/lang/Integer;
@@ -596,7 +596,7 @@ Constant pool:
     descriptor: Ljava/lang/Integer;
     flags: ACC_PUBLIC, ACC_STATIC
 
-  public com.gjxaiou.bytecode.MyTest2();
+  public com.lwj.bytecode.MyTest2();
     descriptor: ()V
     flags: ACC_PUBLIC
     Code:
@@ -616,14 +616,14 @@ Constant pool:
         line 5: 10
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-            0      16     0  this   Lcom/gjxaiou/bytecode/MyTest2;
+            0      16     0  this   Lcom/lwj/bytecode/MyTest2;
 
   public static void main(java.lang.String[]);
     descriptor: ([Ljava/lang/String;)V
     flags: ACC_PUBLIC, ACC_STATIC
     Code:
       stack=2, locals=2, args_size=1
-         0: new           #5                  // class com/gjxaiou/bytecode/MyTest2
+         0: new           #5                  // class com/lwj/bytecode/MyTest2
          3: dup
          4: invokespecial #6                  // Method "<init>":()V
          7: astore_1
@@ -642,7 +642,7 @@ Constant pool:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
             0      23     0  args   [Ljava/lang/String;
-            8      15     1 myTest2   Lcom/gjxaiou/bytecode/MyTest2;
+            8      15     1 myTest2   Lcom/lwj/bytecode/MyTest2;
 
   private synchronized void setX(int);
     descriptor: (I)V
@@ -658,7 +658,7 @@ Constant pool:
         line 16: 5
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-            0       6     0  this   Lcom/gjxaiou/bytecode/MyTest2;
+            0       6     0  this   Lcom/lwj/bytecode/MyTest2;
             0       6     1     x   I
 
   static {};
@@ -680,23 +680,23 @@ SourceFile: "MyTest2.java"
 
 **构造方法**
 
-[![image-20191207170539362](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207170539362.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207170539362.png)
+[![image-20191207170539362](./img//image-20191207170539362.png)](./img/image-20191207170539362.png)
 
 可以看出` String str = "Welcome";` 和`private int x = 5;` 的赋值是在编译器为我们生成的构造方法中执行的，**就是会将非静态的赋值操作放入构造方法中**；即使我们提供了构造方法，但是字节码中对应的赋值任然没有变化，还是在构造方法中进行赋值。如果有几个不同的构造方法，相当于将上面两个赋值语句分别放入构造方法里面的首位，保证无论执行哪一个构造方法都会对两个值进行初始化（两个赋值语句与构造方法相对位置无关，两个赋值语句之间的相对关系有关）。
 
 **静态的成员变量的赋值是在 `` 方法中完成的**，包括如果有静态代码块，所有的静态相关的都会放在同一个 ``方法中；
 
-[![image-20191207180248501](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207180248501.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207180248501.png)
+[![image-20191207180248501](./img//image-20191207180248501.png)](./img/image-20191207180248501.png)
 
-#### 补充
+## 补充
 
-**ConstantValue属性**
+### **ConstantValue属性**
 
 ConstantValue 属性的作用是通知虚拟机自动为静态变量赋值。只有被 static 关键字修饰的变量（类变量）才可以使用这项属性。类似 “int x = 123” 和 “static int x = 123” 这样的变量定义在 Java 程序中是非常常见的事情，但虚拟机对这两种变量赋值的方式和时刻都有所不同。**对于非 static 类型的变量（也就是实例变量）的赋值是在实例构造器 ` `方法中进行的**；而**对于类变量，则有两种方式可以选择：在类构造器 ` `方法中或者使用 ConstantValue 属性**。目前 Sun Javac 编译器的选择是：**如果同时使用 final 和 static 来修饰一个变量（按照习惯，这里称 “常量” 更贴切），并且这个变量的数据类型是基本类型或者 java.lang.String 的话，就生成 ConstantValue 属性来进行初始化，如果这个变量没有被 final 修饰，或者并非基本类型及字符串，则将会选择在 `` 方法中进行初始化**。
 
 虽然有 final 关键字 才更符合 “ConstantValue” 的语义，但虚拟机规范中并没有强制要求字段必须设置了 ACC_FINAL 标志，只要求了有 ConstantValue 属性的字段必须设置 ACC_STATIC 标志而已，对 final 关键字的要求是 javac 编译器自己加入的限制。而对 ConstantValue 的属性值只能限于基本类型和 String，不过笔者不认为这是什么限制，因为此属性值只是一个常量池的索引号，由于 Class 文件格式的常量类型中只有与基本属性和字符串相对应的字面量，所以就算 ConstantValue 属性想支持别的类型也无能为力。ConstantValue 属性的结构见下表。
 
-ConstantValue属性结构
+### ConstantValue属性结构
 
 用于通知虚拟机自动为静态变量赋值。只有被static关键字修饰的变量才可以使用这项属性。
 
@@ -706,7 +706,7 @@ ConstantValue属性结构
 | u4   | attribute_length     | 1    |                                  |
 | u2   | constantValue_index  | 1    | 指向常量池中一个字面量常量的引用 |
 
-#### InnerClasses属性结构
+### InnerClasses属性结构
 
 用于记录内部类与宿主类之间的关联，如果一个类中定义了内部类，编译器则会为它生成内部类INnerClasses属性
 
@@ -732,7 +732,7 @@ inner_class_info_index 和 outer_class_info_index 都是指向常量池中 CONST
 
  inner_class_access_flags 是内部类的访问标志，类似于类的 access_flags，它的取值范围见下表。
 
-#### 内部类访问标志
+### 内部类访问标志
 
 | 标志名称       | 标志值 | 描述                         |
 | -------------- | ------ | ---------------------------- |
@@ -747,7 +747,7 @@ inner_class_info_index 和 outer_class_info_index 都是指向常量池中 CONST
 | ACC_ANNOTATION | 0x2000 | 内部类是否是一个注解         |
 | ACC_ENUM       | 0x4000 | 内部类是否是一个枚举         |
 
-#### Deprecated/Synthetic属性结构
+### Deprecated/Synthetic属性结构
 
 前者是用于标示某个类，字段或者方法是否不再推荐使用
 
@@ -764,7 +764,7 @@ inner_class_info_index 和 outer_class_info_index 都是指向常量池中 CONST
 | u2   | attribute_name_index | 1    |
 | u4   | attribute_length     | 1    |
 
-#### StackMapTable属性结构
+### StackMapTable属性结构
 
 于JDK1.6之后添加在Class规范中，位于Code属性表中，该属性会在虚拟机类加载的字节码校验阶段被新类型检查检验器（Type Checker）使用。
 
@@ -775,7 +775,7 @@ inner_class_info_index 和 outer_class_info_index 都是指向常量池中 CONST
 | u2              | number_of_entries       | 1                 |
 | stack_map_frame | stack_map_frame_entries | number_of_entries |
 
-#### Signature属性结构
+### Signature属性结构
 
 于JDK1.5发布之后添加到Class规范中，它是一个可选的定长属性，可以出现在类，属性表，方法表结构的属性表中。该属性会记录泛型签名信息，在Java语言中泛型采用的是擦除法实现的伪泛型，在字节码（Code属性）中，泛型信息编译之后都统统被擦除掉。由于无法像C#等运行时支持获取真泛型类型，添加该属性用于弥补该缺陷，现在Java反射已经能获取到泛型类型。
 
@@ -787,7 +787,7 @@ inner_class_info_index 和 outer_class_info_index 都是指向常量池中 CONST
 
 其中 signature_index 值必须是一个对常量池的有效索引且为 CONSTANT_Utf8_info，表示类签名，方法类型签名或字段类型签名。如果当前Signature属性是类文件的属性，则这个结构表示类签名，如果当前Signature属性是方法表的属性，则表示方法类型签名，如果当前Signature属性是字段表的属性，则表示字段类型签名。
 
-#### BootstrapMethods属性结构
+### BootstrapMethods属性结构
 
 于JDK1.7发布后添加到Class文件规范中，是一个复杂变长的属性，位于类文件的属性表中。第八章
 
@@ -812,21 +812,20 @@ BootstrapMethods 属性中，num_bootstrap_methods 项的值给出了 bootstrap_
 - num_bootstrap_arguments：num_bootstrap_arguments 项的值给出了 bootstrap_arguments[] 数组成员的数量。
 - bootstrap_arguments[]：bootstrap_arguments[] 数组的每个成员必须是一个对常量池的有效索引。常量池在该索引处必须是下列结构之一：CONSTANT_String_info、CONSTANT_Class_info、CONSTANT_Integer_info、CONSTANT_Long_info、CONSTANT_Float_info、CONSTANT_Double_info、CONSTANT_MethodHandle_info 或 CONSTANT_MethodType_info。
 
-## 异常处理对应的字节码文件分析
 
-异常的结构为：区别与异常表，该表主要是列举中方法中可能抛出的受检查异常，也就是方法描述时throws关键字列举的异常
 
-| 类型 | 名称                  | 数量                 |
-| ---- | --------------------- | -------------------- |
-| u2   | attribute_name_index  | 1                    |
-| u4   | attribute_length      | 1                    |
-| u2   | number_of_exceptions  | 1                    |
-| u2   | exception_index_table | number_of_exceptions |
+### 异常处理对应的字节码分析
 
-- 测试3
+**异常表 Exception table**
 
-```
-package com.gjxaiou.bytecode;
+JVM采用异常表的方式来对异常进行处理，存放处理异常的信息，每个exception_table表，是由start_pc、end_pc、hangder_pc、catch_type组成
+
+- start_pc、end_pc：表示在code数组中从start_pc到end_pc（包含start_pc，不包含end_pc）的指令抛出的异常会由这个表项（hangder_pc）来处理
+- hangder_pc：表示处理异常的代码的开始处。
+- catch_type：表示会被处理的异常类型，它指向常量池中的一个异常类。当catch_type=0时，表示处理所有的异常。
+
+```java
+package com.lwj.bytecode;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -834,18 +833,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 
-public class MyTest3 {
+public class Test3 {
     public void test() {
         try {
             InputStream is = new FileInputStream("test.txt");
             ServerSocket serverSocket = new ServerSocket(9999);
             serverSocket.accept();
         } catch (FileNotFoundException e) {
-
+			int i = 0;
         } catch (IOException e) {
-
+			int i = 1;
         } catch (Exception e) {
-
+            int i = 2;
         } finally {
             System.out.println("finally");
         }
@@ -855,93 +854,20 @@ public class MyTest3 {
 
 对应的反编译结果：
 
-```
-E:\Program\Java\JVM\DemoByMyself\out\production\DemoByMyself\com\gjxaiou\bytecode>javap -verbose MyTest3
-警告: 二进制文件MyTest3包含com.gjxaiou.bytecode.MyTest3
-Classfile /E:/Program/Java/JVM/DemoByMyself/out/production/DemoByMyself/com/gjxaiou/bytecode/MyTest3.class
-  Last modified 2019-12-7; size 1064 bytes
-  MD5 checksum 3861a6dfc9c6a41fbb9d9e5ba56ae0b0
-  Compiled from "MyTest3.java"
-public class com.gjxaiou.bytecode.MyTest3
+```java
+$ javap -v -c Test3.class
+Classfile /D:/Repository/Framework/JavaVirtualMachine/jvm/com/lwj/bytecode/Test3.class
+  Last modified 2020-3-30; size 756 bytes
+  MD5 checksum 5150b854f4ad80e98583822103ad4ac1
+  Compiled from "Test3.java"
+public class com.lwj.bytecode.Test3
   minor version: 0
   major version: 52
   flags: ACC_PUBLIC, ACC_SUPER
 Constant pool:
-   #1 = Methodref          #15.#35        // java/lang/Object."<init>":()V
-   #2 = Class              #36            // java/io/FileInputStream
-   #3 = String             #37            // test.txt
-   #4 = Methodref          #2.#38         // java/io/FileInputStream."<init>":(Ljava/lang/String;)V
-   #5 = Class              #39            // java/net/ServerSocket
-   #6 = Methodref          #5.#40         // java/net/ServerSocket."<init>":(I)V
-   #7 = Methodref          #5.#41         // java/net/ServerSocket.accept:()Ljava/net/Socket;
-   #8 = Fieldref           #42.#43        // java/lang/System.out:Ljava/io/PrintStream;
-   #9 = String             #44            // finally
-  #10 = Methodref          #45.#46        // java/io/PrintStream.println:(Ljava/lang/String;)V
-  #11 = Class              #47            // java/io/FileNotFoundException
-  #12 = Class              #48            // java/io/IOException
-  #13 = Class              #49            // java/lang/Exception
-  #14 = Class              #50            // com/gjxaiou/bytecode/MyTest3
-  #15 = Class              #51            // java/lang/Object
-  #16 = Utf8               <init>
-  #17 = Utf8               ()V
-  #18 = Utf8               Code
-  #19 = Utf8               LineNumberTable
-  #20 = Utf8               LocalVariableTable
-  #21 = Utf8               this
-  #22 = Utf8               Lcom/gjxaiou/bytecode/MyTest3;
-  #23 = Utf8               test
-  #24 = Utf8               is
-  #25 = Utf8               Ljava/io/InputStream;
-  #26 = Utf8               serverSocket
-  #27 = Utf8               Ljava/net/ServerSocket;
-  #28 = Utf8               StackMapTable
-  #29 = Class              #47            // java/io/FileNotFoundException
-  #30 = Class              #48            // java/io/IOException
-  #31 = Class              #49            // java/lang/Exception
-  #32 = Class              #52            // java/lang/Throwable
-  #33 = Utf8               SourceFile
-  #34 = Utf8               MyTest3.java
-  #35 = NameAndType        #16:#17        // "<init>":()V
-  #36 = Utf8               java/io/FileInputStream
-  #37 = Utf8               test.txt
-  #38 = NameAndType        #16:#53        // "<init>":(Ljava/lang/String;)V
-  #39 = Utf8               java/net/ServerSocket
-  #40 = NameAndType        #16:#54        // "<init>":(I)V
-  #41 = NameAndType        #55:#56        // accept:()Ljava/net/Socket;
-  #42 = Class              #57            // java/lang/System
-  #43 = NameAndType        #58:#59        // out:Ljava/io/PrintStream;
-  #44 = Utf8               finally
-  #45 = Class              #60            // java/io/PrintStream
-  #46 = NameAndType        #61:#53        // println:(Ljava/lang/String;)V
-  #47 = Utf8               java/io/FileNotFoundException
-  #48 = Utf8               java/io/IOException
-  #49 = Utf8               java/lang/Exception
-  #50 = Utf8               com/gjxaiou/bytecode/MyTest3
-  #51 = Utf8               java/lang/Object
-  #52 = Utf8               java/lang/Throwable
-  #53 = Utf8               (Ljava/lang/String;)V
-  #54 = Utf8               (I)V
-  #55 = Utf8               accept
-  #56 = Utf8               ()Ljava/net/Socket;
-  #57 = Utf8               java/lang/System
-  #58 = Utf8               out
-  #59 = Utf8               Ljava/io/PrintStream;
-  #60 = Utf8               java/io/PrintStream
-  #61 = Utf8               println
+	// 省略了常量池
 {
-  public com.gjxaiou.bytecode.MyTest3();
-    descriptor: ()V
-    flags: ACC_PUBLIC
-    Code:
-      stack=1, locals=1, args_size=1
-         0: aload_0
-         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-         4: return
-      LineNumberTable:
-        line 9: 0
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-            0       5     0  this   Lcom/gjxaiou/bytecode/MyTest3;
+    // 省略构造方法
 
   public void test();
     descriptor: ()V
@@ -949,263 +875,241 @@ Constant pool:
     Code:
       // 对于 Java 类中的每一个实例方法（非 static 方法），其在编译后所生成的字节码中，方法参数的数量总是比源代码中方法参数的数量多一个（即为 this），它位于方法的第一个参数位置处。这样我们就可以在 Java 的实例方法中使用 this 来访问当前对象的属性以及其他方法；
      // 这个操作时在编译期间完成的，即在 Javac 编译器在编译的时候将对 this 的访问转化为对一个普通实例方法的访问，接下来在运行期间，由 JVM 在实例方法时候，自动的向实例方法传入该 this 参数，所以在实例方法的局部变量表中，至少会有一个执行当前对象的局部变量。
-      	// Locals = 4:this/is/serverSocket/ex(这个 ex 为三个其中之一，因为 catch 只能执行一个)，这里表示最多为 4 个，因为 catch 方法可能不执行；
+      // Locals = 4:this/is/serverSocket/ex(这个 ex 为三个其中之一，因为 catch 只能执行一个)，这里表示最多为 4 个，因为 catch 方法可能不执行；
+      //堆栈上最多存3个对象，4个局部变量，有1个参数
       stack=3, locals=4, args_size=1
          // 创建对象，这里就是创建了一个 FileInputStream 对象
          0: new           #2                  // class java/io/FileInputStream
-         // dup:将操作数栈最顶层数进行复制，相当于压栈
+		// dup:复制栈顶数值并将复制值压入栈顶，相当于压栈
          3: dup
-         // ldc：从运行期的常量池中推一个 item，就是将常量池中的 test.txt 推进去，使其能构造出该对象
+		// ldc：从运行期的常量池中推一个 item，就是将常量池中的 test.txt 推进去，使其能构造出该对象
          4: ldc           #3                  // String test.txt
          // 调用父类的相应构造方法    
          6: invokespecial #4                  // Method java/io/FileInputStream."<init>":(Ljava/lang/String;)V
-         // 将应用存储到一个局部变量中，就是将 FileInputStream 创建处理实例的引用存储到局部变量 is 中
+         // 将应用存储到一个局部变量中，就是将 FileInputStream 创建处理实例的引用存储到局部变量 is 中，	astore_1 中 a 代表操作一个引用 _1 代表存放到局部变量表中的索引为1的位置，0索引位置一般存放 this引用
          9: astore_1
-         // 以上5行对应于源代码中的 InputStream is = new FileInputStream("test.txt");    
-        10: new           #5                  // class java/net/ServerSocket
-        13: dup
-        14: sipush        9999
-        17: invokespecial #6                  // Method java/net/ServerSocket."<init>":(I)V
-        20: astore_2
-        21: aload_2
-        22: invokevirtual #7                  // Method java/net/ServerSocket.accept:()Ljava/net/Socket; 
-        25: pop
-        26: getstatic     #8                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        29: ldc           #9                  // String finally
-        31: invokevirtual #10                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-         // 因为可能报错，因此执行的顺序在运行期才能确定，在编译期只能使用 goto 语句在做可能的跳转
-        34: goto          84
-        // 将抛出的异常引用赋值给 ex 对象
-        37: astore_1
-        38: getstatic     #8                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        41: ldc           #9                  // String finally
-        43: invokevirtual #10                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-         // catch 中执行之后跳转到 84，即 return  
-        46: goto          84
+        10: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+		// 可以看出下面这部是 finally 中的内容，也就是try中的代码没有发生异常，会正常走到 finally中
+        13: ldc           #6                  // String finally
+        15: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+		// 因为可能报错，因此真正的执行顺序在运行期才能确定，在编译期只能使用 goto 语句做可能的跳转，这里是try中没有发生异常，直接进行返回
+        18: goto          74
+		// 正常情况下是无法走到这里的，但是如果发生异常，JVM会根据 Exception table（异常表）中进行相应的指令跳转到这里，这里
+        21: astore_1
+		// 将int型0推送至栈顶，结合代码可以看到这里是捕获到 FileNotFoundException 异常的处理代码
+        22: iconst_0
+        23: istore_2
+        24: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        27: ldc           #6                  // String finally
+        29: invokevirtual #7  
+        32: goto          74
+        35: astore_1
+		// 将int型1推送至栈顶，结合代码可以看到这里是捕获到 IOException 异常的处理代码
+        36: iconst_1
+        37: istore_2
+        38: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        41: ldc           #6                  // String finally
+        43: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        46: goto          74
+		// 可以看到 PC 21 36 49 都将捕获的变量保存到局部变量表中index为1的位置，因为这三部分在运行时只会走其中的一个分支，
         49: astore_1
-        50: getstatic     #8                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        53: ldc           #9                  // String finally
-        55: invokevirtual #10                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-        58: goto          84
-        61: astore_1
-        62: getstatic     #8                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        65: ldc           #9                  // String finally
-        67: invokevirtual #10                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-        70: goto          84
-        73: astore_3
-        74: getstatic     #8                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        77: ldc           #9                  // String finally
-        79: invokevirtual #10                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-        82: aload_3
-        83: athrow
-        84: return
+		// 将int型2推送至栈顶，结合代码可以看到这里是捕获到 Exception 异常的处理代码
+        50: iconst_2
+        51: istore_2
+        52: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        55: ldc           #6                  // String finally
+        57: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        60: goto          74
+        63: astore_3
+        64: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        67: ldc           #6                  // String finally
+        69: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        72: aload_3
+        73: athrow
+        74: return
+
       Exception table:
          from    to  target type
-             0    26    37   Class java/io/FileNotFoundException
-             0    26    49   Class java/io/IOException
-             0    26    61   Class java/lang/Exception
-             0    26    73   any
-      LineNumberTable:
-        line 12: 0
-        line 13: 10
-        line 14: 21
-        line 22: 26
-        line 23: 34
-        line 15: 37
-        line 22: 38
-        line 23: 46
-        line 17: 49
-        line 22: 50
-        line 23: 58
-        line 19: 61
-        line 22: 62
-        line 23: 70
-        line 22: 73
-        line 23: 82
-        line 24: 84
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-           10      16     1    is   Ljava/io/InputStream;
-           21       5     2 serverSocket   Ljava/net/ServerSocket;
-            0      85     0  this   Lcom/gjxaiou/bytecode/MyTest3;
-      StackMapTable: number_of_entries = 5
-        frame_type = 101 /* same_locals_1_stack_item */
-          stack = [ class java/io/FileNotFoundException ]
-        frame_type = 75 /* same_locals_1_stack_item */
-          stack = [ class java/io/IOException ]
-        frame_type = 75 /* same_locals_1_stack_item */
-          stack = [ class java/lang/Exception ]
-        frame_type = 75 /* same_locals_1_stack_item */
-          stack = [ class java/lang/Throwable ]
-        frame_type = 10 /* same */
+			//从 0到10 之间的指令如果发生了FileNotFoundException 会跳转到21继续执行
+             0    10    21   Class java/io/FileNotFoundException
+             0    10    35   Class java/io/IOException
+             0    10    49   Class java/lang/Exception
+             0    10    63   any
+            21    24    63   any
+            35    38    63   any
+            49    52    63   any
+	
+	//省略行号表
 }
-SourceFile: "MyTest3.java"
+SourceFile: "Test3.java"
 ```
 
-- exception_table：存放处理异常的信息，每个exception_table表，是由start_pc、end_pc、hangder_pc、catch_type组成，这里为：`00 00`
+**如果将异常抛出，对应的字节码为**
 
-  - start_pc、end_pc：表示在code数组中从start_pc到end_pc（包含start_pc，不包含end_pc）的指令抛出的异常会由这个表项（hangder_pc）来处理
-  - hangder_pc：表示处理异常的代码的开始处。
-  - catch_type：表示会被处理的异常类型，它指向常量池中的一个异常类。当catch_type=0时，表示处理所有的异常。
+```java
+public void test0() throws FileNotFoundException {
+}
+```
 
-  [![image-20191207184820512](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207184820512.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207184820512.png)
+![image-20200330142051245](img/image-20200330142051245.png)
 
-- Java字节码对于异常的处理方式：
+### finally修改要返回的变量会对返回值产生影响吗？
 
-  - 统一采用异常表的方式来对异常进行处理；
+```java
+public int test3() {
+    int i;
+    try {
+        i = 1;
+        return i;
+    } finally {
+        i = 2;
+    }
+}
 
-  - 在jdk1.4.2之前的版本中，并不是使用异常表的方式对异常进行处理的，而是采用特定的指令方式；
+bytecode：    
+ public int test3();
+    descriptor: ()I
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=4, args_size=1
+         0: iconst_1 	//将int型1推送至栈顶
+         1: istore_1	//将栈顶int型数值存入第二个本地变量
+         2: iload_1		//这里准备返回值，将第二个int型本地变量推送至栈顶
+         3: istore_2	//由于还有finally块中的语句，所以没有直接返回，而是复制一份保存到第三个本地变量
+         4: iconst_2	//执行finally块中的语句，将int型2推送至栈顶
+         5: istore_1	//这里将第保存在第二个本地变量的i进行了修改
+         6: iload_2		//返回第三个本地变量元素，也就是之前保存的1
+         7: ireturn		//返回一个int
+		//这里是发生了异常的情况
+         8: astore_3	//将捕获到的异常引用，保存在第四个本地变量中
+         9: iconst_2	//执行finally块中的内容
+        10: istore_1
+        11: aload_3		//将捕获到的异常引用推送至栈顶，也就是将第四个引用类型本地变量推送至栈顶
+        12: athrow		//将栈顶的异常抛出
+      Exception table:
+         from    to  target type
+             0     4     8   any
 
-  - 当异常处理存在 finally 语句块时，现代化的 JVM 采取的处理方式是将 finally 语句内的字节码拼接到每个catch 语句块后面。也就是说，程序中存在多少个 catch，就会在每一个 catch 块后面重复多少个 finally 语句块，也就是存在多少个 finally 块的内容。
+```
 
-    [![image-20191207190130275](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207190130275.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207190130275.png)
+finally中修改返回的变量不会对返回值产生影响，
 
-  **如果将异常抛出，对应的字节码为**
+**从字节码层面分析了虚拟机在处理异常流程的过程，我们可以看出以下几点内容：**
 
-  源代码上区别：`public void test() throws FileNotFoundException, NullPointerException{`
+1. JVM采用异常表的方式来对异常进行处理，而不是简单的跳转命令来实现Java异常及finally处理机制。（注：在JDK1.4.2之前的Javac编译器采用了jsr和ret指令实现finally语句。在JDK1.7中，已经完全禁止Class文件中出现jsr和ret指令，如果遇到这两条指令，虚拟机会在类加载的字节码校验阶段抛出异常）
+2. 当异常处理存在finally语句块时，编译器会自动在每一段可能的分支路径之后都将finally语句块的内容冗余生成一遍来实现finally语义。
+3. 在我们Java代码中，finally语句块是在最后的，但编译器在生成字节码时候进行了指令重排序，将finally语句块的执行指令移到了return指令之前，这样就从字节码角度解释了finally为什么总是会执行。
+4. finally语句块中对返回值的修改并不会影响之前return语句的返回结果，因为编译器将要返回值单独保留了一个副本，如果在finally中重新返回则会影响之前的返回结果。
 
-  对应的字节码：
+# 3.字节码指令
 
-  [![image-20191207190923625](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E5%AD%97%E8%8A%82%E7%A0%81.resource/image-20191207190923625.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/字节码.resource/image-20191207190923625.png)
-
-  ## 二、字节码指令
-
-  - Java虚拟机的指令由一个字节长度的、 代表着某种特定操作含义的数字（称为操作码，Opcode）以及跟随其后的零至多个代表此操作所需参数（称为操作数，Operands）而构成。
+- Java虚拟机的指令由一个字节长度的、 代表着某种特定操作含义的数字（称为操作码，Opcode）以及跟随其后的零至多个代表此操作所需参数（称为操作数，Operands）而构成。
   - JVM 采用面向操作数栈，所以大多数指令不包含操作数，只有一个操作码。
-  - JVM 操作码长度为 1 个字节（0 ~255），即指令集的操作码总数不超过 256 个
+- JVM 操作码长度为 1 个字节（0 ~255），即指令集的操作码总数不超过 256 个
   - **Class 文件格式放弃了编译后代码的操作数长度对齐，所以 JVM 处理超过一个字节数据时候，需要在运行时将一个 16 位长度的无符号整数使用两个无符号字节存储起来，值为：`(byte1 << 8) | byte2`，虽然性能有损失，但是不对齐省略了填充和间隔符号，文件更加精简。
 
-  ### （一）字节码与数据类型
+## 3.1 字节码与数据类型
 
-  在Java虚拟机的指令集中，大多数的指令都包含了其操作所对应的数据类型信息。 例如，iload指令用于从局部变量表中加载int型的数据到操作数栈中，而fload指令加载的则是float类型的数据。 这两条指令的操作在虚拟机内部可能会是由同一段代码来实现的，但在Class文件中它们必须拥有各自独立的操作码。
+在Java虚拟机的指令集中，大多数的指令都包含了其操作所对应的数据类型信息。 例如，iload指令用于从局部变量表中加载int型的数据到操作数栈中，而fload指令加载的则是float类型的数据。 这两条指令的操作在虚拟机内部可能会是由同一段代码来实现的，但在Class文件中它们必须拥有各自独立的操作码。
 
-  对于大部分与数据类型相关的字节码指令，它们的操作码助记符中都有特殊的字符来表明专门为哪种数据类型服务：i代表对int类型的数据操作，l代表long,s代表short,b代表byte,c代表char,f代表float,d代表double,a代表reference。 也有一些指令的助记符中没有明确地指明操作类型的字母，如arraylength指令，它没有代表数据类型的特殊字符，但操作数永远只能是一个数组类型的对象。 还有另外一些指令，如无条件跳转指令goto则是与数据类型无关的。
+对于大部分与数据类型相关的字节码指令，它们的操作码助记符中都有特殊的字符来表明专门为哪种数据类型服务：i代表对int类型的数据操作，l代表long,s代表short,b代表byte,c代表char,f代表float,d代表double,a代表reference。 也有一些指令的助记符中没有明确地指明操作类型的字母，如arraylength指令，它没有代表数据类型的特殊字符，但操作数永远只能是一个数组类型的对象。 还有另外一些指令，如无条件跳转指令goto则是与数据类型无关的。
 
-  ### （二）加载和存储指令
+## 3.2 加载和存储指令
 
-  加载和存储指令用于将数据在栈帧中的局部变量表和操作数栈之间来回传输，这类指令包括如下内容。
+加载和存储指令用于将数据在栈帧中的局部变量表和操作数栈之间来回传输，这类指令包括如下内容。
 
-  - 将一个局部变量加载到操作栈：`iload、 iload_＜n＞、 lload、 lload_＜n＞、 fload、 fload_＜n＞、 dload、 dload_＜n＞、 aload、 aload_＜n＞`。
+- 将一个局部变量加载到操作栈：`iload、 iload_＜n＞、 lload、 lload_＜n＞、 fload、 fload_＜n＞、 dload、 dload_＜n＞、 aload、 aload_＜n＞`。
   - 将一个数值从操作数栈存储到局部变量表：`istore、 istore_＜n＞、 lstore、 lstore_＜n＞、fstore、 fstore_＜n＞、 dstore、 dstore_＜n＞、 astore、 astore_＜n＞`。
-  - 将一个常量加载到操作数栈：`bipush、 sipush、 ldc、 ldc_w、 ldc2_w、 aconst_null、iconst_m1、 iconst_＜i＞、 lconst_＜l＞、 fconst_＜f＞、 dconst_＜d＞`。
+- 将一个常量加载到操作数栈：`bipush、 sipush、 ldc、 ldc_w、 ldc2_w、 aconst_null、iconst_m1、 iconst_＜i＞、 lconst_＜l＞、 fconst_＜f＞、 dconst_＜d＞`。
   - 扩充局部变量表的访问索引的指令：`wide`。
 
-  ### （三）运算指令
+## 3.3 运算指令
 
-  运算或算术指令用于对两个操作数栈上的值进行某种特定运算，并把结果重新存入到操作栈顶。 大体上算术指令可以分为两种：对整型数据进行运算的指令与对浮点型数据进行运算的指令，无论是哪种算术指令，都使用Java虚拟机的数据类型，由于没有直接支持byte、short、 char和boolean类型的算术指令，对于这类数据的运算，应使用操作int类型的指令代替。 整数与浮点数的算术指令在溢出和被零除的时候也有各自不同的行为表现，所有的算术指令如下。
+运算或算术指令用于对两个操作数栈上的值进行某种特定运算，并把结果重新存入到操作栈顶。 大体上算术指令可以分为两种：对整型数据进行运算的指令与对浮点型数据进行运算的指令，无论是哪种算术指令，都使用Java虚拟机的数据类型，由于没有直接支持byte、short、 char和boolean类型的算术指令，对于这类数据的运算，应使用操作int类型的指令代替。 整数与浮点数的算术指令在溢出和被零除的时候也有各自不同的行为表现，所有的算术指令如下。
 
-  - 加法指令：iadd、 ladd、 fadd、 dadd。
-  - 减法指令：isub、 lsub、 fsub、 dsub。
-  - 乘法指令：imul、 lmul、 fmul、 dmul。
-  - 除法指令：idiv、 ldiv、 fdiv、 ddiv。
-  - 求余指令：irem、 lrem、 frem、 drem。
-  - 取反指令：ineg、 lneg、 fneg、 dneg。
-  - 位移指令：ishl、 ishr、 iushr、 lshl、 lshr、 lushr。
+- 加法指令：iadd、 ladd、 fadd、 dadd。
+- 减法指令：isub、 lsub、 fsub、 dsub。
+- 乘法指令：imul、 lmul、 fmul、 dmul。
+- 除法指令：idiv、 ldiv、 fdiv、 ddiv。
+- 求余指令：irem、 lrem、 frem、 drem。
+- 取反指令：ineg、 lneg、 fneg、 dneg。
+- 位移指令：ishl、 ishr、 iushr、 lshl、 lshr、 lushr。
   - 按位或指令：ior、 lor。
-  - 按位与指令：iand、 land。
+- 按位与指令：iand、 land。
   - 按位异或指令：ixor、 lxor。
-  - 局部变量自增指令：iinc。
+- 局部变量自增指令：iinc。
   - 比较指令：dcmpg、 dcmpl、 fcmpg、 fcmpl、 lcmp。
 
-  ### （四）类型转换指令
+## 3.4类型转换指令
 
-  类型转换指令可以将两种不同的数值类型进行相互转换，这些转换操作一般用于实现用户代码中的显式类型转换操作
+类型转换指令可以将两种不同的数值类型进行相互转换，这些转换操作一般用于实现用户代码中的显式类型转换操作
 
-  - int类型到long、 float或者double类型。
-  - long类型到float、 double类型。
+- int类型到long、 float或者double类型。
+- long类型到float、 double类型。
   - float类型到double类型。
 
-  ### （五）对象创建与访问指令
+## 3.5 对象创建与访问指令
 
-  虽然类实例和数组都是对象，但Java虚拟机对类实例和数组的创建与操作使用了不同的字节码指令。 对象创建后，就可以通过对象访问指令获取对象实例或者数组实例中的字段或者数组元素，这些指令如下。
+虽然类实例和数组都是对象，但Java虚拟机对类实例和数组的创建与操作使用了不同的字节码指令。 对象创建后，就可以通过对象访问指令获取对象实例或者数组实例中的字段或者数组元素，这些指令如下。
 
-  - 创建类实例的指令：new。
-  - 创建数组的指令：newarray、 anewarray、 multianewarray。
+- 创建类实例的指令：new。
+- 创建数组的指令：newarray、 anewarray、 multianewarray。
   - 访问类字段（static字段，或者称为类变量）和实例字段（非static字段，或者称为实例变量）的指令：getfield、 putfield、 getstatic、 putstatic。
-  - 把一个数组元素加载到操作数栈的指令：baload、 caload、 saload、 iaload、 laload、faload、 daload、 aaload。
+- 把一个数组元素加载到操作数栈的指令：baload、 caload、 saload、 iaload、 laload、faload、 daload、 aaload。
   - 将一个操作数栈的值存储到数组元素中的指令：bastore、 castore、 sastore、 iastore、fastore、 dastore、 aastore。
-  - 取数组长度的指令：arraylength。
+- 取数组长度的指令：arraylength。
   - 检查类实例类型的指令：instanceof、 checkcast。
 
-  ### （六）操作数栈管理指令
+## 3.6 操作数栈管理指令
 
-  如同操作一个普通数据结构中的堆栈那样，Java虚拟机提供了一些用于直接操作操作数栈的指令，包括：
+如同操作一个普通数据结构中的堆栈那样，Java虚拟机提供了一些用于直接操作操作数栈的指令，包括：
 
-  - 将操作数栈的栈顶一个或两个元素出栈：pop、 pop2。
-  - 复制栈顶一个或两个数值并将复制值或双份的复制值重新压入栈顶：dup、 dup2、dup_x1、 dup2_x1、 dup_x2、 dup2_x2。
+- 将操作数栈的栈顶一个或两个元素出栈：pop、 pop2。
+- 复制栈顶一个或两个数值并将复制值或双份的复制值重新压入栈顶：dup、 dup2、dup_x1、 dup2_x1、 dup_x2、 dup2_x2。
   - 将栈最顶端的两个数值互换：swap。
 
-  ### （七）控制转移指令
+## 3.7 控制转移指令
 
-  控制转移指令可以让Java虚拟机有条件或无条件地从指定的位置指令而不是控制转移指令的下一条指令继续执行程序，从概念模型上理解，可以认为控制转移指令就是在有条件或无条件地修改PC寄存器的值。 控制转移指令如下。
+控制转移指令可以让Java虚拟机有条件或无条件地从指定的位置指令而不是控制转移指令的下一条指令继续执行程序，从概念模型上理解，可以认为控制转移指令就是在有条件或无条件地修改PC寄存器的值。 控制转移指令如下。
 
-  - 条件分支：ifeq、 iflt、 ifle、 ifne、 ifgt、 ifge、 ifnull、 ifnonnull、 if_icmpeq、 if_icmpne、if_icmplt、 if_icmpgt、 if_icmple、 if_icmpge、 if_acmpeq和if_acmpne。
-  - 复合条件分支：tableswitch、 lookupswitch。
+- 条件分支：ifeq、 iflt、 ifle、 ifne、 ifgt、 ifge、 ifnull、 ifnonnull、 if_icmpeq、 if_icmpne、if_icmplt、 if_icmpgt、 if_icmple、 if_icmpge、 if_acmpeq和if_acmpne。
+
+- 复合条件分支：tableswitch、 lookupswitch。
   - 无条件分支：goto、 goto_w、 jsr、 jsr_w、 ret。
 
   在Java虚拟机中有专门的指令集用来处理int和reference类型的条件分支比较操作，为了可以无须明显标识一个实体值是否null，也有专门的指令用来检测null值。
 
-  ### （八）方法调用和返回指令
+## 3.8 方法调用和返回指令
 
-  - invokevirtual指令用于调用对象的实例方法，根据对象的实际类型进行分派（虚方法分派），这也是Java语言中最常见的方法分派方式。
-  - invokeinterface指令用于调用接口方法，它会在运行时搜索一个实现了这个接口方法的对象，找出适合的方法进行调用。
+- invokevirtual指令用于调用对象的实例方法，根据对象的实际类型进行分派（虚方法分派），这也是Java语言中最常见的方法分派方式。
+
+- invokeinterface指令用于调用接口方法，它会在运行时搜索一个实现了这个接口方法的对象，找出适合的方法进行调用。
+
   - invokespecial指令用于调用一些需要特殊处理的实例方法，包括实例初始化方法、 私有方法和父类方法。
-  - invokestatic指令用于调用类方法（static方法）。
+- invokestatic指令用于调用类方法（static方法）。
   - invokedynamic指令用于在运行时动态解析出调用点限定符所引用的方法，并执行该方法，前面4条调用指令的分派逻辑都固化在Java虚拟机内部，而invokedynamic指令的分派逻辑是由用户所设定的引导方法决定的。
 
   方法调用指令与数据类型无关，而方法返回指令是根据返回值的类型区分的，包括ireturn（当返回值是boolean、 byte、 char、 short和int类型时使用）、 lreturn、 freturn、 dreturn和areturn，另外还有一条return指令供声明为void的方法、 实例初始化方法以及类和接口的类初始化方法使用。
 
-  ### （九）异常处理指令
+## 3.9 异常处理指令
 
-  在Java程序中显式抛出异常的操作（throw语句）都由athrow指令来实现，除了用throw语句显式抛出异常情况之外，Java虚拟机规范还规定了许多运行时异常会在其他Java虚拟机指令检测到异常状况时自动抛出。 例如，在前面介绍的整数运算中，当除数为零时，虚拟机会在idiv或ldiv指令中抛出ArithmeticException异常。
+在Java程序中显式抛出异常的操作（throw语句）都由athrow指令来实现，除了用throw语句显式抛出异常情况之外，Java虚拟机规范还规定了许多运行时异常会在其他Java虚拟机指令检测到异常状况时自动抛出。 例如，在前面介绍的整数运算中，当除数为零时，虚拟机会在idiv或ldiv指令中抛出ArithmeticException异常。
 
-  而在Java虚拟机中，处理异常（catch语句）不是由字节码指令来实现的（很久之前曾经使用jsr和ret指令来实现，现在已经不用了），而是采用异常表来完成的。
+而在Java虚拟机中，处理异常（catch语句）不是由字节码指令来实现的（很久之前曾经使用jsr和ret指令来实现，现在已经不用了），而是采用异常表来完成的。
 
-  ### （十）同步指令
+## 3.10 同步指令
 
-  Java虚拟机可以支持方法级的同步和方法内部一段指令序列的同步，这两种同步结构都是使用管程（Monitor）来支持的。
+Java虚拟机可以支持方法级的同步和方法内部一段指令序列的同步，这两种同步结构都是使用管程（Monitor）来支持的。
 
-  方法级的同步是隐式的，即无须通过字节码指令来控制，它实现在方法调用和返回操作之中。 虚拟机可以从方法常量池的方法表结构中的ACC_SYNCHRONIZED访问标志得知一个方法是否声明为同步方法。 当方法调用时，调用指令将会检查方法的ACC_SYNCHRONIZED访问标志是否被设置，如果设置了，执行线程就要求先成功持有管程，然后才能执行方法，最后当方法完成（无论是正常完成还是非正常完成）时释放管程。 在方法执行期间，执行线程持有了管程，其他任何线程都无法再获取到同一个管程。 如果一个同步方法执行期间抛出了异常，并且在方法内部无法处理此异常，那么这个同步方法所持有的管程将在异常抛到同步方法之外时自动释放。
+方法级的同步是隐式的，即无须通过字节码指令来控制，它实现在方法调用和返回操作之中。 虚拟机可以从方法常量池的方法表结构中的ACC_SYNCHRONIZED访问标志得知一个方法是否声明为同步方法。 当方法调用时，调用指令将会检查方法的ACC_SYNCHRONIZED访问标志是否被设置，如果设置了，执行线程就要求先成功持有管程，然后才能执行方法，最后当方法完成（无论是正常完成还是非正常完成）时释放管程。 在方法执行期间，执行线程持有了管程，其他任何线程都无法再获取到同一个管程。 如果一个同步方法执行期间抛出了异常，并且在方法内部无法处理此异常，那么这个同步方法所持有的管程将在异常抛到同步方法之外时自动释放。
 
-  同步一段指令集序列通常是由Java语言中的synchronized语句块来表示的，Java虚拟机的指令集中有monitorenter和monitorexit两条指令来支持synchronized关键字的语义，正确实现synchronized关键字需要Javac编译器与Java虚拟机两者共同协作支持
-
-
-
-## 9.Class文件结构
-
-### 9.1语言无关性
-
-![](D:\Study\Framework\JVM\img\1577885643(1).jpg)
-
-### 9.2 文件结构
-
-![](D:\Study\Framework\JVM\img\1577885869(1).jpg)
-
-- 魔数
-
-  判断是否是class文件，0xCAFEBABE
-
-- 版本
-
-  Java的版本号，以target参数为准  -target 1.5|1.8
-
-- 常量池
-
-- 访问符
-
-- 类、超类、接口
-
-- 字段
-
-- 方法
-
-- 属性
-
-## 
+同步一段指令集序列通常是由Java语言中的synchronized语句块来表示的，Java虚拟机的指令集中有monitorenter和monitorexit两条指令来支持synchronized关键字的语义，正确实现synchronized关键字需要Javac编译器与Java虚拟机两者共同协作支持
 
 
 
-**符号引用和直接引用**
+# Need Dispose
+
+### **符号引用和直接引用**
 
 有些符号引用是在类加载阶段或者是第一次使用就会转换为直接引用，这种叫做静态解析；另外一些符号引用则是在每次运行期转换为直接引用，这种转换叫做动态链接，体现为Java的多态性。
 
@@ -1220,6 +1124,8 @@ fu.test();
 
 
 
+### 方法调用类型
+
 1. invokeinterface：调用接口中的方法，实际上是在运行期决定的，决定到底调用实现该接口的某个对象的特定方法
 2. invokestatic：调用静态方法
 3. invokespecial：调用自己的私有方法、构造方法以及父类方法
@@ -1228,7 +1134,7 @@ fu.test();
 
 
 
-**静态解析**
+### **静态解析**
 
 1. 静态方法
 2. 父类方法
@@ -1237,7 +1143,7 @@ fu.test();
 
   以上四类方法称作虚方法，在类的加载阶段就可以将符号引用转换为直接引用
 
-**动态解析**
+### **动态解析**
 
 - 先在常量池中找到操作数栈顶的第一个元素所指向对象的实际类型（等号右边的类型，等号左边是静态类型）所对应的类
 - 具体调用test方法时，编译后的字节码：invokevirtual  #6<com.lwj.Fu.test>  这里其实就是指向父类方法的符号引用，只有在运行期，知道栈顶的元素的实际类型后，才能知道子类到底有没有重写父类方法，会不会发生多态
@@ -1245,7 +1151,7 @@ fu.test();
 
 
 
-**方法的静态分派**
+### **方法的静态分派**
 
 Fa fa=new Zi()
 
@@ -1255,7 +1161,7 @@ Fa fa=new Zi()
 
 
 
-**方法的动态分派**
+### **方法的动态分派**
 
 方法接收者，invokevirtual字节码指令的多态查找流程。
 
@@ -1263,7 +1169,7 @@ Fa fa=new Zi()
 
 
 
-**在连接阶段会创建虚方法表**
+### **在连接阶段会创建虚方法表**
 
 针对于方法调用动态分派的过程中，虚拟机会在类的方法区建立一个虚方法表的数据结构（virtual method table，vtable）
 
@@ -1271,19 +1177,40 @@ Fa fa=new Zi()
 
 
 
-**字节码中new 一个对象**
+### **字节码中new 一个对象**
 
-new 	在内存空间中为该对象分配内存，返回分配的内存地址
+1. new	在内存空间中为该对象分配内存，返回分配的内存地址，并压入栈中
 
-dup	将内存地址压入栈中
+2. dup	复制栈顶数值并将复制值压入栈顶
 
-invokespecial	调用该对象的构造方法
+3. invokespecial	调用该对象的构造方法
 
-astrore_1	将内存地址的引用赋给一个局部变量
+4. astore_1	将栈顶引用型数值存入第二个本地变量
+5. pop	将栈顶数值弹出(数值不能是long或double类型的)
+
+```java
+Test3 o = new Test3();	//对应情况4
+0 new #11 <com/lwj/bytecode/Test3>
+3 dup
+4 invokespecial #12 <com/lwj/bytecode/Test3.<init>>
+7 astore_1
+8 return
+    
+new Test3();	//对应情况5
+0 new #11 <com/lwj/bytecode/Test3>
+3 dup
+4 invokespecial #12 <com/lwj/bytecode/Test3.<init>>
+7 pop
+8 return
+```
+
+可以看出每次执行 new 指令后都会紧跟 dup 指令，根本原因是JVM执行方法的过程是通过操作数栈来实现的，而没有使用寄存器，如果要对某一操作数连续做两次操作，则需要将栈顶操作数复制为两份。
+
+完成对象的地址分配后，执行 `<init>` 方法会消耗一次栈顶操作数，将对象的引用存放到局部变量表中又会消耗一次栈顶操作数，这就是dup紧跟在new后边的原因，如果只是创建了一个对象并没有保存它的引用，针对这种情况JVM会直接pop掉被复制的那个操作数。
 
 
 
-**虚拟机执行字节码的两种执行方式**
+### **虚拟机执行字节码的两种执行方式**
 
 1. 解释执行
 
@@ -1295,7 +1222,7 @@ astrore_1	将内存地址的引用赋给一个局部变量
 
 
 
-**基于栈的指令集与基于寄存器的指令集之间的关系：**
+### **基于栈的指令集与基于寄存器的指令集之间的关系：**
 
 1. JVM执行指令时所采取的方式是基于栈的指令集
 2. 基于栈的指令集主要的操作有入栈和出栈两种
