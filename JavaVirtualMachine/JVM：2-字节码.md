@@ -955,6 +955,8 @@ public void test0() throws FileNotFoundException {
 
 ### finally修改要返回的变量会对返回值产生影响吗？
 
+- 对于返回变量是基本类型：
+
 ```java
 public int test3() {
     int i;
@@ -992,14 +994,66 @@ bytecode：
 
 ```
 
-finally中修改返回的变量不会对返回值产生影响，
+**结论：**finally块 中修改基本类型的返回变量不会对其有影响。
+
+- 对于返回变量是引用类型：
+
+```java
+private static class Student {
+    private int age;
+    //constructor(ing age)
+    //get()  set()
+}
+
+public Student test5() {
+    Student student = null;
+    try {
+        student = new Student(1);
+        return student;
+    } finally {
+        student.setAge(2);
+    }
+}
+
+bytecode：    
+  public com.lwj.bytecode.Test2$Student test5();
+    descriptor: ()Lcom/lwj/bytecode/Test2$Student;
+    flags: ACC_PUBLIC
+    Code:
+      stack=3, locals=4, args_size=1
+         0: aconst_null
+         1: astore_1
+         2: new           #25                 // class com/lwj/bytecode/Test2$Student
+         5: dup
+         6: iconst_1
+         7: invokespecial #26                 // Method com/lwj/bytecode/Test2$Student."<init>":(I)V
+        10: astore_1					    // 完成初始化，并将student引用保存到局部变量表中第二个位置
+        11: aload_1						    
+        12: astore_2					    // 将student引用复制到第三个位置，两个引用指向堆中同一个对象
+        13: aload_1						    // 加载的是第二个位置的student引用
+        14: iconst_2
+        15: invokevirtual #27                 // Method com/lwj/bytecode/Test2$Student.setAge:(I)V
+        18: aload_2						    
+        19: areturn						    // 返回第三个位置的引用，但对象已经通过第二个位置的引用被修改
+	   	// 下面是try中发生异常执行的指令
+        20: astore_3
+        21: aload_1
+        22: iconst_2
+        23: invokevirtual #27                 // Method com/lwj/bytecode/Test2$Student.setAge:(I)V
+        26: aload_3
+        27: athrow
+      Exception table:
+         from    to  target type
+             2    13    20   any
+```
+
+**结论：**由于引用的特殊，在finally块 中修改引用类型的返回值会对其有影响，这里就像方法传参中的值传递和引用传递一样。
 
 **从字节码层面分析了虚拟机在处理异常流程的过程，我们可以看出以下几点内容：**
 
 1. JVM采用异常表的方式来对异常进行处理，而不是简单的跳转命令来实现Java异常及finally处理机制。（注：在JDK1.4.2之前的Javac编译器采用了jsr和ret指令实现finally语句。在JDK1.7中，已经完全禁止Class文件中出现jsr和ret指令，如果遇到这两条指令，虚拟机会在类加载的字节码校验阶段抛出异常）
 2. 当异常处理存在finally语句块时，编译器会自动在每一段可能的分支路径之后都将finally语句块的内容冗余生成一遍来实现finally语义。
 3. 在我们Java代码中，finally语句块是在最后的，但编译器在生成字节码时候进行了指令重排序，将finally语句块的执行指令移到了return指令之前，这样就从字节码角度解释了finally为什么总是会执行。
-4. finally语句块中对返回值的修改并不会影响之前return语句的返回结果，因为编译器将要返回值单独保留了一个副本，如果在finally中重新返回则会影响之前的返回结果。
 
 # 3.字节码指令
 

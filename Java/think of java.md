@@ -76,7 +76,7 @@ byte res = (byte) ((byte) 127 + (byte) 1); //这里先用int类型来保存128�
 System.out.println(res);	//-128 
 ```
 
-
+## [字符编码](./think of Java：1-字符编码.md)
 
 # 3.操作符
 
@@ -267,11 +267,19 @@ System.out.println(o1);	//2.0
 
 ## finalize()
 
+​		finalize 是基础类 java.lang.Object 的一个方法，它的设计目的是保证对象在被垃圾收集前完成特定资源的回收， finalize 机制现在已经不推荐使用了，在 JDK 9 中开始被标记为 deprecated。
+
 ​		当我们不再使用某个对象时，这个对象的内存空间就需要被回收，以便分配新的对象，在Java中不需要我们手动来终结一个对象，JVM的垃圾收集线程会代替我们来做这件事。
 
-​		如果判定某个对象需要回收，会判断该对象是否重写了`finalize()`方法或者该方法是否已经被调用过了，如果没有重写或者已经被调用过了，那么本次垃圾回收会回收该对象；
+​		如果判定某个对象需要回收，会判断该对象是否重写了`finalize()`方法或者该方法是否已经被调用过了，如果没有重写或者已经被调用过了，那么本次垃圾回收会回收该对象。
 
-​		如果重写来但`finalize()`方法没被调用过，那么有必要执行该finalize方法，具体的执行过程是具体过程是将该对象放置到一个叫做 F-Queue 的队列之中，**并在稍后由一个由虚拟机自动建立的、低优先级的 Finalizer 线程去执行它，这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束**，这样做的原因是，如果一个对象在 finalize() 方法中执行缓慢或者发生了死循环，将很可能会导致 F-Queue 队列中其他对象永久处于等待，甚至导致整个内存回收系统崩溃。
+​		如果重写了但`finalize()`方法没被调用过，那么有必要执行该finalize方法，具体的执行过程是具体过程是将该对象放置到一个叫做 F-Queue 的队列之中，**并在稍后由一个由虚拟机自动建立的、低优先级的 Finalizer 线程去执行它，这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束**，这样做的原因是，如果一个对象在 finalize() 方法中执行缓慢或者发生了死循环，将很可能会导致 F-Queue 队列中其他对象永久处于等待，甚至导致整个内存回收系统崩溃。
+
+​		因此一旦实现了非空的 finalize 方法，就会导致相应对象回收呈现数量级上的变慢，finalize 成为了快速回收对象的阻碍者。
+
+​		Java 平台目前逐步使用 java.lang.ref.Cleaner 来替换掉原有的 finalize 实现。Cleaner的实现利用了 幻象引用（PhantomReference），这是一种常见的 post - mortem 清理机制。利用幻象引用和引用队列，可以保证对象被彻底销毁前做一些类似资源回收的工作，它比 finalize 更轻量、更可靠。吸取了 finalize 的教训，每个Cleaner的操作都是独立的，它有自己的运行线程。
+
+​		而Cleaner机制也存在缺陷，在《Effective Java》第三版中对避免使用 finalize 和 Cleaner进行了详细说明。
 
 ## 数组初始化
 
@@ -373,25 +381,31 @@ class Zi extends Fu {
 
 **代理：**这是继承和组合的中庸之道，代理类需要持有被代理对象的引用，（这就像组合），同时还需要在代理类中暴露该被代理对象的所有方法，这个通常是通过代理类实现被代理类的接口，（这里就像继承）。
 
-## final关键字
+## final 关键字
 
-### final修饰变量
+final 修饰类、方法、变量，参数分别有不同的意义。
 
-被`final` 修饰的变量只能被赋值一次，修饰引用的话，则该引用不能指向其他对象，但已经指向的对象内容是可变的，如果被 `staic final ` 修饰的变量 作为编译期常量。
+1. final 修饰变量
 
-### final修饰参数
+   被`final` 修饰的变量只能被赋值一次，修饰引用的话，则该引用不能指向其他对象，但已经指向的对象内容是可变的，如果被 `staic final ` 修饰的变量 作为编译期常量。
 
-在方法中无法修改参数引用所指向的对象，这一特征主要向匿名内部类传递数据。
+   由于final 变量产生了一定程度的不可变效果，所以可以用于保护只读数据，尤其是在并发编程中，合理使用 final 有利于减少额外的同步开销。
 
-### final修饰方法
+2. final 修饰参数
 
-final方法无法被子类重写，以防继承类修改它的含义。private 权限默认就是 final的
+   在方法中无法修改参数引用所指向的对象，这一特征主要向匿名内部类传递数据。
 
-在子类中重新定义父类中的private 的方法，其实是重新定义了一个相同方法签名的方法，可以用@Override检测。
+3. final 修饰方法
 
-### final修饰类
+   final方法无法被子类重写，以防继承类修改它的含义。private 权限默认就是 final的。
 
-被final修饰的类无法被继承
+   在子类中重新定义父类中的private 的方法，其实是重新定义了一个相同方法签名的方法，可以用@Override检测。
+
+4. final 修饰类
+
+   被final修饰的类无法被继承，在Java 核心类库中，或者第三方类库的一些基础类，都会被声明为 final class，搭配类加载机制可以有效的避免 API 使用者更改基础功能，可以保证平台的安全性。
+
+final 也可能有助于JVM将方法进行内联、可以帮助改善编译器进行条件编译的能力等等，但这并不是我们关注的重点，因为现代高性能JVM足够智能，它判断方法内联未必依赖 final 的提示，**因此我们需要关注的是 final 关键字的语义上的使用**，因此在日常开发中，除非有特殊考虑或者确实有效，不然最好不要指望这种技巧带来的所谓的性能好处。
 
 # 8.多态
 
@@ -905,6 +919,8 @@ public class Test1 implements Iterable<String> {
 
   底层数组实现，所以支持随机访问，可以动态扩容。
 
+  [ArrayList 源码分析](./think of Java：11-ArrayList 源码分析.md)
+
 - LinkedList
 
   LinkedList和ArrayList一样实现类基本的List接口，但它还添加了额外的方法，使其可以当作栈、队列或者双端队列来使用。
@@ -925,7 +941,7 @@ public class Test1 implements Iterable<String> {
 
 - 它根据键的hashCode值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却与插入顺序不同的。 HashMap最多只允许一条记录的键为null，允许多条记录的值为null。
 - HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
-- [HashMap源码分析](./HashMap 源码分析.md)
+- [HashMap源码分析](./think of Java：11-HashMap 源码分析.md)
 
 ## Hashtable
 
@@ -935,7 +951,7 @@ public class Test1 implements Iterable<String> {
 ## LinkedHashMap
 
 -  LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
-- [LinkedHashMap源码分析](./LinkedHashMap源码分析.md)  **TODO**
+- [LinkedHashMap源码分析](./think of Java：11-LinkedHashMap源码分析.md)  **TODO**
 
 ## TreeMap
 
@@ -945,139 +961,7 @@ public class Test1 implements Iterable<String> {
 
 对于上述四种Map类型的类，要求映射中的key是不可变对象。不可变对象是该对象在创建后它的哈希值不会被改变。如果对象的哈希值发生变化，Map对象很可能就定位不到映射的位置了。
 
-# 12.异常处理
-
-Exception 和 Error 都是继承了 Throwable类，只有 Throwable 类型的实例才可以被抛出 throw 或者被捕获 catch，它是异常处理机制的基本组成类型。
-
-## 异常的概念
-
-**Error** 
-
-Error 是在正常情况下，不大可能出现的情况，绝大部分Error都会导致程序处于非正常状态、不可恢复状态，不需要捕获，如 OutOfMemoryError 之类，都是 Error 的子类。
-
-**Exception**
-
-Exception 可以分 可检查（check）异常 和 不检查（unchecked）异常。
-
-1. **可检查异常 **在源代码中需要显示的进行捕获处理，编译器强制要求程序员为这样的异常做预备处理工作（使用
-   try…catch…finally或者throws）。在方法中要么用try-catch语句捕获它并处理，要么用throws子句声明抛出它，否则编译不会通过，这是编译期检查的一部分，这样的异常一般是由程序的运行环境导致的。因为程序可能被运行在各种未知的环境下，而我们需要考虑到在这种情况下会发生的一些异常。如SQLException 、IOException、ClassNotFoundException 等。Error是 Throwable 但不是 Exception。
-2. **不检查异常** 就是所谓的运行时异常，javac在编译时，不会提示和发现这样的异常，同样也不要求在程序处理这些异常。所以如果愿意，我们可以编写代码处理（使用try…catch…finally），也可以选择不处理。例如  ClassCastException（错误的强制类型转换异常），ArrayIndexOutOfBoundsException（数组索引越界），NullPointerException（空指针异常）等等。
-
-![image-20200330152821100](img/image-20200330152821100.png)
-
-## 从JVM角度看异常处理
-
-1. JVM采用异常表的方式来对异常进行处理，而不是简单的跳转命令来实现Java异常及finally处理机制。
-2. 当异常处理存在finally语句块时，编译器会自动在每一段可能的分支路径之后都将finally语句块的内容冗余生成一遍来实现finally语义。
-3. 在我们Java代码中，finally语句块是在最后的，但编译器在生成字节码时候进行了指令重排序，将finally语句块的执行指令移到了return指令之前，这样就从字节码角度解释了finally为什么总是会执行。
-4. finally语句块中对返回值的修改并不会影响之前return语句的返回结果，因为编译器将要返回值单独保留了一个副本，如果在finally中重新返回则会影响之前的返回结果。
-
-## 日常开发中的异常处理
-
-### try-with-resources
-
-try-with-resources是Java 1.7 中新增的语法糖来打开资源，而无需手动资源关闭代码，具体使用如下：
-
-```java
-try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File("test.txt")));
-     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File("test.txt")));
-) {
-    int b;
-    while ((b = bis.read()) != -1) {
-        bos.write(b);
-    }
-} catch (IOException e) {
-    e.printStackTrace();
-}
-```
-
-为了配合try-with-resources，资源必须实现 AutoClosable 接口，底层还是在编译器做的优化，帮我们自动生成了finally块，并在里边调用了close（）方法。并且使用了 `addSuppressed`来解决之前异常屏蔽的问题。
-
-### 异常屏蔽问题
-
-```java
-private static class Connection implements AutoCloseable {
-    void sendData() throws Exception {
-        throw new Exception("sendData() exception ");
-    }
-
-    public void close() throws Exception {
-        throw new Exception("close() exception ");
-    }
-}
-	
-public static void main(String[] args) {
-    try {
-        Connection connection = new Connection();
-        try {
-		   // ...  其他的业务逻辑
-            connection.sendData();
-        } finally {
-            connection.close();
-        }
-    } catch (Exception e) {
-        e.printStackTrace();	// 查看最终的异常信息
-    }
-}
-java.lang.Exception: call close exception 
-	at _12_异常处理.Test1$Connection.close(Test1.java:33)
-	at _12_异常处理.Test1.main(Test1.java:43)
-```
-
-`sendData()` 和 `conn.close()` 都发生了错误，在 finally块 中首先会将 try块 抛出的异常保存到局部变量表中，然后执行自己的逻辑，如果在执行过程中没有发生异常，则会将之前保存的异常，从局部变量表加载到操作数栈顶然后抛出，以上是正常关闭资源的情况，如果关闭资源发生异常，也就是finally块 中的代码出错，则会重新抛出位于操作数栈顶的 新异常，看起来就像是新异常将老异常覆盖了，因此我们无法得知问题的根源。
-
-要解决这个问题也很简单，只需要将新老异常关联起来即可，可以使用 initCause（Throwable exception）或者 addSuppressed（Throwable exception），try-with-resources 使用的是 addSuppressed() 的方式。
-
-```java
-public static void main(String[] args) {
-    try {
-        // try-with-resources 方式 不仅美观，美观而且简洁
-        try (Connection connection = new Connection()) {
-            // ...  其他的业务逻辑
-            connection.sendData();
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
-
-java.lang.Exception: sendData() exception 
-	at _12_异常处理.Test1$Connection.sendData(Test1.java:29)
-	at _12_异常处理.Test1.main(Test1.java:40)
-	Suppressed: java.lang.Exception: close() exception 
-		at _12_异常处理.Test1$Connection.close(Test1.java:33)
-		at _12_异常处理.Test1.main(Test1.java:41)
-```
-
-Java编译后的部分代码如下：
-
-```java
-try {
-    int var5;
-    try {
-        while((var5 = var1.read()) != -1) {
-            var3.write(var5);
-        }
-    } catch (Throwable var29) {
-        var4 = var29;
-        throw var29;
-    }
-} finally {
-    if (var3 != null) {
-        if (var4 != null) {
-            try {
-                var3.close();
-            } catch (Throwable var28) {
-                var4.addSuppressed(var28);	//
-            }
-        } else {
-            var3.close();
-        }
-    }
-}
-```
-
-
+# [12.异常处理](./think of Java：12-异常处理.md)
 
 # 14.类型信息
 

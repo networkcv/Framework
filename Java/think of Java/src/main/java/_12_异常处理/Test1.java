@@ -66,20 +66,18 @@ public class Test1 {
                 exception = serviceException;
                 throw serviceException;
             } finally {
-                if (exception != null) {
-                    try {
-                        conn.close();
-                    } catch (Throwable IOException) {
-                        exception.initCause(IOException);
-                    }
-                } else {
+                try {
                     conn.close();
+                } catch (Throwable IOException) {
+//                     exception.initCause(IOException);
+                    exception.addSuppressed(IOException);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();    // 查看最终的异常信息
+            e.printStackTrace();
         }
     }
+
 
     public void test() {
         try {
