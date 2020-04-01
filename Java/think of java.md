@@ -279,7 +279,7 @@ System.out.println(o1);	//2.0
 
 ​		Java 平台目前逐步使用( java.lang.ref.Cleaner ) Cleaner机制来替换掉原有的 finalize 实现。Cleaner的实现利用了 幻象引用（PhantomReference），这是一种常见的 post - mortem 清理机制。利用幻象引用和引用队列，可以保证对象被彻底销毁前做一些类似资源回收的工作，吸取了 finalize 的教训，每个Cleaner的操作都是独立的，它有自己的运行线程。Cleaner机制不如Finalizer机制那样危险，但仍然是不可预测，运行缓慢并且通常是不必要的。
 
-​		Finalizer机制和Cleaner机制的缺陷，在《Effective Java》第三版中对避免使用 finalize 和 Cleaner进行了详细说明。	
+​		Finalizer机制和Cleaner机制的缺陷，在《Effective Java》第三版中对[避免使用 finalize 和 Cleaner](./https://www.jianshu.com/p/45b4df2bd7aa)进行了详细说明。	
 
 
 

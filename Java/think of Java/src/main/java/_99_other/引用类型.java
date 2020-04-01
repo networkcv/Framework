@@ -8,19 +8,20 @@ import java.lang.ref.ReferenceQueue;
  * create by lwj on 2020/3/31
  */
 public class 引用类型 {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Object counter = new Object();
         ReferenceQueue refQueue = new ReferenceQueue();
-        PhantomReference<Object> p = new PhantomReference<>(counter,refQueue);
-        counter=null;
+        PhantomReference<Object> p = new PhantomReference<>(counter, refQueue);
+        counter = null;
         System.gc();
-        try{
+        try {
             Reference remove = refQueue.remove(10000L);
-            if (remove!=null){
+            if (remove != null) {
                 System.out.println("ok");
             }
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
+
 }
