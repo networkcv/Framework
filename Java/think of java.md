@@ -275,11 +275,13 @@ System.out.println(o1);	//2.0
 
 ​		如果重写了但`finalize()`方法没被调用过，那么有必要执行该finalize方法，具体的执行过程是具体过程是将该对象放置到一个叫做 F-Queue 的队列之中，**并在稍后由一个由虚拟机自动建立的、低优先级的 Finalizer 线程去执行它，这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束**，这样做的原因是，如果一个对象在 finalize() 方法中执行缓慢或者发生了死循环，将很可能会导致 F-Queue 队列中其他对象永久处于等待，甚至导致整个内存回收系统崩溃。
 
-​		因此一旦实现了非空的 finalize 方法，就会导致相应对象回收呈现数量级上的变慢，finalize 成为了快速回收对象的阻碍者。
+​		因此一旦实现了非空的 finalize 方法，就会导致相应对象回收呈现数量级上的变慢，比使用try-with-resources机制慢50倍，finalize 成为了快速回收对象的阻碍者。
 
-​		Java 平台目前逐步使用 java.lang.ref.Cleaner 来替换掉原有的 finalize 实现。Cleaner的实现利用了 幻象引用（PhantomReference），这是一种常见的 post - mortem 清理机制。利用幻象引用和引用队列，可以保证对象被彻底销毁前做一些类似资源回收的工作，它比 finalize 更轻量、更可靠。吸取了 finalize 的教训，每个Cleaner的操作都是独立的，它有自己的运行线程。
+​		Java 平台目前逐步使用( java.lang.ref.Cleaner ) Cleaner机制来替换掉原有的 finalize 实现。Cleaner的实现利用了 幻象引用（PhantomReference），这是一种常见的 post - mortem 清理机制。利用幻象引用和引用队列，可以保证对象被彻底销毁前做一些类似资源回收的工作，吸取了 finalize 的教训，每个Cleaner的操作都是独立的，它有自己的运行线程。Cleaner机制不如Finalizer机制那样危险，但仍然是不可预测，运行缓慢并且通常是不必要的。
 
-​		而Cleaner机制也存在缺陷，在《Effective Java》第三版中对避免使用 finalize 和 Cleaner进行了详细说明。
+​		Finalizer机制和Cleaner机制的缺陷，在《Effective Java》第三版中对避免使用 finalize 和 Cleaner进行了详细说明。	
+
+
 
 ## 数组初始化
 
