@@ -1,8 +1,6 @@
 package _99_other;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
+import java.lang.ref.*;
 
 /**
  * create by lwj on 2020/3/31
@@ -11,11 +9,12 @@ public class 引用类型 {
     public static void main(String[] args) {
         Object counter = new Object();
         ReferenceQueue refQueue = new ReferenceQueue();
-        PhantomReference<Object> p = new PhantomReference<>(counter, refQueue);
+        WeakReference<Object> p = new WeakReference<>(counter, refQueue);
+
         counter = null;
         System.gc();
         try {
-            Reference remove = refQueue.remove(10000L);
+            Reference remove = refQueue.remove(3000L);
             if (remove != null) {
                 System.out.println("ok");
             }

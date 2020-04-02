@@ -94,6 +94,8 @@ JVM 垃圾回收
 
 详见：**[think of Java：99-深入Java引用.md](../Java/think of Java：99-深入Java引用.md)**
 
+参考：[java-reference核心原理分析](./[http://ifeve.com/java-reference%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/](http://ifeve.com/java-reference核心原理分析/))
+
 在JDK 1.2之后，Java 对引用的概念进行了扩充，将引用分为强引用（Strong Reference）、 软引用（Soft Reference）、 弱引用（Weak Reference）、 虚引用（Phantom Reference）4种，这4种引用强度依次逐渐减弱。
 
 ### 3.1 四种引用类型
@@ -129,7 +131,7 @@ SoftReference aSoftRef = new SoftReference(aRef);
 
 ​		谈到各种引用的编程，就必然要提到引用队列。我们在创建各种引用并关联到相应对象时，可以选择是否需要关联引用队列。
 
-​		虚引用无法取得对象实例，因此必须和引用队列（ReferenceQueue）联合使用。当垃圾收集器准备回收一个对象时，如果发现它还有虚引用，JVM会把该Reference设置成pending状态，如果引用创建时指定了ReferenceQueue，在回收对象的内存之前，ReferenceHandler线程会把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。
+​		虚引用无法取得对象实例，因此必须和引用队列（ReferenceQueue）联合使用。当垃圾收集器准备回收一个对象时，如果发现它还被虚引用所指向并且引用创建时指定了ReferenceQueue，JVM会把该Reference设置成pending状态，在回收对象的内存之前，ReferenceHandler线程会把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。
 
 ```java
 Object counter = new Object();
