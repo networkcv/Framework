@@ -1,7 +1,8 @@
 参考博客 ：[HashMap 源码详细分析(JDK1.8)](https://segmentfault.com/a/1190000012926722)
 
-
 ## HashMap 源码解析
+
+基于Java 8的源码
 
 ```java
 final float loadFactor;		//负载因子，用来反应HashMap数组桶的使用情况
@@ -586,6 +587,48 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
     return null;
 }
 ```
+
+## Java 1.7 中的HashMap
+
+先提一下1.7中HashMap的扩容机制，在1.7中还没有引入红黑树，在resize方法中，会使用链表的头插法进行新老数组桶的拷贝，而1.7 中HashMap的多线程问题就是发生在这个地方。
+
+这里通过代码简单介绍一下，链表的头插法。
+
+```java
+public void test() {
+    Node node1 = new Node(1);
+    Node node2 = new Node(2);
+    Node node3 = new Node(3);
+    node1.next = node2;
+    node2.next = node3;
+
+    Node[] oldTable = new Node[3];
+    oldTable[1] = node1;
+    System.out.println(Arrays.asList(oldTable));
+
+    Node[] newTable = new Node[3];
+    // 头插法 画图可以更好理解
+    Node node = oldTable[1];
+    Node next ;
+    while(node!=null){
+        next=node.next;
+        node.next=newTable[1];
+        newTable[1]=node;
+        node=next;
+    }
+    System.out.println(Arrays.asList(newTable));
+}
+```
+
+对比尾插法，可以看出头插法的最大好处是，插入节点时不需要便利到链表的末尾，直接插入即可，不足之处在于，头插法会反转链表的顺序。
+
+###  扩容造成死循环分析过程
+
+
+
+###  扩容造成数据丢失分析过程
+
+
 
 ## 总结
 
