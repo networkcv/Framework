@@ -1224,7 +1224,7 @@ public class Collections {
 
 # 17.Java核心类
 
-## Object
+## 17.1 Object
 
 #### 1、为什么重写equals还要重写hashcode
 
@@ -1247,122 +1247,236 @@ Java API中有如下规定:
 只重写equals，不重写hashcode    在使用集合类，例如map 将没有重写hashcode的对象作为键时，那么会根据该对象的内存地址计算哈希值，然后取模定位到要存储的散列表中，取值时需要用内存地址一模一样的对象才能取到值(不考虑不同对象哈希值相同)
 只重写hashcode,不重写equals     如果发生散列冲突的话，hashcode可以正常定位，但是通过equals比较内存，地址会永远返回fasle，造成无法取出
 
-## 包装类
 
-包装类的"=="运算在不遇到算术运算的情况下不会自动拆箱
-包装类的equals()方法不处理数据转型
+
+## 17.2 String
+
+### 17.2.1 String 简介
+
+String 类是Java中非常基础和重要的类，提供了构造和管理字符串的基本逻辑，它是典型的 Immutable 类，被声明成为 final class，所有的属性也是 fianl 的。由于它的不可变性，类似拼接、裁剪字符串等动作，都会产生新的 String 对象，因此字符串相关性能的效率对应用性能有明显影响。
+
+### 17.2.2 String 为什么设计为不可变类
+
+1. 保证 String 对象的安全性。假设 String 对象是可变的，那么 String 对象将可能被恶意修改。
+2. 保证 hash 属性值不会频繁变更，确保了唯一性，使得类似 HashMap 容器才能实现相应的 key-value 功能。
+3. 可以实现字符串常量池
+
+### 17.2.3 String的缓存
+
+通过对常见应用的堆转储（Dump Heap），分析对象组成，会发现25%的对象是字符串，其中有半数是重复的，如果能避免创建重复的字符串，那么可以有效降低内存消耗和对象创建开销，这便是 字符串常量池 存在的意义。
+
+编译期间，编译器就会将代码中用到的所有字符串汇总到一起，保存在字节码文件中某个位置，这一部分就是字符串常量池了，以上是静态地生成常量池的过程。在程序运行期间，字符串也可以被动态的添加至池中。
+
+String 在 Java 6 以后提供了 intern（）方法，目的是提示JVM把对应的字符串缓存起来，以备重复使用。在我们对字符串对象调用 intern（）方法的时候，如果常量池中已经有缓存的字符串，则会返回缓存的实例引用，否则先将其缓存起来，再返回实例引用。这样就可以避免创建重复的对象，帮助我们节约不少的空间。
+
+Intern 是一种显示的排重机制，但它也有一定的副作用，一个是因为常量池的实现机制，类似于HashTable的实现方式，存储的数据量越大，遍历的时间复杂度就会增加，背离了intern的初衷；另一个是写起来不方便，而且在开发时，很难统计字符串的重复情况。因此，我们要结合场景使用。
+
+> Oracle JDK 8u20之后，推出了一个新特性，在G1 GC 下的字符串排重，它是通过将相同数据的字符串指向同一份数据来做到的，是JVM底层的改变，不需要Java类库做什么修改。
+
+**一般情况下JVM 会将 类似 "abc"这样的文本字符串，或者字符串常量之类的缓存起来。**
+
+在Java 6及以前的版本中，HotSpot 虚拟机通过用永久代来实现了JVM中方法区的概念（其他虚拟机实现可没有永久代的概念），这个空间是有限的，基本不会被FullGC以外的垃圾收集照顾到，因此，容易发生OOM。
+
+Java 7中将字符串常量从永久代移出，放置在堆中，这样就极大的避免了永久带占满的问题。
+
+JDK 8中永久代被 MetaSpace （元数据区）代替了，这个区域并不在JVM中，而是属于本地内存，因此可以随着物理机的内存增长而增长。元空间存储类的元信息，静态变量和常量池等并入堆中。
+
+### 17.2.4 字符串的拼接
+
+ 字符串的拼接是对字符串操作使用最频繁的操作之一，因此编译器会对其进行优化。
+
+**字面量的直接拼接**
 
 ```java
-public static int parseInt(String s){}   将字符串转为int
-public static Integer valueOf(String s) throws NumberFormatException {}    将字符串转为Integer
- public int intValue() {}   将当前Integer 转为int返回
-相当把基本类型的值作为成员变量封装在对象中，产生这个对象的类就是包装类。
-自动拆箱、装箱的原理是jdk1.5之后对编译器进行如下优化，
- Integer i=129 <=> Integer i=new Integer(129); 
- int i=new Integer(129) <=> int i=(new Intgeger(129)).intValue();
+// 字面量（文本字符串）直接拼接
+public void test0() {
+    String str = "111" + "222";
+}
+
+	// 反编译后：
+  public void test0();
+    Code:
+       0: ldc           #2	// String 111222   将int,float或String型常量值从常量池中推送至栈顶
+       2: astore_1
+       3: return
 ```
-笔试题：   方便频繁使用-128～127之间的整数，会有一块缓存区域存放-128～127之间的数字，所以比地址相等，注意只存放整数
+
+前面提到JVM会将类似 “abc” 这样的文本字符串缓存起来，代码中 “111”+“222”，编译器可以直接判断出结果是 “111222”，所以会将 “111222” 这个字符字面量存放到常量池中，还需要注意的是，常量池中不会缓存 “111” 和 “222”。
 
 ```java
-Integer i1 = 127;
-Integer i2 = 127;
-System.out.println(i1 == i2);   //true
-Integer i3 = 128;
-Integer i4 = 128;
-System.out.println(i3==i4);   //false
+public void test1() {
+    final  String str1 = "111";
+    final  String str2 = "222";
+    String str = str1 + str2;
+}
 ```
 
+字符串常量也会被JVM在编译期缓存起来，上面的代码在反编译后会和 test0（）的反编译结果相同。
+
+**字符串变量的拼接**
+
+```java
+// 字符串变量的拼接
+public void test1() {
+    String str1 = "111";
+    String str2 = "222";
+    String str = str1 + str2;
+}
+
+  public void test1();
+    Code:
+       0: ldc           #3                  // String 111
+       2: astore_1
+       3: ldc           #4                  // String 222
+       5: astore_2
+       6: new           #5                  // class java/lang/StringBuilder
+       9: dup
+      10: invokespecial #6                  // Method java/lang/StringBuilder."<init>":()V
+      13: aload_1
+      14: invokevirtual #7                  // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      17: aload_2
+      18: invokevirtual #7                  // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      21: invokevirtual #8                  // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      24: astore_3
+      25: return
+
+```
+
+在JDK 8中，使用 “ + ” 进行的字符串变量拼接操作会自动被 Java编译器转换为 StringBuilder 操作，下面的代码进行编译后会生成和上面一样的字节码指令，但写法比较繁琐。
+
+```java
+public void test2() {
+    String str1 = "111";
+    String str2 = "222";
+    String str=new StringBuilder().append(str1).append(str2).toString();
+}
+```
+
+由于这个特性的存在，我们要尽量不要在循环中使用字符串拼接，因为这种做法会导致创建大量的StringBuilder对象，从而容易引起OOM。
+
+```java
+String str = "str";
+for(int i=0; i<1000; i++) {
+      str = str + i;
+}
+//编译器优化后
+String str = "str";
+for(int i=0; i<1000; i++) {
+    str = (new StringBuilder(String.valueOf(str))).append(i).toString();
+}
+```
+
+所以我们在做字符串拼接时，如果不涉及到线程安全的情况下，我们显示的使用 StringBuilder 进行拼接，提升系统性能，如果涉及到线程安全的话，可以使用 StringBuffer 来进行字符串拼接。
+
+```java
+StringBuilder str = new StringBuilder("str");
+for (int i = 0; i < 1000; i++) {
+    str = str.append(i);
+}
+```
+
+> 在JDK 9中为了更加统一字符串的操作优化，提供了 StringConcatFactory。
+
+### 17.2.5 String 的自身演化
+
+![img](img/16d5eac18d375060-1584499478807)
+
+**Java6 以及以前版本**
+
+String 对象是对 char 数组进行了封装实现的对象，主要有四个成员变量： char 数组、偏移量 offset、字符数量 count、哈希值 hash。
+
+String 对象是通过 offset 和 count 两个属性来定位 char[]  数组，获取字符串。这么做可以高效、快速地共享数组对象，同时节省内存空间，但这种方式很有可能会导致内存泄漏。
+
+**Java7 版本开始到 Java8 版本**
+
+从 Java7 版本开始，Java 对 String 类做了一些改变。String 类中不再有 offset 和 count 两个变量了。这样的好处是String 占用的内存稍微少了些，同时 String.substring  方法也不再共享 char[]，从而解决了使用该方法可能导致的内存泄漏问题。
+
+ **Java9 版本开始**
+
+将 char[] 数组改为了 byte[] 数组，并增加一个标识编码的属性 coder。coder 属性默认有 0 和 1 两个值， 0 代表Latin-1（单字节编码），1 代表 UTF-16 编码。在计算字符串长度或者调用 indexOf() 方法时，会用到这个属性。
+
+Java中char 是两个字节大小，但我们平时使用的26个字母和数字都可以用一个byte来表示，只有在存中文字符的时候才会如果用来存一个字节的字符有点浪费，为了节约空间，Java 公司就改成了一个字节的byte来存储字符串。这样在存储一个字节的字符是就避免了浪费。
 
 
-## String
+
+
 
 ### String常用方法
 
   代码的复用性很高，System Arrays 
 ​    replace contains  contentEquals 支持操作字符序列
 
-      CharSequence 字符序列接口 常用实现类有String StringBuilder StringBuffer
-        int length()   char charAt(int index)  public String toString();
-        CharSequence subSequence(int start, int end)
-    
-    replace 和 replaceAll 两者都是可以全部替换 replaceAll的形参名称是regex 所以支持正则表达式 all意思应该是更全面的意思
-    equals 和 contentEquals equals 只能判断字符串，contenEquals可以判断字符序列
-    public boolean contentEquals(CharSequence cs) {}    判断 字符序列 内容是否相同
-    
-    public String replace(CharSequence target, CharSequence replacement) {  
-        return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
-                this).replaceAll(Matcher.quoteReplacement(replacement.toString()));
+```java
+  CharSequence 字符序列接口 常用实现类有String StringBuilder StringBuffer
+    int length()   char charAt(int index)  public String toString();
+    CharSequence subSequence(int start, int end)
+
+replace 和 replaceAll 两者都是可以全部替换 replaceAll的形参名称是regex 所以支持正则表达式 all意思应该是更全面的意思
+equals 和 contentEquals equals 只能判断字符串，contenEquals可以判断字符序列
+public boolean contentEquals(CharSequence cs) {}    判断 字符序列 内容是否相同
+
+public String replace(CharSequence target, CharSequence replacement) {  
+    return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
+            this).replaceAll(Matcher.quoteReplacement(replacement.toString()));
+}
+
+    public boolean contains(CharSequence s) {  是否包含指定 字符序列
+    return indexOf(s.toString()) > -1;
+}
+
+～～public native String intern();  在调用”ab”.intern()方法的时候会返回”ab”，但是这个方法会首先检查字符串池中是否有”ab”这个字符串，
+如果存在则返回这个字符串的引用，否则就将这个字符串添加到字符串池中，然会返回这个字符串的引用。
+```
+
+
+```java
+public char charAt(int index) {     返回指定索引的字符
+    if ((index < 0) || (index >= value.length)) {
+        throw new StringIndexOutOfBoundsException(index);
     }
-    
-        public boolean contains(CharSequence s) {  是否包含指定 字符序列
-        return indexOf(s.toString()) > -1;
-    }
-    
-    ～～public native String intern();  在调用”ab”.intern()方法的时候会返回”ab”，但是这个方法会首先检查字符串池中是否有”ab”这个字符串，
-    如果存在则返回这个字符串的引用，否则就将这个字符串添加到字符串池中，然会返回这个字符串的引用。
+    return value[index];
+}
+
+indexOf(int ch,[int fromIndex]) {}  判断字符串中是否包含 数字对应的ASCll码字符，如包含返回索引，否则返回-1
+
+public int indexOf(String str, [int fromIndex]) {    判断字符串中是否包含 指定字符，如包含返回索引，否则返回-1
+    return indexOf(value, 0, value.length,
+            str.value, 0, str.value.length, fromIndex);
+}
+public static String valueOf(int i) {   将输入值转为字符串
+    return Integer.toString(i);
+}
+public String[] split(String regex, [int limit]) {}   按regex分割成String数组，limit默认为0，是分成几块
+
+public String substring(int beginIndex, [int endIndex]) {}  分割字符串包左不包右 
+
+public String concat(String str) {}     向当前字符串对象末尾追加str
+
+public char[] toCharArray() {}      变成字符数组   
+
+public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {}
+从当前字符数组的 srcBegin 开始到 srcEnd （包左不包右）保存到 dst 字符数组中，从 dstBegin 开始存放
+底层调用System.arraycopy(value, srcBegin, dst, dstBegin, length: srcEnd - srcBegin);
+
+StringBuilder    public AbstractStringBuilder reverse() {}  字符串反转
+```
+
+#### 灵活的字符串的分割
+
+字符串的分割是字符串操作的常用操作之一，对于字符串的分割，大部分人使用的都是 Split() 方法，Split() 方法大多数情况下使用的是正则表达式，这种分割方式本身没有什么问题，但是由于正则表达式的性能是非常不稳定的，使用不恰当会引起回溯问题，很可能导致 CPU 居高不下。在以下两种情况下 Split() 方法不会使用正则表达式：
+
+- 传入的参数长度为1，且不包含“.$|()[{^?*+\”regex元字符的情况下，不会使用正则表达式
+- 传入的参数长度为2，第一个字符是反斜杠，并且第二个字符不是ASCII数字或ASCII字母的情况下，不会使用正则表达式
+
+**所以我们在字符串分割时，应该慎重使用 Split() 方法，首先考虑使用 String.indexOf() 方法进行字符串分割，如果 String.indexOf() 无法满足分割要求，再使用 Split() 方法，使用 Split() 方法分割字符串时，需要注意回溯问题。**
 
 
-    public char charAt(int index) {     返回指定索引的字符
-        if ((index < 0) || (index >= value.length)) {
-            throw new StringIndexOutOfBoundsException(index);
-        }
-        return value[index];
-    }
-    
-    indexOf(int ch,[int fromIndex]) {}  判断字符串中是否包含 数字对应的ASCll码字符，如包含返回索引，否则返回-1
-    
-    public int indexOf(String str, [int fromIndex]) {    判断字符串中是否包含 指定字符，如包含返回索引，否则返回-1
-        return indexOf(value, 0, value.length,
-                str.value, 0, str.value.length, fromIndex);
-    }
-    public static String valueOf(int i) {   将输入值转为字符串
-        return Integer.toString(i);
-    }
-    public String[] split(String regex, [int limit]) {}   按regex分割成String数组，limit默认为0，是分成几块
-    
-    public String substring(int beginIndex, [int endIndex]) {}  分割字符串包左不包右 
-    
-    public String concat(String str) {}     向当前字符串对象末尾追加str
-    
-    public char[] toCharArray() {}      变成字符数组   
-    
-    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {}
-    从当前字符数组的 srcBegin 开始到 srcEnd （包左不包右）保存到 dst 字符数组中，从 dstBegin 开始存放
-    底层调用System.arraycopy(value, srcBegin, dst, dstBegin, length: srcEnd - srcBegin);
-
-
-
-### String 对象的实现
-
-`String`对象是 Java 中使用最频繁的对象之一，所以 Java 公司也在不断的对`String`对象的实现进行优化，以便提升`String`对象的性能，看下面这张图，一起了解一下`String`对象的优化过程。
-
-
-
-![img](img/16d5eac18d375060-1584499478807)
-
-
-
-##### 1. 在 Java6 以及之前的版本中
-
-`String`对象是对 char 数组进行了封装实现的对象，主要有四个成员变量： char 数组、偏移量 offset、字符数量 count、哈希值 hash。
-
-`String`对象是通过 offset 和 count 两个属性来定位 char[]  数组，获取字符串。这么做可以高效、快速地共享数组对象，同时节省内存空间，但这种方式很有可能会导致内存泄漏。
-
-##### 2. 从 Java7 版本开始到 Java8 版本
-
-从 Java7 版本开始,Java 对`String`类做了一些改变。`String`类中不再有 offset 和 count 两个变量了。这样的好处是`String`对象占用的内存稍微少了些，同时 String.substring  方法也不再共享 char[]，从而解决了使用该方法可能导致的内存泄漏问题。
-
-##### 3. 从 Java9 版本开始
-
-将 char[] 数组改为了 byte[] 数组，为什么需要这样做呢？我们知道 char 是两个字节，如果用来存一个字节的字符有点浪费，为了节约空间，Java 公司就改成了一个字节的byte来存储字符串。这样在存储一个字节的字符是就避免了浪费。
-
-在 Java9 维护了一个新的属性 coder，它是编码格式的标识，在计算字符串长度或者调用 indexOf() 函数时，需要根据这个字段，判断如何计算字符串长度。coder 属性默认有 0 和 1 两个值， 0 代表Latin-1（单字节编码），1 代表 UTF-16 编码。如果 `String`判断字符串只包含了 Latin-1，则 coder 属性值为 0 ，反之则为 1。
 
 ### String 对象的创建方式
 
 #### 1、通过字符串常量的方式
 
-`String str= "pingtouge"`的形式，使用这种形式创建字符串时， JVM 会在字符串常量池中先检查是否存在该对象，如果存在，返回该对象的引用地址，如果不存在，则在字符串常量池中创建该字符串对象并且返回引用。使用这种方式创建的好处是：避免了相同值的字符串重复创建，节约了内存
+`String str = "pingtouge"`的形式，使用这种形式创建字符串时， JVM 会在字符串常量池中先检查是否存在该对象，如果存在，返回该对象的引用地址，如果不存在，则在字符串常量池中创建该字符串对象并且返回引用。使用这种方式创建的好处是：避免了相同值的字符串重复创建，节约了内存
 
 #### 2、String()构造函数的方式
 
@@ -1381,130 +1495,7 @@ System.out.println(i3==i4);   //false
 
 然后是`String str1 = new String("pingtouge")`这行代码，这里使用的是构造函数的方式创建字符串对象，根据我们上面对构造函数方式创建字符串对象的理解，`str1`得到的应该是堆中`pingtouge`字符串的引用地址。由于`str`指向的是`pingtouge`字符串对象在常量池中的地址引用而`str1`指向的是堆中`pingtouge`字符串的引用地址，所以`str`肯定不等于`str1`。
 
-### String 对象的不可变性
 
-从我们知道`String`对象的那一刻起，我想大家都知道了`String`对象是不可变的。那它不可变是怎么做到的呢？`Java` 这么做能带来哪些好处？我们一起来简单的探讨一下，先来看看`String` 对象的一段源码：
-
-```
-public final class String
-    implements java.io.Serializable, Comparable<String>, CharSequence {
-    /** The value is used for character storage. */
-    private final char value[];
-
-    /** Cache the hash code for the string */
-    private int hash; // Default to 0
-
-    /** use serialVersionUID from JDK 1.0.2 for interoperability */
-    private static final long serialVersionUID = -6849794470754667710L;
-    }
-复制代码
-```
-
-从这段源码中可以看出，`String`类用了 final 修饰符，我们知道当一个类被 final 修饰时，表明这个类不能被继承，所以`String`类不能被继承。这是`String`不可变的第一点
-
-再往下看，用来存储字符串的`char value[]`数组被`private` 和`final`修饰，我们知道对于一个被`final`的基本数据类型的变量，则其数值一旦在初始化之后便不能更改。这是`String`不可变的第二点。
-
-Java 公司为什么要将`String`设置成不可变的，主要从以下三方面考虑：
-
-- 1、保证 String 对象的安全性。假设 String 对象是可变的，那么 String 对象将可能被恶意修改。
-- 2、保证 hash 属性值不会频繁变更，确保了唯一性，使得类似 HashMap 容器才能实现相应的 key-value 缓存功能。
-- 3、可以实现字符串常量池
-
-### String 对象的优化
-
-字符串是我们常用的`Java`类型之一，所以对字符串的操作也是避免不了的，在对字符串的操作过程中，如果使用不当，性能会天差地别。那么在字符串的操作过程中，有哪些地方需要我们注意呢？
-
-#### 优雅的拼接字符串
-
-字符串的拼接是对字符串操作使用最频繁的操作之一，由于我们知道`String`对象的不可变性，所以我们在做拼接时尽可能少的使用`+`进行字符串拼接或者说潜意识里认为不能使用`+`进行字符串拼接，认为使用`+`进行字符串拼接会产生许多无用的对象。事实真的是这样吗？我们来做一个实验。我们使用`+`来拼接下面这段字符串。
-
-```
-String str8 = "ping" +"tou"+"ge";
-复制代码
-```
-
-一起来分析一下这段代码会产生多少个对象？如果按照我们理解的意思来分析的话，首先会创建`ping`对象，然后创建`pingtou`对象，最后才会创建`pingtouge`对象，一共创建了三个对象。真的是这样吗？其实不是这样的，Java 公司怕我们程序员手误，所以对编译器进行了优化，上面的这段字符串拼接会被我们的编译器优化，优化成一个`String str8 = "pingtouge";`对象。除了对常量字符串拼接做了优化以外，对于使用`+`号动态拼接字符串，编译器也做了相应的优化，以便提升`String`的性能，例如下面这段代码：
-
-```
-String str = "pingtouge";
-
-for(int i=0; i<1000; i++) {
-      str = str + i;
-}
-
-复制代码
-```
-
-编译器会帮我们优化成这样
-
-```
-String str = "pingtouge";
-
-for(int i=0; i<1000; i++) {
-        	  str = (new StringBuilder(String.valueOf(str))).append(i).toString();
-}
-
-复制代码
-```
-
-可以看出 Java 公司对这一块进行了不少的优化，防止由于程序员不小心导致`String`性能急速下降，尽管 Java 公司在编译器这一块做了相应的优化，但是我们还是能看出 Java 公司优化的不足之处，在动态拼接字符串时，虽然使用了 StringBuilder 进行字符串拼接，但是每次循环都会生成一个新的 StringBuilder 实例，同样也会降低系统的性能。
-
-所以我们在做字符串拼接时，我们需要从代码的层面进行优化，**在动态的拼接字符串时，如果不涉及到线程安全的情况下，我们显示的使用 StringBuilder 进行拼接，提升系统性能，如果涉及到线程安全的话，我们使用 StringBuffer 来进行字符串拼接**
-
-#### 巧妙的使用 intern() 方法
-
-```
-     * <p>
-     * When the intern method is invoked, if the pool already contains a
-     * string equal to this {@code String} object as determined by
-     * the {@link #equals(Object)} method, then the string from the pool is
-     * returned. Otherwise, this {@code String} object is added to the
-     * pool and a reference to this {@code String} object is returned.
-     * <p>
-     public native String intern();
-复制代码
-```
-
-这是 intern() 函数的官方注释说明，大概意思就是 intern 函数用来返回常量池中的某字符串，如果常量池中已经存在该字符串，则直接返回常量池中该对象的引用。否则，在常量池中加入该对象，然后 返回引用。
-
-有一位`Twitter`工程师在`QCon`全球软件开发大会上分享了一个他们对 `String`对象优化的案例，他们利用`String.intern()`方法将以前需要20G内存存储优化到只需要几百兆内存。这足以体现`String.intern()`的威力，我们一起来看一个例子，简单的了解一下`String.intern()`的用法。
-
-```
-    public static void main(String[] args) {
-        String str = new String("pingtouge");
-        String str1 = new String("pingtouge");
-        System.out.println("未使用intern()方法："+(str==str1));
-        System.out.println("未使用intern()方法,str："+str);
-        System.out.println("未使用intern()方法,str1："+str1);
-
-        String str2= new String("pingtouge").intern();
-        String str3 = new String("pingtouge").intern();
-        System.out.println("使用intern()方法："+(str2==str3));
-        System.out.println("使用intern()方法,str2："+str2);
-        System.out.println("使用intern()方法,str3："+str3);
-
-    }
-复制代码
-```
-
-
-
-![img](data:image/svg+xml;utf8,<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="466" height="156"></svg>)
-
-从结果中可以看出，未使用`String.intern()`方法时，构造相同值的字符串对象返回不同的对象引用地址，使用`String.intern()`方法后，构造相同值的字符串对象时，返回相同的对象引用地址。这能帮我们节约不少空间
-
-
-
-**`String.intern()`方法虽然好，但是我们要结合场景使用，不能乱用，因为常量池的实现是类似于一个`HashTable`的实现方式，`HashTable` 存储的数据越大，遍历的时间复杂度就会增加。如果数据过大，会增加整个字符串常量池的负担。**
-
-#### 灵活的字符串的分割
-
-字符串的分割是字符串操作的常用操作之一，对于字符串的分割，大部分人使用的都是 Split() 方法，Split() 方法大多数情况下使用的是正则表达式，这种分割方式本身没有什么问题，但是由于正则表达式的性能是非常不稳定的，使用不恰当会引起回溯问题，很可能导致 CPU 居高不下。在以下两种情况下 Split() 方法不会使用正则表达式：
-
-- 传入的参数长度为1，且不包含“.$|()[{^?*+\”regex元字符的情况下，不会使用正则表达式
-- 传入的参数长度为2，第一个字符是反斜杠，并且第二个字符不是ASCII数字或ASCII字母的情况下，不会使用正则表达式
-
-**所以我们在字符串分割时，应该慎重使用 Split() 方法，首先考虑使用 String.indexOf() 方法进行字符串分割，如果 String.indexOf() 无法满足分割要求，再使用 Split() 方法，使用 Split() 方法分割字符串时，需要注意回溯问题。**
 
 ### String 的 hashCode () 中的31
 
@@ -1605,22 +1596,41 @@ public static Map<Integer, Integer> partition(List<Integer> hashs) {
 ![img](img/4015792512-5a65992dec292_articlex.png)
 最后再来看看大质数101的表现，不难看出，质数101作为乘子时，算出的哈希值分布情况要好于主角31，有点喧宾夺主的意思。不过不可否认的是，质数101的作为乘子时，哈希值的分布性确实更加均匀。所以如果不在意质数101容易导致数据信息丢失问题，或许其是一个更好的选择。
 
-## StringBuffer & StringBuilder
+## 17.3 StringBuffer & StringBuilder 
 
-### StirngBuileder动态扩容 
+StringBuffer 是为了解决上面提到的拼接产生太多中间对象的问题而提供的一个类，它是Java1.5中新增的，我们可以用appened 或者 add 方法，把字符串添加到已有序列的末尾或者指定位置，StringBuffer 本质是一个线程安全的可修改字符序列，初始容量为16，它在保证线程安全的同时也带来了额外的性能开销，除非有线程安全的需要，不然还是推荐使用StringBuilder，这两者都继承自 AbstractStringBuilder，在重写父类方法时，只是简单的调用了父类对应方法，区别在于StringBuffer 会在方法上加上 synchronized 来保证线程的安全。
 
-​    StringBuilder.append("a")  AbstaractStringBuilder中有 字符数组value int类型的计数器count 用来统计value的使用情况
-​    字符数组长度默认为16，在添加前计算要添加到str的长度，然后ensureCapacityInternal(minimumCapacity) 确保容量的方法，
-​    会将count计数器和str长度相加作为追加后的长度传入minimumCapacity，然后由minimumCapacity和当前数组长度进行比较，
-​    如果追加后的长度>当前数组长度就调用扩容方法  expandCapacity(minimumCapacity) ，扩容的方式是 int newCapacity=value.length * 2 + 2;
-​    如果新定义的newCapacity(新容量) 比 minimumCapacity(追加后长度)小，则newCapacity=minimumCapacity，
-​    然后value=Arrays.copyOf(value, newCapacity); 对字符数组进行动态扩充，先建一个新数组，然后进行数据迁移
-​    进行以上操作后，此时的value进行完成扩容，str.getChars(0, len, value, count);  进行追加，然后将count计数器更新。
-​    完成后返回当前对象。
+**StirngBuileder动态扩容** 
 
-StringBuilder    public AbstractStringBuilder reverse() {}  字符串反转
+构建时初始的字符数组长度为16，每次在拼接字符串的时候，都会修改底层的字符数组，不过在正式修改之前，先会确定当前字符数组的容量是否足够，不够的话会进行扩容，扩容之后还要进行数组拷贝。这一过程会产生多重开销，因此如果我们能确定拼接会发生非常多次且容量大致可预计，那么就可以指定合适的初始大小，避免多次扩容带来的性能开销。
 
-Arrays public static String toString(Object[] a) {} 打印一维数组
+## 17.4 包装类
+
+包装类的"=="运算在不遇到算术运算的情况下不会自动拆箱
+包装类的equals()方法不处理数据转型
+
+```java
+public static int parseInt(String s){}   将字符串转为int
+public static Integer valueOf(String s) throws NumberFormatException {}    将字符串转为Integer
+ public int intValue() {}   将当前Integer 转为int返回
+相当把基本类型的值作为成员变量封装在对象中，产生这个对象的类就是包装类。
+自动拆箱、装箱的原理是jdk1.5之后对编译器进行如下优化，
+ Integer i=129 <=> Integer i=new Integer(129); 
+ int i=new Integer(129) <=> int i=(new Intgeger(129)).intValue();
+```
+
+笔试题：   方便频繁使用-128～127之间的整数，会有一块缓存区域存放-128～127之间的数字，所以比地址相等，注意只存放整数
+
+```java
+Integer i1 = 127;
+Integer i2 = 127;
+System.out.println(i1 == i2);   //true
+Integer i3 = 128;
+Integer i4 = 128;
+System.out.println(i3==i4);   //false
+```
+
+
 
 
 ## Random
