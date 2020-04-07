@@ -1255,13 +1255,129 @@ Java API中有如下规定:
 
 String 类是Java中非常基础和重要的类，提供了构造和管理字符串的基本逻辑，它是典型的 Immutable 类，被声明成为 final class，所有的属性也是 fianl 的。由于它的不可变性，类似拼接、裁剪字符串等动作，都会产生新的 String 对象，因此字符串相关性能的效率对应用性能有明显影响。
 
-### 17.2.2 String 为什么设计为不可变类
+### 17.2.2 String 对象的创建
+
+**1、通过字符串常量的方式**
+
+`String str = "pingtouge"`的形式，使用这种形式创建字符串时， JVM 会在字符串常量池中先检查是否存在该对象，如果存在，返回该对象的引用地址，如果不存在，则在字符串常量池中创建该字符串对象并且返回引用。使用这种方式创建的好处是：避免了相同值的字符串重复创建，节约了内存
+
+**2、String()构造函数的方式**
+
+`String str = new String("pingtouge")`的形式，使用这种方式创建字符串对象过程就比较复杂，分成两个阶段，首先在编译时，字符串`pingtouge`会被加入到常量结构中，类加载时候就会在常量池中创建该字符串。然后就是在调用new()时，JVM 将会调用`String`的构造函数，同时引用常量池中的`pingtouge`字符串， 在堆内存中创建一个`String`对象并且返回堆中的引用地址。
+
+了解了`String`对象两种创建方式，我们来分析一下下面这段代码，加深我们对这两种方式的理解，下面这段代码片中，`str`是否等于`str1`呢？
+
+```
+  String str = "pingtouge";
+  String str1 = new String("pingtouge");
+  system.out.println(str==str1)
+复制代码
+```
+
+我们逐一来分析这几行代码，首先从`String str = "pingtouge"`开始，这里使用了字符串常量的方式创建字符串对象，在创建`pingtouge`字符串对象时，JVM会去常量池中查找是否存在该字符串，这里的答案肯定是没有的，所以JVM将会在常量池中创建该字符串对象并且返回对象的地址引用，所以`str`指向的是`pingtouge`字符串对象在常量池中的地址引用。
+
+然后是`String str1 = new String("pingtouge")`这行代码，这里使用的是构造函数的方式创建字符串对象，根据我们上面对构造函数方式创建字符串对象的理解，`str1`得到的应该是堆中`pingtouge`字符串的引用地址。由于`str`指向的是`pingtouge`字符串对象在常量池中的地址引用而`str1`指向的是堆中`pingtouge`字符串的引用地址，所以`str`肯定不等于`str1`。
+
+### 17.3 String常用方法
+
+```java
+public final class String
+    implements java.io.Serializable, Comparable<String>, CharSequence {
+    // String类使用final作为一个不可变类，实现了序列化接口、比较接口、字符序列接口
+    //CharSequence 字符序列接口 常用实现类有String StringBuilder StringBuffer
+    public int length() { return value.length;}  
+    
+    public char charAt(int index) {
+       //...
+        return value[index];
+    }
+    
+    public String toString();
+    
+    //拆分字符序列，包左不包右
+    public CharSequence subSequence(int beginIndex, int endIndex) {
+        return this.substring(beginIndex, endIndex);
+    }
+
+	//replace 和 replaceAll 两者都是可以全部替换 replaceAll 支持正则表达式
+    public String replace(CharSequence target, CharSequence replacement) {
+        return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
+                this).replaceAll(Matcher.quoteReplacement(replacement.toString()));
+    }    
+    
+    public String replaceAll(String regex, String replacement) {
+        return Pattern.compile(regex).matcher(this).replaceAll(replacement);
+    }
+    
+	//equals是Object的方法，contenEquals可以判断字符序列内容是否相等
+    public boolean equals(Object anObject) {
+    		//...
+    	}
+    public boolean contentEquals(CharSequence cs) {
+        	//...
+    	}
+
+	//是否包含指定 字符序列
+    public boolean contains(CharSequence s) {  	
+   		return indexOf(s.toString()) > -1;
+    }
+
+    /*
+     * 在调用”ab”.intern()方法的总是会返回常量池中”ab”的引用
+     * 该方法会首先检查字符串池中是否有”ab”这个字符串，如果存在则返回该字符串的引用，
+     * 否则就将这个字符串添加到常量池中，然会返回该字符串的引用。
+     */
+	public native String intern();  
+    
+    public char charAt(int index) {     返回指定索引的字符
+    if ((index < 0) || (index >= value.length)) {
+        throw new StringIndexOutOfBoundsException(index);
+    }
+    return value[index];
+}
+
+indexOf(int ch,[int fromIndex]) {}  判断字符串中是否包含 数字对应的ASCll码字符，如包含返回索引，否则返回-1
+
+public int indexOf(String str, [int fromIndex]) {    判断字符串中是否包含 指定字符，如包含返回索引，否则返回-1
+    return indexOf(value, 0, value.length,
+            str.value, 0, str.value.length, fromIndex);
+}
+public static String valueOf(int i) {   将输入值转为字符串
+    return Integer.toString(i);
+}
+public String[] split(String regex, [int limit]) {}   按regex分割成String数组，limit默认为0，是分成几块
+
+public String substring(int beginIndex, [int endIndex]) {}  分割字符串包左不包右 
+
+public String concat(String str) {}     向当前字符串对象末尾追加str
+
+public char[] toCharArray() {}      变成字符数组   
+
+public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {}
+从当前字符数组的 srcBegin 开始到 srcEnd （包左不包右）保存到 dst 字符数组中，从 dstBegin 开始存放
+底层调用System.arraycopy(value, srcBegin, dst, dstBegin, length: srcEnd - srcBegin);
+
+StringBuilder    public AbstractStringBuilder reverse() {}  字符串反转
+```
+
+**灵活的字符串的分割**
+
+字符串的分割是字符串操作的常用操作之一，对于字符串的分割，大部分人使用的都是 Split() 方法，Split() 方法大多数情况下使用的是正则表达式，这种分割方式本身没有什么问题，但是由于正则表达式的性能是非常不稳定的，使用不恰当会引起回溯问题，很可能导致 CPU 居高不下。在以下两种情况下 Split() 方法不会使用正则表达式：
+
+- 传入的参数长度为1，且不包含“.$|()[{^?*+\”regex元字符的情况下，不会使用正则表达式
+- 传入的参数长度为2，第一个字符是反斜杠，并且第二个字符不是ASCII数字或ASCII字母的情况下，不会使用正则表达式
+
+**所以我们在字符串分割时，应该慎重使用 Split() 方法，首先考虑使用 String.indexOf() 方法进行字符串分割，如果 String.indexOf() 无法满足分割要求，再使用 Split() 方法，使用 Split() 方法分割字符串时，需要注意回溯问题。**
+
+
+
+### 17.2.4 String 为什么设计为不可变类
 
 1. 保证 String 对象的安全性。假设 String 对象是可变的，那么 String 对象将可能被恶意修改。
 2. 保证 hash 属性值不会频繁变更，确保了唯一性，使得类似 HashMap 容器才能实现相应的 key-value 功能。
 3. 可以实现字符串常量池
 
-### 17.2.3 String的缓存
+### 17.2.5 String的缓存
 
 通过对常见应用的堆转储（Dump Heap），分析对象组成，会发现25%的对象是字符串，其中有半数是重复的，如果能避免创建重复的字符串，那么可以有效降低内存消耗和对象创建开销，这便是 字符串常量池 存在的意义。
 
@@ -1281,7 +1397,7 @@ Java 7中将字符串常量从永久代移出，放置在堆中，这样就极�
 
 JDK 8中永久代被 MetaSpace （元数据区）代替了，这个区域并不在JVM中，而是属于本地内存，因此可以随着物理机的内存增长而增长。元空间存储类的元信息，静态变量和常量池等并入堆中。
 
-### 17.2.4 字符串的拼接
+### 17.2.6 字符串的拼接
 
  字符串的拼接是对字符串操作使用最频繁的操作之一，因此编译器会对其进行优化。
 
@@ -1377,7 +1493,7 @@ for (int i = 0; i < 1000; i++) {
 
 > 在JDK 9中为了更加统一字符串的操作优化，提供了 StringConcatFactory。
 
-### 17.2.5 String 的自身演化
+### 17.2.7 String 的自身演化
 
 ![img](img/16d5eac18d375060-1584499478807)
 
@@ -1395,105 +1511,15 @@ String 对象是通过 offset 和 count 两个属性来定位 char[]  数组，�
 
 将 char[] 数组改为了 byte[] 数组，并增加一个标识编码的属性 coder。coder 属性默认有 0 和 1 两个值， 0 代表Latin-1（单字节编码），1 代表 UTF-16 编码。在计算字符串长度或者调用 indexOf() 方法时，会用到这个属性。
 
-Java中char 是两个字节大小，但我们平时使用的26个字母和数字都可以用一个byte来表示，只有在存中文字符的时候才会如果用来存一个字节的字符有点浪费，为了节约空间，Java 公司就改成了一个字节的byte来存储字符串。这样在存储一个字节的字符是就避免了浪费。
+Java中char 是两个字节大小，但我们平时使用的26个字母和数字都可以用一个byte来表示，只有在存中文字符的时候才会用到两个字节，因此为了节约空间，将字符串的实现由之前的两个字节，改为一个字节，我们可以明显感受到紧凑字符串带来的优势，即更小的内存占用，更快的传输和操作速度。
 
 
 
 
 
-### String常用方法
-
-  代码的复用性很高，System Arrays 
-​    replace contains  contentEquals 支持操作字符序列
-
-```java
-  CharSequence 字符序列接口 常用实现类有String StringBuilder StringBuffer
-    int length()   char charAt(int index)  public String toString();
-    CharSequence subSequence(int start, int end)
-
-replace 和 replaceAll 两者都是可以全部替换 replaceAll的形参名称是regex 所以支持正则表达式 all意思应该是更全面的意思
-equals 和 contentEquals equals 只能判断字符串，contenEquals可以判断字符序列
-public boolean contentEquals(CharSequence cs) {}    判断 字符序列 内容是否相同
-
-public String replace(CharSequence target, CharSequence replacement) {  
-    return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
-            this).replaceAll(Matcher.quoteReplacement(replacement.toString()));
-}
-
-    public boolean contains(CharSequence s) {  是否包含指定 字符序列
-    return indexOf(s.toString()) > -1;
-}
-
-～～public native String intern();  在调用”ab”.intern()方法的时候会返回”ab”，但是这个方法会首先检查字符串池中是否有”ab”这个字符串，
-如果存在则返回这个字符串的引用，否则就将这个字符串添加到字符串池中，然会返回这个字符串的引用。
-```
-
-
-```java
-public char charAt(int index) {     返回指定索引的字符
-    if ((index < 0) || (index >= value.length)) {
-        throw new StringIndexOutOfBoundsException(index);
-    }
-    return value[index];
-}
-
-indexOf(int ch,[int fromIndex]) {}  判断字符串中是否包含 数字对应的ASCll码字符，如包含返回索引，否则返回-1
-
-public int indexOf(String str, [int fromIndex]) {    判断字符串中是否包含 指定字符，如包含返回索引，否则返回-1
-    return indexOf(value, 0, value.length,
-            str.value, 0, str.value.length, fromIndex);
-}
-public static String valueOf(int i) {   将输入值转为字符串
-    return Integer.toString(i);
-}
-public String[] split(String regex, [int limit]) {}   按regex分割成String数组，limit默认为0，是分成几块
-
-public String substring(int beginIndex, [int endIndex]) {}  分割字符串包左不包右 
-
-public String concat(String str) {}     向当前字符串对象末尾追加str
-
-public char[] toCharArray() {}      变成字符数组   
-
-public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {}
-从当前字符数组的 srcBegin 开始到 srcEnd （包左不包右）保存到 dst 字符数组中，从 dstBegin 开始存放
-底层调用System.arraycopy(value, srcBegin, dst, dstBegin, length: srcEnd - srcBegin);
-
-StringBuilder    public AbstractStringBuilder reverse() {}  字符串反转
-```
-
-#### 灵活的字符串的分割
-
-字符串的分割是字符串操作的常用操作之一，对于字符串的分割，大部分人使用的都是 Split() 方法，Split() 方法大多数情况下使用的是正则表达式，这种分割方式本身没有什么问题，但是由于正则表达式的性能是非常不稳定的，使用不恰当会引起回溯问题，很可能导致 CPU 居高不下。在以下两种情况下 Split() 方法不会使用正则表达式：
-
-- 传入的参数长度为1，且不包含“.$|()[{^?*+\”regex元字符的情况下，不会使用正则表达式
-- 传入的参数长度为2，第一个字符是反斜杠，并且第二个字符不是ASCII数字或ASCII字母的情况下，不会使用正则表达式
-
-**所以我们在字符串分割时，应该慎重使用 Split() 方法，首先考虑使用 String.indexOf() 方法进行字符串分割，如果 String.indexOf() 无法满足分割要求，再使用 Split() 方法，使用 Split() 方法分割字符串时，需要注意回溯问题。**
 
 
 
-### String 对象的创建方式
-
-#### 1、通过字符串常量的方式
-
-`String str = "pingtouge"`的形式，使用这种形式创建字符串时， JVM 会在字符串常量池中先检查是否存在该对象，如果存在，返回该对象的引用地址，如果不存在，则在字符串常量池中创建该字符串对象并且返回引用。使用这种方式创建的好处是：避免了相同值的字符串重复创建，节约了内存
-
-#### 2、String()构造函数的方式
-
-`String str = new String("pingtouge")`的形式，使用这种方式创建字符串对象过程就比较复杂，分成两个阶段，首先在编译时，字符串`pingtouge`会被加入到常量结构中，类加载时候就会在常量池中创建该字符串。然后就是在调用new()时，JVM 将会调用`String`的构造函数，同时引用常量池中的`pingtouge`字符串， 在堆内存中创建一个`String`对象并且返回堆中的引用地址。
-
-了解了`String`对象两种创建方式，我们来分析一下下面这段代码，加深我们对这两种方式的理解，下面这段代码片中，`str`是否等于`str1`呢？
-
-```
-  String str = "pingtouge";
-  String str1 = new String("pingtouge");
-  system.out.println(str==str1)
-复制代码
-```
-
-我们逐一来分析这几行代码，首先从`String str = "pingtouge"`开始，这里使用了字符串常量的方式创建字符串对象，在创建`pingtouge`字符串对象时，JVM会去常量池中查找是否存在该字符串，这里的答案肯定是没有的，所以JVM将会在常量池中创建该字符串对象并且返回对象的地址引用，所以`str`指向的是`pingtouge`字符串对象在常量池中的地址引用。
-
-然后是`String str1 = new String("pingtouge")`这行代码，这里使用的是构造函数的方式创建字符串对象，根据我们上面对构造函数方式创建字符串对象的理解，`str1`得到的应该是堆中`pingtouge`字符串的引用地址。由于`str`指向的是`pingtouge`字符串对象在常量池中的地址引用而`str1`指向的是堆中`pingtouge`字符串的引用地址，所以`str`肯定不等于`str1`。
 
 
 
