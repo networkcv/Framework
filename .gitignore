@@ -24,3 +24,5 @@
 hs_err_pid*
 
 out
+/Project/springdata/*.iml
+/Project/springdata/.gitignore
