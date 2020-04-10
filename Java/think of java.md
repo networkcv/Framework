@@ -1369,13 +1369,15 @@ Java API中有如下规定:
 
 例如 Integer 是 int 的包装类型，在其内部持有一个 int 类型的字段来存储数据，并且提供了基本操作，如数学运算、int和字符串的转换、获取对应的hashCode等。并在JDK 5中，引入了自动拆箱和自动装箱功能，极大的简化了相关编程。
 
+### 17.2.1 包装类出现的缘由
+
 包装类的出现，其实是为了解决基本类型的一些不足，如：
 
-- 有些地方不能直接使用基本类型，比如最常用的集合类。
+- 基本类型无法配合泛型使用，有些地方不能直接使用基本类型，比如最常用的集合类。
 
-- 基本类型不能赋null值，这可能会造成字段无法表达出对应的情况，如`int score` 来表示考试成绩，当 `score = 0`时，无法区分是具体的分值为0还是缺考，但`Integer score` 可以，当  `score=0` 时代表成绩为0，当 `score = null` 时，代表缺考。
+- 无法高效高效表达数据，如基本类型不能赋null值，这可能会造成字段无法表达出对应的情况，如`int score` 来表示考试成绩，当 `score = 0`时，无法区分是具体的分值为0还是缺考，但`Integer score` 可以，当  `score=0` 时代表成绩为0，当 `score = null` 时，代表缺考。
 
-基本API：
+### 17.2.2 基本API
 
 ```java
 // 将int转为Integer
@@ -1390,7 +1392,9 @@ public static Integer valueOf(String s)
     
 ```
 
-对字符串的缓存有专门的常量池，而Integer对常用的数值也进行缓存，默认缓存 -128 ～ 127 之间的值，可以通过JVM参数调整最大值，其内部通过一个静态内部类 IntegerCache 来实现。
+### 17.2.3 包装类的缓存
+
+对字符串的缓存有专门的常量池，而包装类对常用的数值也进行缓存，这里以 Integer 为例，其默认缓存 -128 ～ 127 之间的值，可以通过JVM参数调整最大值，其内部通过一个静态内部类 IntegerCache 来实现。
 
 ```java
 private static class IntegerCache {
@@ -1417,6 +1421,8 @@ private static class IntegerCache {
 }
 ```
 
+### 17.2.4 自动拆箱、装箱
+
 这里还需要理解一下自动拆箱、装箱。
 
 这两个操作实际上算是一种语法糖，所谓的语法糖，就是 Java 编译器为方便我们编写代码而做的一些优化，发生在编译期，也就是生成的字节码是一致的。
@@ -1440,7 +1446,7 @@ public static void main(String[] args){
 
 ```
 
-可以看出自动拆箱和装箱所对应的字节码，装箱时调用了 Integer.valueOf，因此缓存机制也会生效。这也就解释了下面这段代码。
+可以看出自动拆箱和装箱所对应的字节码，装箱时调用了 Integer.valueOf，因此前面提到的缓存机制也会生效。这也就解释了下面这段代码。
 
 ```java
 Integer i1 = 127;
@@ -1453,6 +1459,57 @@ System.out.println(i3==i4);   //false
 ```
 
 这种缓存机制不止被用在Integer中，其他的一些包装类也使用了该机制。Boolean 缓存了 true/false 对应的实例，其他的数值包装类缓存的范围也是 -128 ～127。
+
+### 17.2.5 使用包装类的一些建议
+
+虽然包装类帮助我们解决了基本类型的不足，**但它不能完全的替代基本类型，建议避免无意中的装箱、拆箱行为。**
+
+因为装箱拆箱对应的是对象的创建与方法调用，这些被创建的对象也会增加GC的压力，增大性能的开销。基础类型的局部变量会随着方法栈帧的销毁而一同被回收，因此，不管是内存使用还是处理速度，基本类型都更胜一筹。只是在部分场景下，包装类的能解决基本类型无法解决的问题。
+
+使用原始数据类型、数组甚至本地代码实现等，在性能极度敏感的场景往往更具有优势，可以用其作为替换包装类、动态数组等性能优化的备选项，这样可以尽可能的避免创建过多的对象。
+
+**但在实际开发中，我们大可不必这么做，还是应该以效率为先，以可靠为先，以易扩展为先，以易理解易维护为先。**
+
+### 17.2.6 原始类型的线程安全
+
+原始数据类型的变量存在着线程安全问题，需要使用一些手段如使用synchronized进行同步或使用volatile保证其可见性，才能保证其线程安全。
+
+```java
+public class BaseTypeThreadUnSafe {
+    int i = 0;
+
+    public void increment() {
+        i++;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        BaseTypeThreadUnSafe bean = new BaseTypeThreadUnSafe();
+        Thread thread = new Thread(() -> {
+            for (int i = 0; i < 10000; i++) {
+                bean.increment();
+            }
+        });
+        Thread thread2 = new Thread(() -> {
+            for (int i = 0; i < 10000; i++) {
+                bean.increment();
+            }
+        });
+        thread.start();
+        thread2.start();
+        thread.join();
+        thread2.join();
+        System.out.println(bean.i);
+    }
+}
+// 最后打印的i值，99.99%的概率不会为20000，除非CPU是单核单线程
+```
+
+
+
+这里还需要注意的是，对于volatile 修饰的long和double，读写必须为原子的，不然可能会发生数据撕裂的问题。
+
+原因在于，如 long 类型是8字节，64个bit位，现今的虚拟机都是把32位作为原子性操作。但是对于64位确没有，因此64位虚拟机操作long和double时，会出现两次写操作，分别操作高32位和低32位，如果中间发生了上上下文切换，这可能就造成了错位，因此在64位上操作共享的long和double时，必须实现同步操作。
+
 
 
 ## Random
