@@ -5,7 +5,7 @@
 
 ## 使用模板引擎的页面存放位置：
 
-​    resouces下templates
+​    **resouces下templates**，不能是其他目录
 ​    该目录是安全的，意味着该目录下的内容是不允许外界直接访问的
 
 ## freemakeer:
@@ -191,15 +191,27 @@
 ​    public class UserServiceTest{
 ​    }
 
-    @RunWith:启动器
-    SpringJUnit4ClassRunner.class 让junit与spring环境进行整合
-    
-    @SpringBootTest(classes={Application.class})
-        当前类为springBoot的测试类
-        加载SpringBoot启动类，启动Springboot
-    
-    @ContextConfiguration("classpath:applicationContext.xml")
-        spring整合junit4加载配置文件
+```java
+@RunWith:启动器
+SpringJUnit4ClassRunner.class 让junit与spring环境进行整合
+
+@SpringBootTest(classes={Application.class})
+    当前类为springBoot的测试类
+    加载SpringBoot启动类，启动Springboot
+
+@ContextConfiguration("classpath:applicationContext.xml")
+    spring整合junit4加载配置文件
+```
+
+**recommend**
+
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Slf4j
+```
+
+
 
 ## SpringBoot热启动
 
@@ -628,3 +640,9 @@ public class WebSocketConfig {
     }
 }
 ```
+
+
+
+
+
+![image-20200407100810106](img/image-20200407100810106.png)
