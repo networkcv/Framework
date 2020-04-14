@@ -16,7 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Created by lwj
- * 2020-04-10 17:44
+
  */
 @ControllerAdvice
 public class SellExceptionHandler {

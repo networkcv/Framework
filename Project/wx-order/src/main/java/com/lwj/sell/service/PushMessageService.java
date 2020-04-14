@@ -6,7 +6,7 @@ import com.lwj.sell.dto.OrderDTO;
 /**
  * 推送消息
  * Created by lwj
- * 2020-04-10 22:08
+
  */
 public interface PushMessageService {
 

@@ -4,7 +4,7 @@ import lombok.Getter;
 
 /**
  * Created by lwj
- * 2020-04-10 17:16
+
  */
 @Getter
 public enum PayStatusEnum implements CodeEnum {

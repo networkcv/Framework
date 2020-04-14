@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 public class SecKillServiceImpl implements SecKillService {
 
-    private static final int TIMEOUT = 10 * 1000; //超时时间 10s
+    private static final int TIMEOUT = 10*1000; //超时时间 1s
 
     @Autowired
     private RedisLock redisLock;
@@ -59,6 +59,10 @@ public class SecKillServiceImpl implements SecKillService {
     public void orderProductMockDiffUser(String productId)
     {
         //加锁
+        long time=System.currentTimeMillis()+TIMEOUT;
+        if (!redisLock.lock(productId,String.valueOf(time))) {
+            throw new SellException(101,"人也太多了，再试试～");
+        }
 
         //1.查询该商品库存，为0则活动结束。
         int stockNum = stock.get(productId);
@@ -69,15 +73,16 @@ public class SecKillServiceImpl implements SecKillService {
             orders.put(KeyUtil.genUniqueKey(),productId);
             //3.减库存
             stockNum =stockNum-1;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             stock.put(productId,stockNum);
         }
 
         //解锁
+        redisLock.unlock(productId,String.valueOf(time));
 
     }
 }
