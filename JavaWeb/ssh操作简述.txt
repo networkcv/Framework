@@ -1,0 +1,18 @@
+导包41
+配置aoplicationContext.xml
+添加4个约束
+在web.xml中添加监听器，使spring容器随项目启动
+配置struts.xml
+配置struts核心过滤器strutspre..andexecut.
+spring和struts整合，将action交给spring创建和属性注入
+struts.xml中的action的class配置spring容器配置的actions的name，在spring容器中对action进行属性注入，需要set方法
+导入orm元数据
+spring和hibernate整合，将sessionFactory交给spring管理，需要在applicationContext.xml中配置，在sessionFactory中配置c3p0连接池data source,和其他数据库的基本信息，还有扫描包下的所有元数据文件
+dao，daoimpl继承HibernateDaoSupport
+调用getHibernat…方法，实际是操作sessionFactory,所以注意此处，必须给daoImpl注入sessionFactory
+整合aop事务，首先配置bean transactionManeger，将sessionFactory注入
+xml配置:tx:advice,aop:config
+注解配置：tx：annotation-drivet,并指定哪个transactionManege,然后去service 中@Transactional()配置，可以配置类和方法
+扩大session作用范围，在web.xml中配置opensessioninview监听器，必须配在核心过滤器前
+注意action还需设置scope
+如果要用spring容器中获取东西 则需要Runwith()和Resource() 使用Resource()不用set()

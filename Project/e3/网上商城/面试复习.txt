@@ -1,0 +1,196 @@
+常用注解
+@Controller
+@Service
+@Repository
+@Autowired      
+                根据引用类型进行bean注入
+                @Autowired
+                private ItemService itemService;
+@RequestMapping 
+                @RequestMapping(value = "/content/category/create" ,method = RequestMethod.POST)
+@RequestParam   
+                public List<EasyUITreeNode> getItemCatList(@RequestParam(name = "id", defaultValue = "0") Long parentId) {
+@ResponseBody   
+                不走逻辑视图直接响应浏览器，相当于调用response.write()直接向浏览器写数据，将数据直接响应给浏览器，返回json串
+@PathVariable   
+                从请求路径中获取参数               
+                @RequestMapping("/item/{itemId}")
+                @ResponseBody
+                public TbItem getItemById(@PathVariable Long itemId) {
+分布式
+    把系统按照模块拆分成多个子系统。多个子系统相互协作才能完成业务流程。系统之间需要进行通信，分布式里每一个节点，每一个工程都可以搭集群。
+
+集群
+    同一个工程部署到多台服务器上。
+aop
+    面向切面编程
+
+ioc    控制反转
+    将对象的创建和管理交给spring容器
+
+di     依赖注入  
+    我们的编程是面向接口编程，在需要使用的类中声明一个接口，由spinrg来注入配置文件中具体的实现类对象，达到解耦。
+
+soa     面向服务的架构，要求表现层和服务层分开
+    当我们的项目比较小时，我们只有一个系统，并且把他们写到一起，放在一个服务器上，但是随着平台越来越大，数据量越来越大，我们不得不通过分库，把多个模块的数据库分别放在对应得服务器上，每个模块调用自己的子系统即可。
+    随着我们系统的进一步复杂度的提示，我们不得不进一步对系统的性能进行提升，我们将多个模块分成多个子系统，多个子系统直接互相调用（因为SOA一般用于大型项目，比较复杂，所以一般总系统不会再集成，会拆分多个，分别做成服务，相互调用）。
+
+dubbo   
+    是资源调度和治理中心的管理工具
+    是管理服务调用的分布式服务框架  (Web Service模式中的WSdl)，以提供者与消费者的方式在dubbo中的zookeeper上注册
+    <!-- 发布服务 -->
+    <dubbo:application name="e3-cart"/>
+    <dubbo:registry protocol="zookeeper" address="192.168.25.128:2181"/>
+    <!-- 用dubbo协议在20880端口暴露服务 -->
+    <dubbo:protocol name="dubbo" port="20884"/>
+    <!-- 声明需要暴露的服务接口 -->
+    <dubbo:service interface="com.lwj.cart.service.CartService" ref="cartServiceImpl" timeout="600000"/>  服务调用超时时间 5分种  单位是毫秒
+    <dubbo:service interface="com.lwj.manager.service.ItemService" ref="itemServiceImpl" timeout="600000"/>
+    
+    <!-- 引用dubbo服务 -->
+    <dubbo:application name="e3-cart-web"/>
+    <dubbo:registry protocol="zookeeper" address="192.168.25.128:2181"/>
+    <dubbo:reference interface="com.lwj.manager.service.ItemService" id="itemService" />
+    <dubbo:reference interface="com.lwj.sso.service.TokenService" id="tokenService" />
+    <dubbo:reference interface="com.lwj.cart.service.CartService" id="cartService" />
+
+zookeeper
+    推荐使用zookeeper作为dubbo的注册中心，注册中心负责服务地址的注册与查找
+
+dao层
+    使用MyBatis逆向工程，可以实现简单的增删改查和单表查询，
+    不建议多表的原因是1.互联网环境下多表查询效率比较低,2.单表查询方便进行缓存添加,3.数据库进行分库分表的时候无法对不同库的表进行关联
+    整合思路：由spirng创建数据库连接池，spring管理SqlSessionFactory、mapper代理对象，在SqlSessionFactory中注入dataSource和加载mybatis全局配置文件SqlMapConfig.xml
+
+service层
+    在applicationContext-service.xml中配置包扫描器 将所有带有@service注解的的service实现类都放到spring容器中管理。并由spring管理事务。
+
+web层/表现层
+    Springmvc框架，由springmvc管理controller。    Springmvc的三大组件。
+
+pageHelper
+    如果你也在用Mybatis，建议尝试该分页插件，这个一定是最方便使用的分页插件。
+    该插件目前支持Oracle,Mysql,MariaDB,SQLite,Hsqldb,PostgreSQL六种数据库分页。
+    第一步：把PageHelper依赖的jar包添加到工程中。
+    第二步：在Mybatis配置xml中配置拦截器插件:
+    第三步：在代码中使用
+    1、设置分页信息：
+        //获取第1页，10条内容，默认查询总数count
+        PageHelper.startPage(1, 10);
+        //紧跟着的第一个select方法会被分页
+    List<Country> list = countryMapper.selectIf(1);
+    这个list其实是page对象，page类继承了ArrayList类，所以可以用list接口声明引用
+    2、取分页信息
+    //分页后，实际返回的结果list类型是Page<E>，如果想取出分页信息，需要强制转换为Page<E>，
+    Page<Country> listCountry = (Page<Country>)list;
+    listCountry.getTotal();
+
+EasyUItree
+    使用EasyUItree实现目录展示，将tb_item_cat中的对应数据封装到EasyUITreeNode
+
+nginx
+    web服务器，tomcat web应用服务器
+    访问静态资源
+        tomcat可以用来访问静态资源，但主要还是用来解析jsp，而且并发量只有500左右
+        nginx也可以用来访问静态资源
+
+    反向代理服务器
+        正向代理：比如vpn代理上网，将用户的请求通过代理服务器转发到要访问的ip，然后将结果响应给用户，其实做的是就请求转发
+        反向代理：网站入口，公网ip，使用nginx反向代理服务器将一个ip作为网站的入口，通过请求转发到对应的应用服务器,然后再返回响应
+    负责均衡
+        如果一个服务由多条服务器提供，需要把负载分配到不同的服务器处理，需要负载均衡。
+        可以根据服务器的实际情况调整服务器权重。权重越高分配的请求越多，权重越低，请求越少。默认是都是1
+        upstream tomcat2 {
+            server 192.168.25.148:8081;
+            server 192.168.25.148:8082 weight=2;
+        }
+
+
+    配置nginx虚拟主机，可以在一台服务器上安装多个网站，通过端口和域名来区别，配置几个server节点就可以实现
+
+    keepalived+nginx 实现nginx高可用，实现nginx一主一备
+
+FastDFS
+    分布式文件系统，fastDFS插件实现文件上传，通过nginx服务器实现http请求访问到图片资源
+    由common.js中绑定上传
+        //指定上传文件参数名称
+		filePostName  : "uploadFile",
+		//指定上传文件请求的url。
+		uploadJson : '/pic/upload',
+    通过ajax实现异步刷新，请求pictureController实现图片上传到fastDFS服务器上，提交表单，将上传的图片的url地址保存到image属性里存到数据库，完成图片上传功能
+
+portal-web 
+    商城入口，其中web.xml中      <url-pattern>*.html</url-pattern> 实现伪静态化，方便SEO
+    默认寻找web.xml中的欢迎页，springmvc的前端控制器对index.html进行获取，然后通过IndexController调用服务，并将查询结果传递给页面显示
+
+redis
+    客户端启动 ./redis-cli -h 192.168.25.153 -p 6379
+    五种常用数据类型
+        String  key-value   get、set    set key value  set name jack
+        Hash    
+            一种是压缩列表，另一种是散列表
+            key-fields-values  hset a b c   a为key bc为a对应的map map中b为key c为value  相当于一个key对于一个map，map中还有key-value    使用hash对key进行归类。 Hset   Hget  hdel key field1
+        List    
+            一种是压缩列表（ziplist），另一种是双向循环链表。
+            有顺序可重复
+        Set     
+            一种是基于有序数组，另一种是基于散列表。
+            元素无顺序，不能重复
+        SortedSet（zset）   
+            跳表实现
+            有顺序，不能重复
+    设置key的过期时间。
+        Expire key second：设置key的过期时间
+        Ttl key：查看key的有效期
+        Persist key：清除key的过期时间。Key持久化。
+
+        192.168.25.153:6379> expire Hello 100
+        (integer) 1
+        192.168.25.153:6379> ttl Hello
+        (integer) 77    
+
+redis-cluster
+    redis集群使用投票容错机制
+    (1)所有的redis节点彼此互联(PING-PONG机制),内部使用二进制协议优化传输速度和带宽.
+    (2)节点的fail是通过集群中超过半数的节点检测失效时才生效.
+    (3)客户端与redis节点直连,不需要中间proxy层.客户端不需要连接集群所有节点,连接集群中任何一个可用节点即可
+    (4)redis-cluster把所有的物理节点映射到[0-16383]slot上,cluster 负责维护node<->slot<->value
+    Redis 集群中内置了 16384 个哈希槽，当需要在 Redis 集群中放置一个 key-value 时，redis 先对 key 使用 crc16 算法算出一个结果，然后把结果对 16384 求余数，这样每个 key 都会对应一个编号在 0-16383 之间的哈希槽，redis 会根据节点数量大致均等的将哈希槽映射到不同的节点
+
+    为了保证投票机制不会出现相持平等情况，建议配置3个节点，为了保证高可用，可以对每个节点配置一个备份机。需要修改redis的端口号7001-7006
+    [root@localhost redis-cluster]# redis01/redis-cli -p 7002 -c
+
+    向ContentServiceImpl中getContentListByCi()进行添加缓存，对content进行增删改的方法实现缓存同步
+
+solr
+    实现站内搜索 使用solr的客户端：solrJ  把商品数据导入到索引库、搜索功能实现。
+	抽象类SolrServer有两个子类 HttpSolrServer、CloudSolrServer分别配置单机版和集群的
+
+solr-cloud
+    solrCloud是基于Solr和Zookeeper的分布式搜索方案，它的主要思想是使用Zookeeper作为集群的配置信息中心
+    solr-cloud 集群 需要用zookeeper集群做入口，CloudSolrServer中需要配置zookeeper集群的ip及端口号 public CloudSolrServer(String zkHost) {}
+    <!--<bean id="cloudSolrServer" class="org.apache.solr.client.solrj.impl.CloudSolrServer">-->
+        <!--<constructor-arg value="192.168.25.129:2181,192.168.25.129:2182,192.168.25.129:2183"/>-->
+        <!--<property name="defaultCollection" value="collection2"/>-->
+    <!--</bean>-->
+    
+
+activeMQ
+    解决系统间通信和解耦
+    queue 点到点：一个生产者一个消费者
+    topic 发布订阅：一个生产者多个消费者，相当于广播
+    producer 生产者 consumer 消费者
+    解决服务间之间需要相互调用的问题，如商品家添加到服务在商品添加的时候需要进行索引库同步，但是两个服务是在不同系统中的无法直接调用，
+    如果在商品添加到功能中直接实现索引库同步的功能会造成提供搜索服务的项目必须要在商品添加的服务前启动的问题。
+    后台管理系统添加商品成功后使用消息队列发送消息，搜索服务使用消息监听器，获取到添加到商品id，根据商品id查询获得商品后同步索引库，实现系统间的通信
+
+freemarker
+    做静态页面的模版引擎
+
+sso单点登录    
+    tomcat集群中为了保持session一致，其中一台中的session发生变化，就会对其他的tomcat进行session广播，集群一旦增大，这种方式就会占用大量的带宽，对服务器性能有极大损耗
+    将注册和登录单独分离出来，形成一个子系统，
+    
+    定义一个token，值为UUID，模拟sessionId，
+
+

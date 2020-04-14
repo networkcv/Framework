@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:soap="http://cxf.apache.org/bindings/soap"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop.xsd
+						http://www.springframework.org/schema/tx 
+						http://www.springframework.org/schema/tx/spring-tx.xsd
+						http://cxf.apache.org/bindings/soap 
+						http://cxf.apache.org/schemas/configuration/soap.xsd
+						http://cxf.apache.org/jaxws 
+						http://cxf.apache.org/schemas/jaxws.xsd
+						">
+
+	<bean id="myJob" class="com.test.job.MailJob">
+		<property name="username" value="itcast_server@126.com"/>
+		<property name="password" value="147963qP"/>
+		<property name="smtpServer" value="smtp.126.com"/>
+	</bean>
+
+	<!-- 配置jobDetail -->
+	<bean id="myJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 用到的Job实例 -->
+		<property name="targetObject">
+			<ref bean="myJob" />
+		</property>
+		<!-- Job实例中的方法 -->
+		<property name="targetMethod">
+			<value>run</value>
+		</property>
+	</bean>
+
+	<!-- 配置触发器Trigger -->
+	<bean id="myTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="myJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<!-- 每5秒执行一次 -->
+			<value>0/5 * * * * ?</value>
+		</property>
+	</bean>
+
+	<!-- 配置scheduler工厂 -->
+	<bean id="scheduler"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="myTrigger" />
+			</list>
+		</property>
+	</bean>
+
+</beans>

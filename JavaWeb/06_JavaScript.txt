@@ -1,0 +1,56 @@
+javascript简单介绍
+ECMAScript
+	1.语法
+	2.变量：只能使用var定义，如果在函数的内容使用var定义，那么它是一个局部变量，如果没有使用var它是一个全局的。弱类型！
+	3.数据类型：原始数据类型(undefined/null/string/number/boolean)
+	4.语句：
+	5.运算符：==与===的区别
+	6.函数：两种写法(有命名称，匿名的)
+
+BOM对象
+	window:alert()(弹窗提醒),prompt()(提供用户输入的对话框),confirm()(显示带有信息，确认和取消的对话框),
+	setInterval()(循环执行代码块,第二个参数是时间),clearInterval()(同上，单次执行代码),
+	setTimeout(),clearTimeout()(提高代码健壮性)
+
+	history:go(参数)(可以跳到上一页或下一页)，back()(返回上一页),forward()(去下一页)
+	location: href属性(实现网页的跳转  onclick="javascript:location.href='02_History对象.html'" )
+
+事件：
+	onsubmit()此事件写在form标签中，必须有返回值。
+	onload()此事件只能写一次并且放到body标签中
+	其它事件放到需要操作的元素位置。(onclick、onfocus、onblur)
+
+获取元素：
+	document.getElementById("id")
+获取元素里面的值:
+	document.getElementById("id").value
+	
+向页面输出
+	弹窗：alert();……
+	向浏览器中写入内容：document.write(内容)；
+	向页面指定位置写入内容,innerHTML  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+首先需要导入jar包 dom4j.jar
+写文件路径的时候，注意包中的文件，包名的每个.都对应一个/ 包前还有加src
+
+XML有DTD约束和 Schema约束 ，解析用dom4j
+
+package test;
+
+import java.util.List;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.junit.Test;
+
+public class TestDom4j {
+	@Test
+	public void testReadWebxml() {
+		// 1.获取解析器
+		SAXReader saxReader = new SAXReader();
+
+		try {
+			// 2.获得document文档对象
+			Document docuement = saxReader.read("src/cn/itheima/xml/schema/web.xml");
+			// 3.获取根元素
+			Element rootElement = docuement.getRootElement();
+			// System.out.println(rootElement);
+			// 4.获取根元素下的子元素
+			List<Element> childElements = rootElement.elements();
+			// 5.遍历子元素
+			for(Element element :childElements){
+				// 6.判断元素名称为servlet的元素
+				if("servlet".equals(element.getName())){
+					// 7.获取servlet-name元素
+					Element serveltName=element.element("servlet-name");
+					System.out.println(serveltName.getText());
+					// 8.获取servlet-class元素
+					System.out.println(element.elementText("servlet-class"));
+				}
+			}
+			
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+}

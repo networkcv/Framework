@@ -1,0 +1,12 @@
+#{v}='1' ${value}=1 #{x}相当于占位符 ${value}相当于字符串拼接
+select * from user where id  = #{v}
+select * from user where username like '%${value}%'
+
+
+<insert id="insetUser"..
+<select keyProperty ="id" resultType="Integer" order="AFTER">
+    select LAST_INSERT_ID()
+<select>
+insert into user values(#{id},#{username},#{birthday},#{sex})
+</insert>
+order="AFTER" mysql数据库中对于主键自增策略，是先将数据保存，然后再生成新的主键， oracle中一般是设置为BEFOREE

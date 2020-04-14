@@ -1,0 +1,23 @@
+当在自己的项目中配置的web.xml设置为缺省(当访问资源地址与所有servlet不匹配时，缺省的由servlet处理)，
+由于就近原则会覆盖Tomcat中config全局配置文件中的web.xml，所以当你输入1.html(WebContent中有该文件)的时候
+servlet会将其当作动态资源来处理，如果没有该url-pattern，则servlet不会去访问静态资源，直接当作缺省处理，
+全局配置文件中的web.xml:
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+ 在缺省的时候是找dafault
+  <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>listings</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+然后找到org.apache.catalina.servlets.DefaultServlet，然后这个类到WebConten下找静态资源，然后逐行打印html语句

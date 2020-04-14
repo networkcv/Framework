@@ -1,0 +1,41 @@
+基本选择器
+	id选择器：$(“#id名称”);
+	元素选择器：$(“元素名称”);
+	类选择器：$(“.类名”);
+	通配符：*
+		选择全部元素
+	多个选择器共用(并集)
+		$("div,span,p.myClass")
+
+层级选择器
+	！！！ancestor descendant: 在给定的祖先元素下匹配所有的后代元素(儿子、孙子、重孙子)(最常用)
+		找ancestor标签里边的descendant标签 注意<td>中间夹着的是儿子 还可以这样使用 body tbody input
+
+	parent > child : 在给定的父元素下匹配所有的子元素(儿子)
+		找parent标签的儿子child标签
+
+	prev + next: 匹配所有紧接在 prev 元素后的 next 元素(紧挨着的，同桌)
+		  <label>Newsletter:</label>
+		  <input name="newsletter" />
+		  注意是一个标签结束后紧挨着的next，比如</lable><input>这样才可以用“+”选择元素
+
+	prev ~ siblings: 匹配 prev 元素之后的所有 siblings 元素(兄弟)
+		找到和prev同一条竖线的元素siblings
+
+基本过滤选择器
+	$('li').first() 等价于：$(“li:first”) 获取第一个元素   /.last()最后一个元素
+
+	$("tr:even") 匹配所有索引值为偶数的元素，从 0 开始计数 /:odd 匹配奇数
+
+	$("tr:eq(1)") 匹配一个给定索引值的元素
+
+	$("tr:gt(0)") 匹配所有大于给定索引值的元素  / :lt(2) 匹配比二小的
+
+	$("input:not(:checked)") 去除所有与给定选择器匹配的元素 用于筛选的选择器
+
+属性选择器
+	！！！$("div[id]")(常用)
+		匹配div中包含这个id属性的元素
+
+	！！！$("input[name='newsletter']").attr("checked", true);
+		匹配input中name为newseletter的元素，注意这里直接用的是“=”号。
