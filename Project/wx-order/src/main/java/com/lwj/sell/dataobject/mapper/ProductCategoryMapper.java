@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * Created by lwj
- * 2020-04-1005 00:22
+ * 2020-04-10 00:22
  */
 public interface ProductCategoryMapper {
 
