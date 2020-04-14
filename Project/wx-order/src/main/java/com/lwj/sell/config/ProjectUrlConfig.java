@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Created by lwj
- * 2020-04-10 11:43
+
  */
 @Data
 @ConfigurationProperties(prefix = "project-url")

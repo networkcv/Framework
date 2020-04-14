@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 卖家用户
  * Created by lwj
- * 2020-04-10 15:28
+
  */
 @Controller
 @RequestMapping("/seller")

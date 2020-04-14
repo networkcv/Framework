@@ -4,7 +4,7 @@ import lombok.Getter;
 
 /**
  * Created by lwj
- * 2020-04-10 18:56
+
  */
 @Getter
 public enum ResultEnum {

@@ -3,7 +3,7 @@ package com.lwj.sell.constant;
 /**
  * redis常量
  * Created by lwj
- * 2020-04-10 16:22
+
  */
 public interface RedisConstant {
 
