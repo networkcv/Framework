@@ -917,17 +917,47 @@ public class Test1 implements Iterable<String> {
 
   可以看出Iterator中的remove方法 会重新给 expectedModCount 赋值，这样每次next方法检查时就不会出现ConcurrentModificationException 异常了。同时 Iterator还提供了 `public void forEachRemaining(Consumer<? super E> consumer) {}` ，这个方法传入的Lambda表达式可以对集合中所有的元素进行处理操作。
 
+## Collection
+
+注：这里暂时没有加入并发容器，只添加了实现Collection接口的集合，Map是容器中的另一个大分支。
+
+![image-20200415071524823](img/image-20200415071524823.png)
+
+**Collection 的子接口主要分下面三类：**
+
+- List
+
+最常用，实现类最多的有序集合，List 接口定义了方便的访问、插入、删除等常用操作，具体由下面的实现类来进行实现。
+
+- Set
+
+set集合中不允许有重复元素，这是它与List最明显的区别，可以在很多场景下保证元素的唯一性。
+
+- Queue/Deque
+
+Java 提供的标准队列接口，除了集合的基本功能，它支持类似于先入先出或者后入先出等特定队列，并且针对队列，重写了部分方法，同时添加了额外的方法，如 offer()、peek()、element()、poll()等。
+
+
+
+**接口的通用实现：**
+
+每种集合的通用逻辑，都会被抽取到相应的抽象类中，如AbstractList定义了Vector、ArrayList、LinkedList的通用逻辑，AbstractSet 和 AbstractQueue 也分别对应了 Set、Queue实现类的通用逻辑，而 AbstractCollection 对这些抽象类再进一步的抽象。
+
+
+
 ## List
 
 - ArrayList
 
-  底层数组实现，所以支持随机访问，可以动态扩容。
+  被广泛使用的动态数组，不是线程安全的，所以性能会好很多， 在容量不足时会创建新数组，并拷贝原有数组数据，每次扩容都会增大50%，因为底层是数组实现，所以可以通过下标来支持随机访问。
 
   [ArrayList 源码分析](./think of Java：11-ArrayList 源码分析.md)
 
+- Vector 是 Java 早期提供的线程安全的动态数组，使用 synchronized 关键字进行同步，除了这一点，其他的实现逻辑基本同 ArrayList 一致，虽然 synchronized 关键字在后续的版本中做了很多优化，但毕竟同步的是由额外开销的，所以在选择上需要慎重。
+
 - LinkedList
 
-  LinkedList和ArrayList一样实现类基本的List接口，但它还添加了额外的方法，使其可以当作栈、队列或者双端队列来使用。
+  Java 提供的双向链表，从集合的结构图中就可以看出，它同时属于List和Deque的实现，前面提到Queue支持类似于先入先出或者后入先出等特定队列，因此LinkedList 可以当作栈、队列或者双端队列来使用。当然是通过相对应的方法。
 
   这些方法只是名称不同，具体实现上只存在些许差异，这样设计是为了便于我们理解当前容器是以什么数据结构来使用的。如 `getFirst()` 和 `element()` 都会返回列表的第一个元素，而不移除它，如果List为null，则会抛出异常，`peek()` 也会返回第一个元素，如果列表为空的话返回null。类似的还有 `removeFirst()` 和 `remover()` 和 `pull`，其中 `peek` `pop` `push` 这些是和 栈Stack 相关的方法，在使用这些方法时，我们是把LinkedList当作栈来看待的。
 
