@@ -230,7 +230,7 @@ final Node<K,V>[] resize() {
                      * 这里什么要用oldCap进行&操作 而不是之前的 cap-1 呢？
                      * 原因在于在数组扩容后，键值对的位置需要重新计算，但不是所有的元素都会移动，
                      * 需要移动的只有与原数组容量进行 &操作后不为0的元素
-                     * 猜猜loHead 代表的是lowHead hiHead 代表的是HighHead 
+                     * loHead 代表的是lowHead hiHead 代表的是HighHead 
                      * 这里的高低对应的是在数组中桶下标的高低
                      * loHead是位置不变的，hiHead是位置要调整的，新位置 = oldCap + 原位置
                      */

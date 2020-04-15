@@ -734,7 +734,119 @@ class D1 extends D {
 
 通过泛型 编译器防止将错误类型的对象放入容器，取出时不用向下转型。
 
-## 添加一组元素
+## Collection
+
+注：这里暂时没有加入并发容器，只添加了实现Collection接口的集合，Map是容器中的另一个大分支。
+
+![image-20200415071524823](img/image-20200415071524823.png)
+
+**Collection 的子接口主要分下面三类：**
+
+- List
+
+  最常用，实现类最多的有序集合，List 接口定义了方便的访问、插入、删除等常用操作，具体由下面的实现类来进行实现。
+
+- Set
+
+​		set集合中不允许有重复元素，这是它与List最明显的区别，可以在很多场景下保证元素的唯一性。
+
+- Queue/Deque
+
+  Java 提供的标准队列接口，除了集合的基本功能，它支持类似于先入先出或者后入先出等特定队列，并且针对队列，重写了部分方法，同时添加了额外的方法，如 `offer()、peek()、element()、poll()`等。
+
+**接口的通用实现：**
+
+​		每种集合的通用逻辑，都会被抽取到相应的抽象类中，如AbstractList定义了Vector、ArrayList、LinkedList的通用逻辑，AbstractSet 和 AbstractQueue 也分别对应了 Set、Queue实现类的通用逻辑，而 AbstractCollection 对这些抽象类再进一步的抽象。
+
+## List
+
+### **ArrayList**
+
+- [ArrayList 源码分析](./think of Java：11-ArrayList 源码分析.md)
+
+- 广泛使用的动态数组，不是线程安全的，所以性能会好很多， 在容量不足时会创建新数组，并拷贝原有数组数据，每次扩容都会增大50%，因为底层是数组实现，所以可以通过下标来支持随机访问。
+
+  ```java
+  int newCapacity = oldCapacity + (oldCapacity >> 1);
+  ```
+
+### Vector
+
+- Vector是 Java 早期提供的线程安全的动态数组，使用 synchronized 关键字进行同步，除了这一点，其他的实现逻辑基本同 ArrayList 一致，虽然 synchronized 关键字在后续的版本中做了很多优化，但毕竟同步的是由额外开销的，所以在选择上需要慎重。
+
+### LinkedList
+
+- [LinkedList源码分析](./think of Java：11-LinkedList源码分析.md)	**TODO**
+
+- Java 提供的双向链表，从集合的结构图中就可以看出，它同时属于List和Deque的实现，前面提**到Queue支持类似于先入先出或者后入先出等特定队列**，**因此LinkedList 可以当作栈、队列或者双端队列来使用**。当然是通过相对应的方法。
+
+- 这些方法只是名称不同，具体实现上只存在些许差异，这样设计是为了便于我们理解当前容器是以什么数据结构来使用的。如 `getFirst()` 和 `element()` 都会返回第一个元素，而不移除它，如果List为null，则会抛出异常，`peek()` 也会返回第一个元素，如果列表为空的话返回null。类似的还有 `removeFirst()` 和 `remover()` 和 `pull`，其中 `peek` `pop` `push` 这些是和 栈Stack 相关的方法，在使用这些方法时，我们是把LinkedList当作栈来看待的。
+
+
+- 在 LinkedList的基础上添加 `element()` 、`offer()`、 `remove()`、`poll()` 和  `peek()`方法，以使其可以用作为一个Queue的实现。
+
+## Set
+
+Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 就像把 Map 中的 keys 单独作为一个数据结构来使用。
+
+### HashSet
+
+利用 哈希算法，将 Dummy value（哑值）保存到对应的key中，如果 哈希散列正常，可以提供常数时间的添加、删除、包含等操作，但不保证有序，具体原因可以参考 对HashMap的介绍。
+
+### LinkedHashSet
+
+继承自 HashSet，内部构建了一个记录插入顺序的双向链表，因此可以按照插入顺序进行 遍历。同时也保证了尝试时间的插入、删除、包含等操作。
+
+### TreeSet
+
+底层通过 TreeMap 实现，支持自然顺序访问，但是添加、删除、包含等操作相对低效 log（N）。
+
+## Map
+
+![image-20200415101645618](img/image-20200415101645618.png)
+
+### HashMap
+
+- HashMap是基于拉链法实现的一个散列表，内部由数组、链表和红黑树实现。
+
+- 它根据键的hashCode值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却与插入顺序不同的。 HashMap最多只允许一条记录的键为null，允许多条记录的值为null。
+- HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
+- [HashMap源码分析](./think of Java：11-HashMap 源码分析.md)
+
+### Hashtable
+
+- Hashtable是遗留类，常用功能与HashMap类似，不同的是它承自Dictionary类，并且是线程安全的，任一时间只有一个线程能写Hashtable，并发性不如ConcurrentHashMap，不允许null键和值。
+- ConcurrentHashMap引入了分段锁。Hashtable不建议在新代码中使用，不需要线程安全的场合可以用HashMap替换，需要线程安全的场合可以用 ConcurrentHashMap 替换。
+
+### LinkedHashMap
+
+-  LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
+- [LinkedHashMap源码分析](./think of Java：11-LinkedHashMap源码分析.md)  **TODO**
+
+### TreeMap
+
+- 基于红黑树(red-black tree)数据结构实现, 按 key 排序.TreeMap实现SortedMap接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用Iterator遍历TreeMap时，得到的记录是排过序的。             
+- 由于底层是基于红黑树的实现，所以get、put、remove之类的操作都是 log（N）时间复杂度。
+- 如果需要使用排序的Map，建议使用TreeMap。在使用TreeMap时，key必须实现Comparable接口或者在构造TreeMap传入自定义的Comparator，否则会在运行时抛出java.lang.ClassCastException类型的异常。我们平时可以使用String类作为key的原因是，String 已经实现了Comparble接口。
+- 这里再提一下，有序和排序是要区分一下的，LinkedHashMap是有序的，它通过链表记录了插入的顺序，而TreeMap的有序是指排序，被插入的key，会进行比较，然后被放到对应的位置，使整个集合始终保持一个有序的状态。
+
+### Map小结
+
+对于上述四种Map类型的类，要求映射中的key是不可变对象。不可变对象是该对象在创建后它的哈希值不会被改变。如果对象的哈希值发生变化，Map对象很可能就定位不到映射的位置了。而String类的不可变性 ，以及其缓存了hash值，因此我们通常使用String作为容器存放的key。
+
+## Conlections
+
+该类为集合的工具类。为我们提供了一些便于操作集合的方法。
+
+### 同步 线程不安全容器
+
+```java
+public static <T> Collection<T> synchronizedCollection(Collection<T> c) 
+public static <T> List<T> synchronizedList(List<T> list) 
+public static <T> Set<T> synchronizedSet(Set<T> s) 
+```
+
+### 添加一组元素
 
 - Arrays.asList(T... a)
 
@@ -755,6 +867,22 @@ System.out.println(integers2.getClass());
 //class java.util.Arrays$ArrayList	这个List是无法被修改的
 //class java.util.ArrayList
 ```
+
+### 对有序集合元素进行排序
+
+```java
+public static <T extends Comparable<? super T>> void sort(List<T> list) 
+public static <T> void sort(List<T> list, Comparator<? super T> c) 
+```
+
+Collections.sort方法底层调用的是 Arrays.sort方法，这个方法涉及到很多关于算法的知识，这里就深入了解它的实现细节了。
+
+在执行排序前，它会对数据进行一个分析，判断是原始数据类型还是对象数据类型，以及数据量的大小，如果数据量太小，复杂排序反而效率更低，Java 会直接进入二分插入排序。
+
+- 对于原始数据类型，使用的是 DualPivotQuicksort，双轴快排，是一种改进的排序算法。
+- 对于对象数据类型，使用的是TimSort，思想上也是一种归并和二分插入排序结合的优化排序算法。
+
+>  虽然这些都是 Java 语言的开发者为我们所提供的底层实现，但我们多了解一些，用起来也更得心应手一些。
 
 ## 容器的打印
 
@@ -867,7 +995,7 @@ public class Test1 implements Iterable<String> {
         }        
 ```
 
-**那如何在遍历集合时删除元素？**
+### **那如何在遍历集合时删除元素？**
 
 - 使用for循环而不是foreach。
 
@@ -917,83 +1045,7 @@ public class Test1 implements Iterable<String> {
 
   可以看出Iterator中的remove方法 会重新给 expectedModCount 赋值，这样每次next方法检查时就不会出现ConcurrentModificationException 异常了。同时 Iterator还提供了 `public void forEachRemaining(Consumer<? super E> consumer) {}` ，这个方法传入的Lambda表达式可以对集合中所有的元素进行处理操作。
 
-## Collection
 
-注：这里暂时没有加入并发容器，只添加了实现Collection接口的集合，Map是容器中的另一个大分支。
-
-![image-20200415071524823](img/image-20200415071524823.png)
-
-**Collection 的子接口主要分下面三类：**
-
-- List
-
-最常用，实现类最多的有序集合，List 接口定义了方便的访问、插入、删除等常用操作，具体由下面的实现类来进行实现。
-
-- Set
-
-set集合中不允许有重复元素，这是它与List最明显的区别，可以在很多场景下保证元素的唯一性。
-
-- Queue/Deque
-
-Java 提供的标准队列接口，除了集合的基本功能，它支持类似于先入先出或者后入先出等特定队列，并且针对队列，重写了部分方法，同时添加了额外的方法，如 offer()、peek()、element()、poll()等。
-
-
-
-**接口的通用实现：**
-
-每种集合的通用逻辑，都会被抽取到相应的抽象类中，如AbstractList定义了Vector、ArrayList、LinkedList的通用逻辑，AbstractSet 和 AbstractQueue 也分别对应了 Set、Queue实现类的通用逻辑，而 AbstractCollection 对这些抽象类再进一步的抽象。
-
-
-
-## List
-
-- ArrayList
-
-  被广泛使用的动态数组，不是线程安全的，所以性能会好很多， 在容量不足时会创建新数组，并拷贝原有数组数据，每次扩容都会增大50%，因为底层是数组实现，所以可以通过下标来支持随机访问。
-
-  [ArrayList 源码分析](./think of Java：11-ArrayList 源码分析.md)
-
-- Vector 是 Java 早期提供的线程安全的动态数组，使用 synchronized 关键字进行同步，除了这一点，其他的实现逻辑基本同 ArrayList 一致，虽然 synchronized 关键字在后续的版本中做了很多优化，但毕竟同步的是由额外开销的，所以在选择上需要慎重。
-
-- LinkedList
-
-  Java 提供的双向链表，从集合的结构图中就可以看出，它同时属于List和Deque的实现，前面提到Queue支持类似于先入先出或者后入先出等特定队列，因此LinkedList 可以当作栈、队列或者双端队列来使用。当然是通过相对应的方法。
-
-  这些方法只是名称不同，具体实现上只存在些许差异，这样设计是为了便于我们理解当前容器是以什么数据结构来使用的。如 `getFirst()` 和 `element()` 都会返回列表的第一个元素，而不移除它，如果List为null，则会抛出异常，`peek()` 也会返回第一个元素，如果列表为空的话返回null。类似的还有 `removeFirst()` 和 `remover()` 和 `pull`，其中 `peek` `pop` `push` 这些是和 栈Stack 相关的方法，在使用这些方法时，我们是把LinkedList当作栈来看待的。
-
-  在IinkedList的基础上添加 `element()` 、`offer()`、 `remove()`、`poll()` 和  `peek()`方法，以使其可以用作为一个Queue的实现。
-
-## Set
-
-- HashSet
-- LinkedHashSet
-- TreeSet
-
-## HashMap
-
-- HashMap是基于拉链法实现的一个散列表，内部由数组、链表和红黑树实现。
-
-- 它根据键的hashCode值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却与插入顺序不同的。 HashMap最多只允许一条记录的键为null，允许多条记录的值为null。
-- HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
-- [HashMap源码分析](./think of Java：11-HashMap 源码分析.md)
-
-## Hashtable
-
-- Hashtable是遗留类，很多映射的常用功能与HashMap类似，不同的是它承自Dictionary类，并且是线程安全的，任一时间只有一个线程能写Hashtable，并发性不如ConcurrentHashMap
-- ConcurrentHashMap引入了分段锁。Hashtable不建议在新代码中使用，不需要线程安全的场合可以用HashMap替换，需要线程安全的场合可以用 ConcurrentHashMap 替换。
-
-## LinkedHashMap
-
--  LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
-- [LinkedHashMap源码分析](./think of Java：11-LinkedHashMap源码分析.md)  **TODO**
-
-## TreeMap
-
-- 基于红黑树(red-black tree)数据结构实现, 按 key 排序.TreeMap实现SortedMap接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用Iterator遍历TreeMap时，得到的记录是排过序的。             
-- 如果使用排序的映射，建议使用TreeMap。在使用TreeMap时，key必须实现Comparable接口或者在构造TreeMap传入自定义的Comparator，否则会在运行时抛出java.lang.ClassCastException类型的异常。
-- 我们平时可以使用String类作为key的原因是，String 已经实现了Comparble接口
-
-对于上述四种Map类型的类，要求映射中的key是不可变对象。不可变对象是该对象在创建后它的哈希值不会被改变。如果对象的哈希值发生变化，Map对象很可能就定位不到映射的位置了。
 
 # [12.异常处理](./think of Java：12-异常处理.md)
 
