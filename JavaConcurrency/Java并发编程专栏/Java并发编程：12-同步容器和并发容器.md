@@ -104,6 +104,13 @@ ConcurrentHashMap用于替代低性能的HashTable，在学习ConcurrentHashMap�
 
 如果想深入了解ConcurrentHashMap，可以参考[这篇文章](https://crossoverjie.top/2018/07/23/java-senior/ConcurrentHashMap/)。
 
+这里简单介绍一下它的逻辑
+
+1. 将当前 Segment 中的 table 通过 key 的 hashcode 定位到 HashEntry。
+2. 遍历该 HashEntry，如果不为空则判断传入的 key 和当前遍历的 key 是否相等，相等则覆盖旧的 value。
+3. 不为空则需要新建一个 HashEntry 并加入到 Segment 中，同时会先判断是否需要扩容。
+4. 最后会解除在 1 中所获取当前 Segment 的锁。
+
 
 
 ### 2.3 ConcurrentSkipListMap
