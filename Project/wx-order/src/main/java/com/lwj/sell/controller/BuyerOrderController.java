@@ -25,7 +25,6 @@ import java.util.Map;
 
 /**
  * Created by lwj
-
  */
 @RestController
 @RequestMapping("/buyer/order")
@@ -53,7 +52,7 @@ public class BuyerOrderController {
             log.error("【创建订单】购物车不能为空");
             throw new SellException(ResultEnum.CART_EMPTY);
         }
-/**/
+
         OrderDTO createResult = orderService.create(orderDTO);
 
         Map<String, String> map = new HashMap<>();

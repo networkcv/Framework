@@ -1,4 +1,4 @@
-package com.lwj.sell.controller;
+﻿package com.lwj.sell.controller;
 
 import com.lwj.sell.config.ProjectUrlConfig;
 import com.lwj.sell.enums.ResultEnum;
@@ -18,7 +18,6 @@ import java.net.URLEncoder;
 
 /**
  * Created by lwj
-
  */
 @Controller
 @RequestMapping("/wechat")
