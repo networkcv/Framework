@@ -245,6 +245,55 @@ for (int i = 0; i < 1000; i++) {
 
 > 在JDK 9中为了更加统一字符串的操作优化，提供了 StringConcatFactory。
 
+### 字符串面试题
+
+```java
+// 创建了几个对象	
+String st1 = new String(“adasfbc”);
+String st2 = new String(“java");
+```
+
+个人觉得应该一个对象，位于字符串常量池中的字面量不算对象，只能算是字符串，而在堆中创建的才是真正的对象。
+
+```java
+String str1 = "ab";
+String str2 = "ab";
+System.out.println(str1 == str2);
+// true
+```
+
+```java
+String str1 = new String("ab");
+String str2 = "ab";
+System.out.println(str1 == str2);
+//	false
+```
+
+```java
+String str1 = "a" + "b";
+String str2 = "ab";
+System.out.println(str1 == str2);
+// true
+```
+
+```java
+String str1 = "a";
+String str2 = str1 + "b";
+String str3 = "ab";
+System.out.println(str2 == str3);
+// false
+```
+
+```java
+final String str1 = "a";
+String str2 = str1 + "b";
+String str3 = "ab";
+System.out.println(str2 == str3);
+// true
+```
+
+
+
 ## 13.7 String 的自身演化
 
 ![img](img/16d5eac18d375060-1584499478807.jpg)

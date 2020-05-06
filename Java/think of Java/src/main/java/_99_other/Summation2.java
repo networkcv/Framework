@@ -8,7 +8,7 @@ import java.util.HashSet;
  */
 public class Summation2 {
     public static void main(String[] args) {
-        int[] nums = {0, 3, 3, 2, 1, 5, 3,9};
+        int[] nums = {0, 3, 3, 2, 1, 5, 3, 9};
         System.out.println(find(nums, 9));
     }
 
