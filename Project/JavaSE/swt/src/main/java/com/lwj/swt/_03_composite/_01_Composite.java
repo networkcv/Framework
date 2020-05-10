@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.*;
  *
  * 容器类
  */
-public class _08_Composite {
+public class _01_Composite {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
  * 过 GridData 来设置每一个组件的外观形状。GridLayout 的构造方法无参数，但可以通过
  * GridData 和设置 GridLayout 的属性来设置组件的排列及组件的形状和位置。
  */
-public class _13_GridLayout {
+public class _03_GridLayout {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

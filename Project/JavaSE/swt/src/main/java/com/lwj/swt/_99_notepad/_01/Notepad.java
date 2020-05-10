@@ -1,4 +1,4 @@
-package com.lwj.swt._99_notepad;
+package com.lwj.swt._99_notepad._01;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.swt.SWT;

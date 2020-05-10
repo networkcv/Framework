@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Shell;
  *
  * 按钮
  */
-public class _02_Button {
+public class _01_Button {
     public static void main(String[] args){
         Display display=new Display();//创建一个display对象。
         Shell shell=new Shell(display);//shell是程序的主窗体

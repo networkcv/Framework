@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Text;
 /**
  * create by lwj on 2020/5/7
  */
-public class _16_KeyListener {
+public class _02_KeyListener {
     public static void main(String[] args) {
 
         Display display = new Display();

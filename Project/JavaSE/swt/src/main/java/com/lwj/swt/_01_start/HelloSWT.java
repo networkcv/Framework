@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Text;
  * create by lwj on 2020/5/6
  * Hello SWT
  */
-public class _01_HelloSWT {
+public class HelloSWT {
     public static void main(String[] args) {
         Display display = new Display();//创建一个display对象。
         Shell shell = new Shell(display);//shell是程序的主窗体

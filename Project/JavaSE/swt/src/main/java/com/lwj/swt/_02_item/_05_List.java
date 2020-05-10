@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.*;
  * create by lwj on 2020/5/7
  * 列表框 （使用 ctrl 可以多选）
  */
-public class _06_List {
+public class _05_List {
     public static void main(String[] args) {
         Display display = new Display();//创建一个display对象。
         final Shell shell = new Shell(display);//shell是程序的主窗体
@@ -33,7 +33,7 @@ public class _06_List {
             }
         });
         Button bt2 = new Button(shell, SWT.NONE);
-        bt2.setBounds(130, 60, 100, 25);
+        bt2.setBounds(200, 60, 100, 25);
         bt2.setText("取值");
         bt2.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {

@@ -9,7 +9,7 @@ import org.eclipse.swt.widgets.*;
  * create by lwj on 2020/5/7
  * 菜单
  */
-public class _07_Menu {
+public class _06_Menu {
     public static void main(String[] args) {
         Display display = new Display();//创建一个display对象。
         final Shell shell = new Shell(display);//shell是程序的主窗体

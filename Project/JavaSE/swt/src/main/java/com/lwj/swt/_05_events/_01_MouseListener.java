@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.*;
  * focusGained() 得到焦点时触发。
  * focusLost() 失去焦点时触发。
  */
-public class _15_MouseListener {
+public class _01_MouseListener {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

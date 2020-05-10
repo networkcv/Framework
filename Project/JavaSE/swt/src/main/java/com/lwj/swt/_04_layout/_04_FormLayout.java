@@ -10,6 +10,6 @@ package com.lwj.swt._04_layout;
  * 现组件的定位，用 FormData 和 FormAttachment 配合，可以创建复杂的界面，而且当主窗体
  * 大小改变时，组件的相对位置能保持相对不变。FormLayout 的构造方法：FormLayout()。
  */
-public class _14_FormLayout {
+public class _04_FormLayout {
     //TODO
 }

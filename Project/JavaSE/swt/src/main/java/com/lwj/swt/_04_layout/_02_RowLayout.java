@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Shell;
  * 还可以对每个组件通过 setLayoutData()方法设置 RowData 对象。RowData 用来设置组件的大
  * 小。
  */
-public class _12_RowLayout {
+public class _02_RowLayout {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

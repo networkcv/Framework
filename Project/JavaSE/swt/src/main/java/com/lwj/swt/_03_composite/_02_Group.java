@@ -6,7 +6,7 @@ import org.eclipse.swt.widgets.*;
 /**
  * create by lwj on 2020/5/7
  */
-public class _09_Group {
+public class _02_Group {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

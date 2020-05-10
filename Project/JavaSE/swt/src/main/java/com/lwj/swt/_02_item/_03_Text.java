@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Text;
  * SWT.V_SCROLL：带垂直滚动条。
  * SWT.H_SCROLL：带水平滚动条。
  */
-public class _04_Text {
+public class _03_Text {
     public static void main(String[] args) {
         Display display=new Display();//创建一个display对象。
         Shell shell=new Shell(display);//shell是程序的主窗体

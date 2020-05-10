@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Shell;
  * 3.GridLayout 网格式布局，以网格的方式进行布局，组件可以占用指定的一个或几个网格
  * 4.FormLayout 表格式布局，通过定义组件四个边的距离来排列组件，被引用的相对的组件可以是父组件，也可以是同一容器中的其它组件
  */
-public class _11_FillLayout {
+public class _01_FillLayout {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display);

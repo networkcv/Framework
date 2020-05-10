@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
  * create by lwj on 2020/5/7
  * 标签页
  */
-public class _10_TabFolder {
+public class _03_TabFolder {
     public static void main(String[] args) {
         Display display = new Display();
         Shell shell = new Shell(display,SWT.SHELL_TRIM);
