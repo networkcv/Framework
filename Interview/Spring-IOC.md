@@ -275,7 +275,7 @@ private TestDao testDao;
 1. 第三方jar，需要pom.xml添加依赖，不依赖Spring，适合非Spring项目的依赖注入
 2. 不支持Autowired(required=false)
 
-
+Spring自带的@Autowired的缺省情况等价于JSR-330的@Inject注解； Spring自带的@Qualifier的缺省的根据Bean名字注入情况等价于JSR-330的@Named注解； Spring自带的@Qualifier的扩展@Qualifier限定描述符注解情况等价于JSR-330的@Qualifier注解。
 
 ## 练习
 ```java
@@ -449,7 +449,7 @@ InitDestroyAnnotationBeanPostProcessor
 
 @AutoWired  
 AutowiredAnnotationBeanPostProcessor  
-  
+
 InstantiationAwareBeanPostProcessor
 负责Bean的实例化
 - 实例化----实例化的过程是一个创建Bean的过程，即调用Bean的构造函数，单例的Bean放入单例池中

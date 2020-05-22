@@ -10,7 +10,7 @@
         </layout>
     </appender>
 
-    <!-- <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--<appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>DENY</onMatch>
@@ -21,9 +21,9 @@
                 %msg%n
             </pattern>
         </encoder>
-        <!--滚动策略-->
+        &lt;!&ndash;滚动策略&ndash;&gt;
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!--路径-->
+            &lt;!&ndash;路径&ndash;&gt;
             <fileNamePattern>./log/info.%d.log</fileNamePattern>
         </rollingPolicy>
     </appender>
@@ -38,15 +38,15 @@
                 %msg%n
             </pattern>
         </encoder>
-        <!--滚动策略-->
+        &lt;!&ndash;滚动策略&ndash;&gt;
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!--路径-->
+            &lt;!&ndash;路径&ndash;&gt;
             <fileNamePattern>./log/error.%d.log</fileNamePattern>
         </rollingPolicy>
-    </appender> -->
+    </appender>-->
 
     <root level="info">
-        <appender-ref ref="consoleLog" />
+        <appender-ref ref="consoleLog"/>
         <!-- <appender-ref ref="fileInfoLog" /> -->
         <!-- <appender-ref ref="fileErrorLog" /> -->
     </root>
