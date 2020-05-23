@@ -1686,9 +1686,8 @@ Java使用`enum`定义枚举类型，它被编译器编译为`final class Xxx ex
    这类注解不会被编译进入`.class`文件，它们在编译后就被编译器扔掉了。
 
    @Override   让编译器检查该方法是否正确地实现了覆写
-   @Deprecated   不建议使用这个方法，可能被废弃
    @SuppressWarnings("all")  告诉编译器忽略此处代码产生的警告，可以加在类或方法上，参数可以设置为all
-
+   
 2. 由工具处理 `.class` 文件使用的注解
 
    工具类在加载class的时候，对class做动态修改，实现一些特殊的功能。这类注解会被编译进入`.class`文件，但加载结束后并不会存在于内存中。这类注解只被一些底层库使用，一般我们不必自己处理。
@@ -1756,12 +1755,67 @@ public @interface Check {
 }
 ```
 
+**@Retention**
 
+表示需要在什么级别保存该注解信息，用于描述注解的生命周期。
 
-@Retention  表示需要在什么级别保存该注解信息，用于描述注解的生命周期
-    SOURCE CLASS RUNTIME(在运行时有效，可以被反射机制读取)
+- 仅编译期：`RetentionPolicy.SOURCE`，也就是仅在 `.java` 文件中才可以看到该注解 ；
+- 仅class文件：`RetentionPolicy.CLASS`，在 `.class` 文件中也可以看到，虽然反射读取不到，但是使用IO流可以读取；
+- 运行期：`RetentionPolicy.RUNTIME`，在运行时有效的注解，才可以被反射机制读取。
 
-如果注解只有一个value属性，赋值时可以直接写值例如 test(value=1)<=>test(1)
+如果`@Retention`不存在，则该`Annotation`默认为`CLASS`。因为通常我们自定义的`Annotation`都是`RUNTIME`，所以，务必要加上`@Retention(RetentionPolicy.RUNTIME)`这个元注解：
+
+**@Repeatable**
+
+该元注解定义 Annotation 是否可重复。
+
+**@Inherited**
+
+用于定义子类是否可以继承父类定义的注解，因此仅对 @Target 类型为 ElementType.TYPE 的类型有效，并且
+
+仅针对 `class` 的继承，对 `interface` 的实现无效。
+
+## 20.3 处理注解
+
+因为注解定义后也是一种`class`，所有的注解都继承自`java.lang.annotation.Annotation`，因此，读取注解，需要使用反射API。
+
+Java提供的使用反射API读取`Annotation`的方法包括：
+
+**判断某个注解是否存在于`Class`、`Field`、`Method`或`Constructor`：**
+
+- `Class.isAnnotationPresent(Class)`
+- `Field.isAnnotationPresent(Class)`
+- `Method.isAnnotationPresent(Class)`
+- `Constructor.isAnnotationPresent(Class)`
+
+例如：
+
+```java
+Method sayMethod = Fu.class.getMethod("say");
+// 检查 sayMethod() 是否使用 @Check 注解
+sayMethod.isAnnotationPresent(Check.class)
+```
+
+**使用反射API读取Annotation：**
+
+1. 根据注解类型读取单个注解，读不到则返回null。
+
+   - `Class.getAnnotation(Class)`
+   - `Field.getAnnotation(Class)`
+   - `Method.getAnnotation(Class)`
+   - `Constructor.getAnnotation(Class)`
+
+2. 读取全部注解。
+
+   - `Class.getAnnotations()`
+
+   - `Field.getAnnotations()`
+
+   - `Method.getAnnotations()`
+
+   - `Constructor.getAnnotations()`
+
+     
 
 # 21.正则表达式
 
