@@ -261,9 +261,10 @@ System.out.println(o1);	//2.0
 
 ## 方法重写
 
-​    1.方法参数相同
-​    2.返回类型和声明异常类型，子类小于等于父类
-​    3.访问权限，子类大于等于父类
+- 方法参数相同
+- 返回类型和声明异常类型，子类小于等于父类
+- 访问权限，子类大于等于父类
+- 方法重写是动态的，是一种运行期的行为
 
 ## finalize()
 
@@ -820,6 +821,7 @@ Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 
 
 ### LinkedHashMap
 
+-  LinkedHashMap 继承自 HashMap，所以它的底层仍然是基于拉链式散列结构即由数组和链表或红黑树组成。另外，LinkedHashMap 在上面结构的基础上，增加了一条双向链表，使得上面的结构可以保持键值对的插入顺序。同时通过对链表进行相应的操作，实现了访问顺序相关逻辑。
 -  LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
 - [LinkedHashMap源码分析](./think of Java：11-LinkedHashMap源码分析.md)  **TODO**
 
@@ -2166,8 +2168,6 @@ class BFilter extends Filter {
 # 23.图形界面
 
 ### [SWING](./think of Java：23-SWING.md)
-
-### [SWT](./think of Java：23-SWT.md)
 
 # 其他
 

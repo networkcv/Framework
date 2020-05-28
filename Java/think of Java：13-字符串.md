@@ -249,11 +249,11 @@ for (int i = 0; i < 1000; i++) {
 
 ```java
 // 创建了几个对象	
-String st1 = new String(“adasfbc”);
-String st2 = new String(“java");
+String st1 = new String(“adasfbc”);	// 2个 一个位于字符串常量池  一个位于堆中
+String st2 = new String(“java");	// 1个 java 这个字符在jvm启动的时候就被用了，所以只有堆中一个
 ```
 
-个人觉得应该一个对象，位于字符串常量池中的字面量不算对象，只能算是字符串，而在堆中创建的才是真正的对象。
+> 个人觉得应该一个对象，位于字符串常量池中的字面量不算对象，只能算是字符串，而在堆中创建的才是真正的对象。
 
 ```java
 String str1 = "ab";
