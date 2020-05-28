@@ -9,6 +9,7 @@ Q ：volatile是如何保证可见性？
 Q ：synchronized和volatile的区别？
 
 ## 1.硬件内存架构、Java内存结构和Java内存模型
+
 ### 1.1 硬件内存架构
 
 ![15-内存架构.jpg](./img/15-内存架构.jpg)

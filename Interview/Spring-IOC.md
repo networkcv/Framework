@@ -376,6 +376,7 @@ EnvironmentAware  获取操作系统环境容器
 ApplicationContextAware 获取IOC容器
 BeanNameAware   获取Bean名称
 EmbeddedValueResolverAware  获取字符串解析器  如：@Value("${name}")
+
 ```java
 public class Person implements ApplicationContextAware {
     private ApplicationContext applicationContext;
@@ -652,3 +653,9 @@ finishBeanFactoryInitialization(beanFactory);
 //  结束Spring上下文刷新
 finishRefresh();
 ```
+
+### 总结
+
+Spring 框架的核心思想就是抽象，IoC 和 AOP 是其核心功能，如果从整体来看 Spring 框架，可以抽离出几大核心顶级接口： BeanDifinetionReader、BeanFactoryPostProcesser、PostProcesser、BeanFactory、FactoryBean 和 Environment。这些接口依次负责 Bean的配置信息读取、增强、装载以及环境变量依赖。
+
+这几个接口就是Spring框架的核心，而如果要问Bean在Spring中的生命周期,我建议可以去看看AbstractApplicationContext的refresh方法, debug通读一遍就明白了,大致就如下几个流程:先经历一堆xxxAware把Bean需要的Spring组件调用各种setxxx给bean (比如setApplicationContext你们肯定见过这个方法) ,然后执行前置增强,也就是postprocesser的beforeinitializing;执行完后就开始初始化bean,初始化方法,然后后置增强,接着disposebean,最后destroy,这里需要注意的是, postprocesser是有顺序的,定义了priorityOrder的会先被执行,然后再执行带了order的。Spring给我的启发很多,它简直就是设计模式的完美范例,你可以在源码当中见到享元、工厂、建造者、适配器、观察者和模板模式。
