@@ -142,14 +142,35 @@
 - [3.总结]()
 
 
-## 同步容器和并发容器
+## 12.同步容器和并发容器
 
 同步容器,并发容器,阻塞队列 ConcurrentModificationException
 ConcurrentHashMap CopyOnWriteArrayList
 
-## 线程池  
-Executors Callable Future FutureTask Timer
-10-创建多少线程才是合适的
+## 13.线程池  ok!
+- 1.为什么要使用线程池
+  - 1.1 使用线程池的好处
+  - 1.2 初探线程池
+- 2.Executor
+  - 2.1 任务的定义(Runnable /Callable)
+  - 2.2 任务的执行(Executor)
+  - 2.3 异步执行的结果(Future)
+  - 2.4 Executor使用示例
+  - 2.5 Executor 使用分析
+- 3.ThreadPoolExecutor
+  - 3.1 ThreadPoolExecutor 构造参数解析
+  - 3.2 ThreadPoolExecutor 使用示例
+  - 3.3 ThreadPoolExecutor 原理分析
+  - 3.4 终止线程池
+  - 3.5 核心线程数量设置
+- 4.常见线程池详解
+  - 4.1 FixedThreadPool
+  - 4.2 SingleThreadExecutor
+  - 4.3 CachedThreadPool 
+  - 4.4 WorkStealingPool
+  - 4.5 ForkJoinPool
+  - 4.6 ScheduledThreadPool
+  - 4.7 小结
 
 ## 锁优化
 
