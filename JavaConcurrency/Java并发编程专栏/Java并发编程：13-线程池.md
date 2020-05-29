@@ -587,6 +587,16 @@ newWorkStealingPool()  根据CPU核数，产生相同数目的线程，线程执
 
 newScheduledThreadPool(int corePoolSize)：创建一个支持定时及周期性任务执行的定长线程池，多数情况下可用来代替Timer类。上一个运行完之后隔2s钟
 
+```java
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command,
+                                                  long initialDelay,
+                                                  long period,
+                                                  TimeUnit unit);
+```
+
+- initialDelay 任务多久后启动
+- period 循环执行该任务的周期时间
+
 ### 4.7 小结
 
 Executors 返回线程池对象的弊端如下：

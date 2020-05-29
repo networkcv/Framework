@@ -1598,7 +1598,7 @@ public class BaseTypeThreadUnSafe {
 
 用来生产随机数，在创建 Random 对象时，可以传入一个`seed(种子)` ，对于特定的种子总是会生成相同的随机数列，可以调用方法 `nextInt(int bound)` 获取，结果会从 `[0,bound)` 里取，包左不包右。
 
-
+# 18.[Java I/O ](think of Java：18-Java IO.md)
 
 # 19.枚举类型
 
