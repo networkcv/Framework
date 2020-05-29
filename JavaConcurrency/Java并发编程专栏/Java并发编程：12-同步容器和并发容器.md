@@ -104,9 +104,9 @@ ConcurrentHashMap用于替代低性能的HashTable，在学习ConcurrentHashMap�
 
 不再使用Segment分段锁机制，利用CAS+synchronized来保证线程安全，synchronized只锁定对应链表或红黑二叉树的首节点，这样只要hash值不冲突就不会发生数据竞争。
 
-如果想深入了解ConcurrentHashMap，可以参考[这篇文章](https://crossoverjie.top/2018/07/23/java-senior/ConcurrentHashMap/)。
+如果想深入了解ConcurrentHashMap，可以参考[这篇文章](https://crossoverjie.top/2018/07/23/java-senior/ConcurrentHashMap/)及[http://www.cnblogs.com/chengxiao/p/6842045.html](http://www.cnblogs.com/chengxiao/p/6842045.html)
 
-这里简单介绍一下它的逻辑
+这里简单介绍一下它的逻辑 
 
 1. 将当前 Segment 中的 table 通过 key 的 hashcode 定位到 HashEntry。
 2. 遍历该 HashEntry，如果不为空则判断传入的 key 和当前遍历的 key 是否相等，相等则覆盖旧的 value。

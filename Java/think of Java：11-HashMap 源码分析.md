@@ -1,4 +1,8 @@
-参考博客 ：[HashMap 源码详细分析(JDK1.8)](https://segmentfault.com/a/1190000012926722)
+参考博客 ：
+
+[HashMap 源码详细分析(JDK1.8)](https://segmentfault.com/a/1190000012926722)
+
+[《Java 8系列之重新认识HashMap》](https://zhuanlan.zhihu.com/p/21673805)
 
 ## HashMap 源码解析
 
