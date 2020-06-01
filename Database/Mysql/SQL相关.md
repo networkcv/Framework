@@ -1,4 +1,4 @@
-### SQL中过滤条件放在on和where中的区别？
+### 1.SQL中过滤条件放在on和where中的区别？
 
 **在 inner join 的情况下，结果是一样的。**
 
