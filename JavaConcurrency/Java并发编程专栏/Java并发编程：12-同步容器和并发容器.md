@@ -295,6 +295,37 @@ ConcurrentLinkedQueue 内部代码我们就不分析了，大家知道 Concurren
 
 ConcurrentLinkedQueue 适合在对性能要求相对较高，同时对队列的读写存在多个线程同时进行的场景，即如果对队列加锁的成本较高则适合使用无锁的 ConcurrentLinkedQueue 来替代。
 
+### 小结
+
+首先谈谈阻塞队列：
+ 当阻塞队列为空时，从阻塞队列中取数据的操作会被阻塞。
+ 当阻塞队列为满时，往阻塞队列中添加数据的操作会被阻塞。
+
+JDK中的七大阻塞队列
+
+|     阻塞队列名称      |                  说明                  |
+| :-------------------: | :------------------------------------: |
+|  ArrayBlockingQueue   |   一个由数组结构组成的有界阻塞队列。   |
+|  LinkedBlockingQueue  |   一个由链表结构组成的有界阻塞队列。   |
+| PriorityBlockingQueue |   一个支持优先级排序的无界阻塞队列。   |
+|      DelayQueue       | 一个使用优先级队列实现的无界阻塞队列。 |
+|   SynchronousQueue    |       一个不存储元素的阻塞队列。       |
+|  LinkedTransferQueue  |   一个由链表结构组成的无界阻塞队列。   |
+|  LinkedBlockingDeque  |   一个由链表结构组成的双向阻塞队列。   |
+
+**ArrayBlockingQueue:**
+ 基于数组的阻塞队列实现，其内部维护一个定长的数组，用于存储队列元素。线程阻塞的实现是通过ReentrantLock来完成的，数据的插入与取出共用同一个锁，因此ArrayBlockingQueue并不能实现生产、消费同时进行。而且在创建ArrayBlockingQueue时，我们还可以控制对象的内部锁是否采用公平锁，默认采用非公平锁。
+
+**LinkedBlockingQueue:**
+ 基于单向链表的阻塞队列实现，在初始化LinkedBlockingQueue的时候可以指定对立的大小，也可以不指定，默认类似一个无限大小的容量（Integer.MAX_VALUE），不指队列容量大小也是会有风险的，一旦数据生产速度大于消费速度，系统内存将有可能被消耗殆尽，因此要谨慎操作。另外LinkedBlockingQueue中用于阻塞生产者、消费者的锁是两个（锁分离），因此生产与消费是可以同时进行的。
+
+
+
+作者：小北觅
+链接：https://www.jianshu.com/p/ab013a4d5878
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
 ## 3.总结
 
 ### 3.1同步集合与并发集合的比较
