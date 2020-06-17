@@ -1,4 +1,26 @@
-### 1.SQL中过滤条件放在on和where中的区别？
+## 关联查询
+
+### inter join & left join & right join 区别？
+
+表 **ta**  & 表 **tb**
+
+| 表名 |                     ta                      |                             tb                              |
+| :--: | :-----------------------------------------: | :---------------------------------------------------------: |
+| 内容 | <img src="img/image-20200611160345549.png"> | ![image-20200611160357737](img/image-20200611160357737.png) |
+
+**inter join**
+
+**select * from ta inter join tb;   /  select * from ta,tb;**
+
+![image-20200611161314380](img/image-20200611161314380.png)
+
+**select * from tb inter join ta;	/	 select * from tb,ta;**
+
+![image-20200611161333940](img/image-20200611161333940.png)
+
+可以看到如果只是用 **inter join** 的话相当于做了两个表的笛卡尔积。
+
+### SQL中过滤条件放在on和where中的区别？
 
 **在 inner join 的情况下，结果是一样的。**
 

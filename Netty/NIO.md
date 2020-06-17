@@ -8,7 +8,7 @@ I/O 模型的简单理解：就是用怎样的通道进行数据的发送和接�
 
 BIO（Blocking I/O）：**同步阻塞**（传统阻塞型），服务器实现模式为一个网络连接对应一个线程，即服务端收到客户端的连接请求时，就启动一个线程进行处理，如果这个连接在保持的状态的下不做任何事情，就会造成不必要的线程开销，如果在读的时候没有读到东西，会发生阻塞。
 
-![](D:\study\Framework\Netty\img\1582880020(1).jpg)
+![](.\img\1582880020(1).jpg)
 
 **BIO编程的简单流程：**
 
@@ -80,7 +80,7 @@ public class BIOServer {
 
 NIO（non -blocking IO）：**同步非阻塞** ，服务器实现模式为一个线程处理多个连接请求，即客户端发送的连接请求都会注册到多路复用器（Selector 选择器）上，多路复用器轮询到连接有I/O请求就进行处理。JDK1.4开始支持，NIO相关类都在java.nio包及子包下。
 
-![](D:\study\Framework\Netty\img\1582880379(1).jpg)
+![](.\img\1582880379(1).jpg)
 
 NIO 有三大核心部分：Channel（通道）、Buffer（缓冲区）、Secletor（选择器）：
 
@@ -424,7 +424,7 @@ public abstract class Selector implements Closeable {}
 
 #### 3.3.1 NIO 非阻塞式网络编程原理分析图
 
-![](D:\study\Framework\Netty\img\NIO 非阻塞式网络编程原理分析图.jpg)
+![](.\img\NIO 非阻塞式网络编程原理分析图.jpg)
 
 - 当客户端连接时，会通过ServerSocketChannel 得到 SocketChannel
 - selector 开始监听，通过 阻塞的select（）或者非阻塞的 select（timeout）方法，返回有事件发生的通道个数，这也就是为什么select方法返回的是int值。

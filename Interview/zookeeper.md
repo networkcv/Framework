@@ -1,4 +1,4 @@
-## Zookeeper
+# Zookeeper
 ZooKeeper 是一个典型的分布式数据一致性解决方案，分布式应用程序可以基于 ZooKeeper 实现诸如数据发布/订阅、负载均衡、命名服务、分布式协调/通知、集群管理、Master 选举、分布式锁和分布式队列等功能。
 
 Zookeeper（业界简称zk）是一种提供配置管理、分布式协同以及命名的中心化服务，这些提供的功能都是分布式系统中非常底层且必不可少的基本功能
@@ -7,6 +7,7 @@ Dubbo就是资源调度和治理中心的管理工具。
 Zookeeper 一个最常用的使用场景就是用于担任服务生产者和服务消费者的注册中心(提供发布订阅服务)。 
 1.jpg
 节点角色说明：
+
 - Provider: 暴露服务的服务提供方。
 - Consumer: 调用远程服务的服务消费方。
 - Registry: 服务注册与发现的注册中心。
@@ -100,13 +101,13 @@ zookeeper  一致 有头 数据树
     1/2/3   三台机器分别的编号
     !wq
 4.启动zookeeper服务端
-    ./zkServer.sh start/stop
+    ./img/zkServer.sh start/stop
     more *.out 查看启动日志 
     jps 显示当前所有java进程pid的命令
-    ./zkServer.sh status 观察运行状态 如查看谁是leader/follower 
+    ./img/zkServer.sh status 观察运行状态 如查看谁是leader/follower 
     flower会处理读服务，将写服务交由leader来处理
 5.使用zookeeper客户端测试
-    ./zkClient.sh -server  连接至zk集群的任意节点
+    ./img/zkClient.sh -server  连接至zk集群的任意节点
     zookeeper和redis相似，将数据树保存在内存中便于操作
     
 
@@ -169,19 +170,19 @@ ZooKeeper集群中每个节点有自己的角色，对于集群可用性来说�
 ## zookeeper 都有哪些使用场景
 ### 分布式协调
 这个其实是 zookeeper 很经典的一个用法，简单来说，就好比，你 A 系统发送个请求到 mq，然后 B 系统消息消费之后处理了。那 A 系统如何知道 B 系统的处理结果？用 zookeeper 就可以实现分布式系统之间的协调工作。A 系统发送请求之后可以在 zookeeper 上对某个节点的值注册个监听器，一旦 B 系统处理完了就修改 zookeeper 那个节点的值，A 系统立马就可以收到通知，完美解决
-![03_分布式协调](./03_分布式协调.png)
+![03_分布式协调](./img/03_分布式协调.png)
 
 ### 分布式锁
 举个栗子。对某一个数据连续发出两个修改操作，两台机器同时收到了请求，但是只能一台机器先执行完另外一个机器再执行。那么此时就可以使用 zookeeper 分布式锁，一个机器接收到了请求之后先获取 zookeeper 上的一把分布式锁，就是可以去创建一个 znode，接着执行操作；然后另外一个机器也尝试去创建那个 znode，结果发现自己创建不了，因为被别人创建了，那只能等着，等第一个机器执行完了自己再执行。
-![04_分布式锁](./04_分布式锁.png)
+![04_分布式锁](./img/04_分布式锁.png)
 
 ### 配置信息管理
 zookeeper 可以用作很多系统的配置信息的管理，比如 dubbo，kafka、storm 等等很多分布式系统都会选用 zookeeper 来做一些元数据、配置信息的管理
-![配置信息管理](./05_配置信息管理.png)
+![配置信息管理](./img/05_配置信息管理.png)
 
 ### HA高可用性
 这个应该是很常见的，比如 hadoop、hdfs、yarn 等很多大数据系统，都选择基于 zookeeper 来开发 HA 高可用机制，就是一个重要进程一般会做主备两个，主进程挂了立马通过 zookeeper 感知到切换到备用进程。
-![HA高可用性](./06_HA高可用性.png)
+![HA高可用性](./img/06_HA高可用性.png)
 
 
 ## 一般实现分布式锁都有哪些方式
@@ -222,7 +223,7 @@ RedLock 算法
 客户端计算建立好锁的时间，如果建立锁的时间小于超时时间，就算建立成功了；
 要是锁建立失败了，那么就依次之前建立过的锁删除；
 只要别人建立了一把分布式锁，你就得不断轮询去尝试获取锁。
-![redis-redlock](./07_redis-redlock.png)
+![redis-redlock](./img/07_redis-redlock.png)
 
 Redis 官方给出了以上两种基于 Redis 实现分布式锁的方法，详细说明可以查看：https://redis.io/topics/distlock 。
 
@@ -494,3 +495,123 @@ zk 分布式锁，获取不到锁，注册个监听器即可，不需要不断�
 redis 分布式锁大家没发现好麻烦吗？遍历上锁，计算时间等等;zk 的分布式锁语义清晰实现简单。
 
 所以先不分析太多的东西，就说这两点，我个人实践认为 zk 的分布式锁比 redis 的分布式锁牢靠、而且模型简单易用。
+
+
+
+# Eureka
+
+[![Eureka服务注册中心的原理](img/1-Dubbo&SpringCloud/springCloud-study-theory.png)](https://github.com/shishan100/Java-Interview-Advanced/blob/master/docs/distributed-system/images/springCloud-study-theory.png) 
+
+## Eureka 集群
+
+非常常见的一个技术面试题，但凡只要是聊到分布式这块，一定会问问你，**Dubbo，Spring Cloud，服务注册中心**，你们当时是怎么选型和调研的，你们最终是选择了哪块技术呢？你选择这块技术的原因和理由是什么呢？
+
+**Eureka、ZooKeeper**
+
+**Dubbo**作为服务框架的，一般注册中心会选择zk
+
+**Spring Cloud**作为服务框架的，**一般服务注册中心会选择Eureka**
+
+**Consul、Nacos，**普及型还没那么广泛，我会在面试训练营课程里增加对应的内容，给大家去进行补充
+
+### 1)服务注册发现的原理
+
+集群模式 [![ZooKeeper](img/zookeeper/eureka-register.png)](https://github.com/shishan100/Java-Interview-Advanced/blob/master/docs/distributed-system/images/eureka-register.png)
+
+**Eureka，peer-to-pee**r，部署一个集群，**但是集群里每个机器的地位是对等的，各个服务可以向任何一个Eureka实例服务注册和服务发现，集群里任何一个Euerka实例接收到写请求之后，会自动同步给其他所有的Eureka实例** [![ZooKeeper](img/zookeeper/zookeeper-register.png)](https://github.com/shishan100/Java-Interview-Advanced/blob/master/docs/distributed-system/images/zookeeper-register.png)
+
+**ZooKeeper，服务注册和发现的原理，Leader + Follower两种角色，只有Leader可以负责写也就是服务注册，他可以把数据同步给Follower，读的时候leader/follower都可以读**
+
+### 2)一致性保障：CP or AP
+
+**CAP，C是一致性，A是可用性，P是分区容错性**
+
+**CP，AP**
+
+**ZooKeeper是有一个leader节点会接收数据， 然后同步写其他节点，一旦leader挂了，要重新选举leader，这个过程里为了保证C，就牺牲了A，Zookeeper不可用一段时间，等下一个leader选举好了，那么就可以继续写数据了，保证一致性**
+
+Eureka是peer模式，可能还没同步数据过去，结果自己就死了，此时还是可以继续从别的机器上拉取注册表，但是看到的就不是最新的数据了，但是保证了高可用性，但无法保证强一致，只能保证最终一致性
+
+### 3）服务注册发现的时效性
+
+zk，时效性更好，注册或者是挂了，一般秒级就能感知到
+
+![springCloud-study-theory](img/1-Dubbo&SpringCloud/springCloud-study-theory.png)
+
+
+
+eureka，默认配置非常糟糕，服务发现感知要到几十秒，甚至分钟级别，上线一个新的服务实例，到其他人可以发现他，极端情况下，可能要1分钟的时间，ribbon去获取每个服务上缓存的eureka的注册表进行负载均衡
+
+服务故障，隔60秒才去检查心跳，发现这个服务上一次心跳是在60秒之前，隔60秒去检查心跳，超过90秒没有心跳，才会认为他死了，2分钟都过去
+
+30秒，才会更新缓存，30秒，其他服务才会来拉取最新的注册表
+
+三分钟都过去了，如果你的服务实例挂掉了，此时别人感知到，可能要两三分钟的时间，一两分钟的时间，很漫长
+
+### 4)容量
+
+zk，不适合大规模的服务实例，因为服务上下线的时候，需要瞬间推送数据通知到所有的其他服务实例，所以一旦服务规模太大，到了几千个服务实例的时候，会导致网络带宽被大量占用
+
+eureka，也很难支撑大规模的服务实例，因为每个eureka实例都要接受所有的请求，实例多了压力太大，扛不住，也很难到几千服务实例
+
+之前dubbo技术体系都是用zk当注册中心，spring cloud技术体系都是用eureka当注册中心这两种是运用最广泛的，但是现在很多中小型公司以spring cloud居多，所以后面基于eureka说一下服务注册中心的生产优化
+
+### 5）多机房、多数据中心、健康检查
+
+# Eureka 服务注册过慢 优化
+
+**zk，一般来说还好，服务注册和发现，都是很快的**
+
+**eureka，必须优化参数**
+
+**eureka.server.responseCacheUpdateIntervalMs = 3000** 
+
+**eureka.client.registryFetchIntervalSeconds = 30000**
+
+**eureka.client.leaseRenewalIntervalInSeconds = 30** 
+
+**eureka.server.evictionIntervalTimerInMs = 60000** **eureka.instance.leaseExpirationDurationInSeconds = 90**
+
+**服务发现的时效性变成秒级，几秒钟可以感知服务的上线和下线**
+
+# 网关的核心功能
+
+#### (1)动态路由：新开发某个服务，动态把请求路径和服务的映射关系热加载到网关里去；服务增减机器，网关自动热感知
+
+#### (2)灰度发布
+
+#### (3)授权认证
+
+#### (7)限流熔断
+
+
+
+#### (4)性能监控：每个API接口的耗时、成功率、QPS
+
+#### (5)系统日志
+
+#### (6)数据缓存
+
+#### 
+
+### 几种技术选型
+
+#### Kong、Zuul、Nginx+Lua（OpenResty）、自研网关
+
+**Kong：Nginx里面的一个基于lua写的模块，实现了网关的功能** **Zuul：Spring Cloud来玩儿微服务技术架构，Zuul**
+
+**Nginx+Lua（OpenResty）：课程目录里面，有一个文档，课程免费学习，亿级流量系统架构的课程，详细讲解了Nginx+Lua的开发**，基于lua自己写类似Kong的网关 **自研网关：自己来写类似Zuul的网关，基于Servlet、Netty来做网关，实现上述所有的功能**
+
+大厂：BAT、京东、美团、滴滴之类的，自研网关，都是基于Netty等技术自研网关；Nginx + Lua（Tengine）来做，封装网关的功能
+
+中小型公司：Spring Cloud技术栈主要是用Zuul，Gateway；如果是Dubbo等技术栈，有的采用Kong等网关，也可以直接不用网关，很多公司压根儿就没用网关，直接Nginx反向代理+负载均衡；
+
+Zuul：基于Java开发，核心网关功能都比较简单，但是比如灰度发布、限流、动态路由之类的，很多都要自己做二次开发
+
+Kong：依托于Nginx实现，OpenResty，lua实现的模块，现成的一些插件，可以直接使用
+
+Zuul（Servlet、Java）：高并发能力不强，部署到一些机器上去，还要基于Tomcat来部署，Spring Boot用Tomcat把网关系统跑起来；Java语言开发，可以直接把控源码，可以做二次开发封装各种需要的功能
+
+Nginx（Kong、Nginx+Lua）：Nginx抗高并发的能力很强，少数几台机器部署一下，就可以抗很高的并发，精通Nginx源码，很难，c语言，很难说从Nginx内核层面去做一些二次开发和源码定制
+
+Java技术栈为主的大厂，很多其实用Java、Servlet、Netty来开发高并发、高性能的网关系统，自己可以把控一切

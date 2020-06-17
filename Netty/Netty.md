@@ -4,7 +4,7 @@ Netty 是由JBOSS提供的一个Java开源框架。
 
 Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **NIO** 来实现的  **网络** 应用框架，
 
-![](D:\Study\Framework\Netty\img\Netty架构.jpg)
+![](.\img\Netty架构.jpg)
 
 在分布式系统中，各个节点之间需要远程服务调用，高性能的RPC框架必不可少，Netty作为异步高性能的通信框架，往往作为基础通信组件被这些RPC框架使用，如阿里的分布式服务框架Dubbo的RPC框架使用的Dubbo协议进行节点间通信，Dubbo协议默认使用Netty作为基础通信组件，用于实现各进程节点之间的内部通信。
 
@@ -37,7 +37,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 **传统阻塞I/O 模型**
 
-![](D:\Study\Framework\Netty\img\传统IO模型图.jpg)
+![](.\img\传统IO模型图.jpg)
 
 黄色的框表示对象， 蓝色的框表示线程，白色的框表示方法(API)
 
@@ -53,7 +53,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 **Reactor 模式**
 
-![](D:\Study\Framework\Netty\img\Reactor设计理念.jpg)
+![](.\img\Reactor设计理念.jpg)
 
 1. 基于 I/O 复用模型：多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待，无需阻塞等待所有连接。当某个连接有新的数据可以处理时，操作系统通知应用程序，线程从阻塞状态返回，开始进行业务处理
     Reactor 对应的叫法:  反应器模式 / 分发者模式(Dispatcher) / 通知者模式(notifier)
@@ -73,7 +73,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### **单Reactor 单线程**
 
-![](D:\Study\Framework\Netty\img\单 Reactor 单线程.jpg)
+![](.\img\单 Reactor 单线程.jpg)
 
 **方案说明：**
 
@@ -99,7 +99,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### **单Reactor 多线程**
 
-![](D:\Study\Framework\Netty\img\单Reactor 多线程.jpg)
+![](.\img\单Reactor 多线程.jpg)
 
 **方案说明：**
 
@@ -119,7 +119,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### **主从Reactor 多线程**
 
-![](D:\study\Framework\Netty\img\主从Reactor多线程.jpg)
+![](.\img\主从Reactor多线程.jpg)
 
 **方案说明：**
 
@@ -164,7 +164,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### 简单版
 
-![](D:\study\Framework\Netty\img\Netty简单版.jpg)
+![](.\img\Netty简单版.jpg)
 
 **方案说明：**
 
@@ -176,7 +176,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### 进阶版
 
-![](D:\study\Framework\Netty\img\Netty进阶版.jpg)
+![](.\img\Netty进阶版.jpg)
 
 
 
@@ -184,7 +184,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 #### 详尽版
 
-![](D:\study\Framework\Netty\img\Netty详尽版.jpg)
+![](.\img\Netty详尽版.jpg)
 
 **方案说明：**
 
@@ -339,7 +339,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 3. ChannelHandler 及其实现类一览图
 
-   ![](D:\Study\Framework\Netty\img\ChannelHandler相关.jpg)
+   ![](.\img\ChannelHandler相关.jpg)
 
    - ChannelInboundHandler 用于处理入站 I/O 事件。
 
@@ -401,7 +401,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 3. 在 Netty 中每个 Channel 都有且仅有一个 ChannelPipeline 与之对应，它们的组成关系如下
 
-   ![](D:\Study\Framework\Netty\img\pipeline和ChannelPipeline.jpg)
+   ![](.\img\pipeline和ChannelPipeline.jpg)
 
    - 一个 Channel 包含了一个 ChannelPipeline，而 ChannelPipeline 中又维护了一个由 ChannelHandlerContext 组成的双向链表，并且每个 ChannelHandlerContext 中又关联着一个 ChannelHandler
    - 入站事件和出站事件在一个双向链表中，入站事件会从链表 head 往后传递到最后一个入站的 handler，出站事件会从链表 tail 往前传递到最前一个出站的 handler，两种类型的 handler 互不干扰
@@ -443,7 +443,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 3. 通常一个服务端口即一个 ServerSocketChannel对应一个Selector 和一个EventLoop线程。BossEventLoop 负责接收客户端的连接并将 SocketChannel 交给 WorkerEventLoopGroup 来进行 IO 处理，如下图所示：
 
-   ![](D:\Study\Framework\Netty\img\1583164929.jpg)
+   ![](.\img\1583164929.jpg)
 
    - BossEventLoopGroup 通常是一个单线程的 EventLoop，EventLoop 维护着一个注册了ServerSocketChannel 的 Selector 实例BossEventLoop 不断轮询 Selector 将连接事件分离出来
    - 通常是 OP_ACCEPT 事件，然后将接收到的 SocketChannel 交给 WorkerEventLoopGroup
@@ -461,7 +461,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 3. 举例说明 Unpooled 获取 Netty的数据容器ByteBuf 的基本使用 
 
-![](D:\Study\Framework\Netty\img\1583193684(1).jpg)
+![](.\img\1583193684(1).jpg)
 
 
 
@@ -691,7 +691,23 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 ```
 
+#### 粘包问题的解决策略
 
+由于底层的TCP无法理解上层的业务数据，所以在底层是无法保证数据包不被拆分和重组的，这个问题只能通过上层的应用协议栈设计来解决，根据业界的主流协议的解决方案，可以归纳如下。
+
+(1) 消息定长，例如每个报文的大小为固定长度200字节，如果不够，空位补空格；
+(2) 在包尾增加回车换行符进行分割，例如FTP协议；
+(3) 将消息分为消息头和消息体，消息头中包含表示消息总长度(或者消息体长度)的字段，通常设计思路为消息头的第一个字段使用int32来表示消息的总长度；
+(4) 更复杂的应用层协议。
+
+#### Netty半包解码器解决TCP粘包/拆包问题
+
+为了解决TCP粘包/拆包导致的半包读写问题，Netty默认提供了多种编解码器用于处理半包，使其解决TCP粘包问题变得非常容易，主要有：
+
+LineBasedFrameDecoder
+DelimiterBasedFrameDecoder（添加特殊分隔符报文来分包）
+FixedLengthFrameDecoder（使用定长的报文来分包）
+LengthFieldBasedFrameDecoder
 
 ## Netty 源码解析
 

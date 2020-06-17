@@ -1,4 +1,4 @@
-
+# 
 
 JVM 垃圾回收
 
@@ -229,7 +229,7 @@ public class FinalizeEscapeGC {
 
 同时程序中两段相同的代码执行结果一次逃脱一次失败，因为任何一个对象的 finalize() 方法都只会被系统自动调用一次，如果对象面临下一次回收，它的 finalize() 方法不会被再次执行，因此第二段代码中自救失败。
 
-![finalize 执行过程](D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/finalize 执行过程.jpg)
+![finalize 执行过程](D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/finalize 执行过程.jpg)
 
 - 需要特别说明的是，**建议大家尽量避免使用这种方法来拯救对象**，因为它不是 C/C++ 中的析构函数，而是Java刚诞生时为了使C/C++程序员更容易接受它所做出的一个妥协。它的运行代价高昂，不确定性大，无法保证各个对象的调用顺序。有些教材中描述它适合做“关闭外部资源”之类的工作“，这完全是对这个方法用途的一种自我安慰。finalize()能做的所有工作，使用try-finally或者其他方式都可以做得更好、更及时，所以建议大家完全可以忘掉Java语言中有这个方法的存在。
 
@@ -298,7 +298,7 @@ public class FinalizeEscapeGC {
 - Young GC 主要是对Eden区进行GC，**它在Eden空间耗尽时会被触发**。在这种情况下Eden空间的数据移动到 Survivor空间中如果 Survivor 空间不够,Eden空间的部分数据会直接晋升到老年代空间。 Survivor区的数据移动到新的 Survivor 区中,也有部分数据晋升到老年代空间中。最终Eden空间的数据为空,GC完成工作,应用线程继续执行;
 - 如果仅仅 GC 新生代对象,我们如何找到所有的根对象呢?老年代的所有对象都是根么?那这样扫描下来会耗费大量的时间。于是，G1引进了 RSet 的概念。它的全称是 Remembered set，作用是跟踪指向某个堆内的对象引用
 
-![image-20191218205128114](D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218205128114.png)
+![image-20191218205128114](D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218205128114.png)
 
 - 在 CMS 中,也有RSet的概念,**在老年代中有一块区域用来记录指向新生代的引用这是一种 point-out**,在进行 Young Go时扫描根时,仅仅需要扫描这一块区域,而不需要扫描整个老年代
 
@@ -360,21 +360,21 @@ public class FinalizeEscapeGC {
 
 遍历了所有可达的对象后，所有可达的对象都变成了黑色。不可达的对象即为白色，需要被清理,如图：
 
-[<img src="D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sanmark.gif" alt="三色标记算法" style="zoom: 50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sanmark.gif)
+[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sanmark.gif" alt="三色标记算法" style="zoom: 50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sanmark.gif)
 
 
 
 - 但是如果在标记过程中，应用程序也在运行，那么对象的指针就有可能改变。这样的话，我们就会遇到一个问题:对象丢失问题
 
-<img src="D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218210809306.png" alt="image-20191218210809306" style="zoom:50%;" />
+<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218210809306.png" alt="image-20191218210809306" style="zoom:50%;" />
 
 这时候应用程序执行了以下操作: A.c=C B.c=null 这样，对象的状态图变成如下情形:
 
-[<img src="D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans2.png" alt="img" style="zoom:50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sans2.png)
+[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans2.png" alt="img" style="zoom:50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sans2.png)
 
 这时候垃圾收集器再标记扫描的时候就会变成下图这样
 
-[<img src="D:/study/Notes/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans1.png" alt="img" style="zoom:50%;" />
+[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans1.png" alt="img" style="zoom:50%;" />
 
 - **很显然，此时C是白色，被认为是垃圾需要清理掉，显然这是不合理的**
 
@@ -846,7 +846,7 @@ Safepoint的选定既不能太少以至于让GC等待时间太长,也不能过�
 
 
 
-### CMS收集器
+# CMS收集器
 
 Concurrent Mark Sweep Garbage Collection 并发标记清除老年代的垃圾收集器，以获取最短回收停顿时间（Stop-The-World）为目标，多数应用B/S系统的服务器上。
 
@@ -928,7 +928,7 @@ CMS通过将大量工作分散到并发处理阶段来减少STW时间，并发�
 
 
 
-### G1收集器
+# G1收集器
 
 **G1收集器堆结构**
 
@@ -1782,7 +1782,7 @@ GC对象是堆空间和永久区
 
 ## 5.GC参数
 
-### 5.1 垃圾收集器选择
+# 5.1 垃圾收集器选择
 
 1. **Serial Collector（串行收集器）**
 

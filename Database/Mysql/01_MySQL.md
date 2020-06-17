@@ -170,9 +170,9 @@ drop index [索引名] on [表名]
 	seclect name,english from table;
 	
 	select name,english+10,math+10 from table;
-
+	
 	select name,english+math from table;
-
+	
 	select name as 姓名,english+math as 总成绩 from table;
 	select name   姓名,english+math  总成绩 from table;	效果同上
 
@@ -180,13 +180,13 @@ drop index [索引名] on [表名]
 	select * from exam where name='张三';
 
 	select * from exam where english>90;
-
+	
 	select * from exam where english between 80 and 100;	//在80到100之间
-
+	
 	select * from exam where english in (75,76,77);	//是75，76，77中的一个
-
+	
 	select * from exam where name like '张%';	//姓张   %多个通配字  _只代表一个通配字符 
-
+	
 	select * from exam where english > 80 and math >70;
 
 3.排序查询 位于句尾
@@ -201,13 +201,13 @@ drop index [索引名] on [表名]
 	
 	<2> sum() 求符合条件的某列的和值
 	     select sum(*) from [table];	
-
+	
 	     select sum(english),sum(math) from [table];
-
+	
 	     select sum(chinese)/count(*) as 全班语文平均分 from [table]; 
 	<3> avg() 求复合条件列的平均值
 	     select avg(math) from [table];
-
+	
 	<4> max(),min() 求复合条件的最大最小值
 	     select max(chinese+math+english) from [table];
 
@@ -216,10 +216,10 @@ drop index [索引名] on [表名]
 
 	where的过滤只能在分组前进行，
 	having可以在分组后过滤。
-
+	
 	查询总价大于100元的商品名称
 	select product ,sum(price) from orders group by product having sum(price)>100;
-
+	
 	查询单价小于100而总价大于100的商品的名称
 	select product,sum(price) from orders where price<100 group by product having sum(price)>100;
 
@@ -240,9 +240,9 @@ drop index [索引名] on [表名]
 	id int primary key auto_increment,
 	name varchar(40)
 	);
-
+	
 	insert into dept values	(null,'财务部');
-
+	
 	create table emp(
 	id int primary key auto_increment,
 	name varchar(40),
@@ -260,27 +260,27 @@ drop index [索引名] on [表名]
 
 	1.笛卡尔积查询:是两张表相乘的结果，其中包含大量错误数据。
 	select * from dept,emp;
-
+	
 	2.内连接查询:查询出左边表有且右边表也有点记录
-
+	
 	select * from dept,emp where dept.id = emp.dept_id;
 	select * from dept inner join emp on dept.id = emp.dept_id; 
-
+	
 	3.外连接查询
-
+	
 	左外连接查询:在内连接的基础上增加左边表有而右边表没有的
 	select * from dept left join emp on dept.id = emp.dept_id;
-
+	
 	右外连接查询:在内连接的基础上增加左边表有而右边表没有的
 	select * from dept right join emp on dept.id = emp.dept_id;
-
+	
 	全外连接查询:在内连接的基础上增加左边表有而右边表没有的
 	select * from dept full join emp on dept.id = emp.dept_id;	#mysql暂不支持全外连接！
-
+	
 	select * from dept left join emp on dept.id = emp.dept_id;
 	union
 	select * from dept right join emp on dept.id = emp.dept_id;	#mysql可以union左外和右外，模拟全外连接
-
+	
 	查询4号部门的名称和员工姓名
 	select dpet.name 部门,emp.name 员工 from dept inner join emp on dept.id=emp.dept_id where dept.id=4;
 
@@ -294,13 +294,13 @@ drop index [索引名] on [表名]
 	2.exists关键字的子查询  相当于boolean，有值返回true反之返回false
 	查询emp表中是否存在年龄大于21岁的员工，存在的话则查询dept表的所有记录
 	select * from dept where exeists (select * from emp where age>21);
-
+	
 	3.带any关键字的子查询	只要满足内部表达式的任意一个条件，就返回一个外层查询结果
 	select * from dept where did>any(select did from emp);
-
+	
 	4.带all关键字的子查询	要同时满足内部表达式的所有一个条件，才返回一个外层查询结果
 	select * from dept where did>any(select did from emp);
-
+	
 	5.带比较运算符的子查询
 	查询赵四的部门名称
 	select dname from dept where did = (select did from emp where name='赵四')
@@ -334,9 +334,9 @@ drop index [索引名] on [表名]
 		
 		两个事务并发修改：必须隔离
 		两个事务并发查询：不用隔离
-
+	
 		一个修改，一个查询：
-
+	
 		  脏读：一个事务读取到另一个事务未提交的数据
 		   -------
 		   a  1000
@@ -404,10 +404,10 @@ drop index [索引名] on [表名]
 		创建表视图包含 数学 语文  数学+语文
 		create (or replace(对已创建表达替换)) view view_stu  as select math,chinese,math+chinese from student;
 		select * from view_stu;
-
+	
 		create view view_stu2 (数学，语文，总分) as select math,chinese,math+chinese from student;
 		select * from view_stu;
-
+	
 	2.多表创建视图
 		create table student(
 		s_id int(3),
@@ -418,7 +418,7 @@ drop index [索引名] on [表名]
 		insert into student values(1,'tom',80,78);
 		insert into student values(2,'jack',80,80);
 		insert into student values(3,'lucy',97,95);
-
+	
 		create table stu_info(
 		s_id int(3),
 		class varchar(20),
@@ -427,14 +427,14 @@ drop index [索引名] on [表名]
 		insert into stu_info values(1,'二班','安徽');
 		insert into stu_info values(2,'三班','重庆');
 		insert into stu_info values(3,'一班','山东');
-
+	
 		创建表视图包含 数学 语文  数学+语文
 		create (or replace(对已创建表达替换)) view view_stu  as select math,chinese,math+chinese from student;
 		select * from view_stu;
-
+	
 		create view view_stu2 (数学，语文，总分) as select math,chinese,math+chinese from student;
 		select * from view_stu; 
-
+	
 		创建视图包含 编号 学生的姓名 和班级
 		create view stu_class (编号，姓名，班级) as
 		select student.s_id,student.name,stu_info.class from student,stu_info where student.s_id=stu_info.s_id;
@@ -443,20 +443,21 @@ drop index [索引名] on [表名]
 		desc(describe) 表名;	查看表结构
 		
 		show table status like '(视图名)' ;
-
+	
 		show create view 视图名;
 	
 	4.修改视图
 		create or replace view 视图名 as 查询语句; 创建修改
-
+	
 		alter view 视图名 as 查询语句
 
-	
+
+​	
 	5.更新视图
 		update 视图名 set chinees=100;
-
+	
 		insert into student values(4,'lili',50,40);
-
+	
 		delete from viw_stu where chinese =30;
 	
 	6.删除视图
@@ -476,21 +477,21 @@ drop index [索引名] on [表名]
 		(3)insert into mysql.user(host,user,password,ssl_cipher,x509_issuer,x509_subject)
 		values ('localhost','huochewang3',password('abc123'),'','','');
 		flush privileges; 刷新权限表
-
+	
 	删除用户
 		drop user 'huochewang'@'localhost';
-
+	
 		delete from mysql.user where host='local' and user='huochewang2';
 		flush privileges; 刷新权限表
-
+	
 	修改用户密码
 		(1)修改root用户的密码
 			mysqladmin -u root  -p password newroot(新密码)
 			在C:\documents and settings\当前windows用户的目录运行语句
-
+	
 			update mysql.user set password=password('abc') where user='root' and host='localhost';
 			flush privileges; 刷新权限表
-
+	
 			用root用户本身登录
 			set password=password('123');
 		(2)使用root用户修改普通用户密码
@@ -498,7 +499,7 @@ drop index [索引名] on [表名]
 			
 			update mysql.user set password=password('abc') where user='username' and host='hostname';
 			flush privileges; 刷新权限表
-
+	
 			set password for 'username'@'hostname'=password('123');
 		(3)普通用户修改自己的密码
 			普通用户登录到数据库
@@ -506,13 +507,13 @@ drop index [索引名] on [表名]
 	授予权限
 		用grant语句创建一个新用户，user4 123 有insert select 权限并使用 with grant option
 		grant insert,select on *.* to 'user4'@'localhost' identified by '123' with grant option;
-
+	
 	查看权限
 		show grants for 'root'@'localhost';
 			
 	收回权限
 		收回user4的insert权限
 		revoke insert on *.* from 'user'@'localhost';
-
+	
 		收回user4的所有权限
 		revoke all privileges, grant option from 'user4'@'localhost';
