@@ -486,17 +486,11 @@ git push origin :refs/tags/标签名
 
 > **==注意：标签总是和某个commit挂钩。如果commit既出现在master分支，又出现在dev分支，那么在这两个分支上都可以看到这个标签。==**
 
----
 
-### GIT使用攻略
 
-#### 单分支使用攻略
 
-- [单分支使用攻略](C:\Users\admin\Desktop\单分支使用攻略.pdf)
 
-  
 
-  
 
 
 
