@@ -354,7 +354,7 @@ Stream.generate(Math::random).limit(10).forEach(System.out::println);
 ```java
     @Test
     public void test() {
-        // filter(Predicate p) 从流中排除某些元素，排除的规则为Predicate类型的函数
+        // filter(Predicate p) 从流中排除某些元素，排除的规则为Predicate类型的函数，过滤出Predicate函数中的元素
         Stream<String> stream = Stream.of("1", "2", "3", "4");
         stream.filter(s -> s.equals("1")).forEach(System.out::println);
 
