@@ -67,3 +67,16 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
 ```
 
 ![](./\img\1583202935(1).jpg)
+
+
+
+## 从主表复制数据到副表
+
+```mysql
+insert into 
+stock_change_record_copy1(order_id,sale_item_sku_id,quantity,ext,gmt_create,gmt_modified)
+select 
+order_id,sale_item_sku_id,quantity,ext,gmt_create,gmt_modified 
+from stock_change_record
+```
+
