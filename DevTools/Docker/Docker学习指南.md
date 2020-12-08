@@ -1,40 +1,10 @@
----
-layout: post
-title: "Docker 学习"
-subtitle: 'Docker learning'
-author: "Networkcv"
-header-img: "img/post-bg-unix-linux.jpg"
-header-style: text
-tags:
-  - Tools
----
+## Docker
 
-### 目录
-- [Docker](#docker)
-    - [Docker与传统虚拟化区别](#docker与传统虚拟化区别)
-    - [镜像与容器](#镜像与容器)
-    - [docker的启动与停止](#docker的启动与停止)
-    - [镜像相关命令](#镜像相关命令)
-    - [容器相关命令](#容器相关命令)
-    - [MySQL部署](#mysql部署)
-    - [nginx部署](#nginx部署)
-    - [redis部署](#redis部署)
-    - [dubbo-admin部署](#dubbo-admin部署)
-- [迁移与备份](#迁移与备份)
-    - [Dockerfile](#dockerfile)
-    - [常用命令](#常用命令)
-    - [构建JDK镜像](#构建jdk镜像)
-    - [搭建docker私有仓库](#搭建docker私有仓库)
-    - [push 私有仓库](#push私有仓库)
-    - [pull 私有仓库](#pull私有仓库)
-
-
-
-## docker
 解决环境搭建问题，如mysql搭建，redis搭建，linux的环境搭建，保证开发，测试，上线，运营的环境上保持一致
 
 ### docker与传统虚拟化区别
-![docker1](./docker1.jpg)
+
+![image-20201206175143493](img/Docker学习指南/image-20201206175143493.png)
 
 ### 镜像与容器
 镜像是构建Docker的基石，用户基于镜像来运行自己的容器，镜像也是Docker生命周期中“构建”部分，镜像是基于联合文件系统的一种层次结构，由一系列指令一步一步构建出来。  
