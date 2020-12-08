@@ -1,0 +1,546 @@
+
+
+# 一、操作索引
+
+## 1.创建索引
+
+### 1.常见的索引
+
+```json
+# 创建索引名为 tehero_index 的索引
+PUT /tehero_index?pretty
+{
+# 索引设置
+  "settings": {
+    "index": {
+      "number_of_shards": 1, # 分片数量设置为1，默认为5
+      "number_of_replicas": 1 # 副本数量设置为1，默认为1
+    }
+  },
+	# 映射配置
+  "mappings": {
+    "_doc": { # 类型名，强烈建议设置为 _doc
+      "dynamic": false, # 动态映射配置
+			# 字段属性配置
+      "properties": {
+        "id": {
+          "type": "integer"  # 表示字段id，类型为integer
+        },
+        "name": {
+          "type": "text",
+          "analyzer": "ik_max_word", # 存储时的分词器
+          "search_analyzer": "ik_smart"  # 查询时的分词器
+        },
+        "createAt": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}
+```
+
+> 注：**dynamic：是动态映射的开关**，有3种状态：true 动态添加新的字段--缺省；推荐使用）false 忽略新的字段,不会添加字段映射，但是会存在于_source中；（strict 如果遇到新字段抛出异常；
+
+```json
+# 返回值如下：
+{
+  "acknowledged": true, # 是否在集群中成功创建了索引
+  "shards_acknowledged": true,
+  "index": "tehero_index"
+}
+```
+
+索引的创建其实还有很大的学问，可以结合业务进行定制化。不一定必须与数据库的格式保持一致。下面再介绍两种常见的索引创建格式。
+
+### 2.多个子类型的索引创建
+
+```json
+PUT /object_index
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "person": {
+          "properties": {
+            "name": {
+              "type": "text"
+            }
+          }
+        },
+        "animal": {
+          "properties": {
+            "name": {
+              "type": "text"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 3.子字段的索引创建
+
+```json
+PUT /fields_index
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "content": {
+          "type": "keyword",
+          "fields": {
+            "ik_max_analyzer": {
+              "type": "text",
+              "analyzer": "ik_max_word",
+              "search_analyzer": "ik_max_word"
+            },
+            "ik_smart_analyzer": {
+              "type": "text",
+              "analyzer": "ik_smart"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+
+
+## 2.查询索引
+
+```json
+GET /tehero_index  # 索引名，可以同时检索多个索引或所有索引
+如：GET /*    GET /tehero_index,other_index
+
+GET /_cat/indices?v  #查看所有 index
+```
+
+结果：
+
+```json
+{
+  "tehero_index": {
+    "aliases": {},
+    "mappings": {
+      "_doc": {
+        "dynamic": "false",
+        "properties": {
+          "createAt": {
+            "type": "date"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart"
+          }
+        }
+      }
+    },
+    "settings": {
+      "index": {
+        "creation_date": "1589271136921",
+        "number_of_shards": "1",
+        "number_of_replicas": "1",
+        "uuid": "xueDIxeUQnGBQTms65wA6Q",
+        "version": {
+          "created": "6050499"
+        },
+        "provided_name": "tehero_index"
+      }
+    }
+  }
+}
+```
+
+## 3.更新索引
+
+> ES提供了一系列对index修改的语句，包括**副本数量的修改、新增字段、refresh_interval值的修改、索引分析器的修改（后面重点讲解）、别名的修改**（关于别名，TeHero后面会专门讲解，这是一个在实践中非常有用的操作）。
+
+先学习常用的语法：
+
+```json
+# 修改副本数
+PUT /tehero_index/_settings
+{
+    "index" : {
+        "number_of_replicas" : 2
+    }
+}
+
+# 修改分片刷新时间,默认为1s
+PUT /tehero_index/_settings
+{
+    "index" : {
+        "refresh_interval" : "2s"
+    }
+}
+
+# 新增字段 age
+PUT /tehero_index/_mapping/_doc 
+{
+  "properties": {
+    "age": {
+      "type": "integer"
+    }
+  }
+}
+```
+
+更新完后，我们再次查看索引配置：
+
+```json
+GET /tehero_index
+结果：
+{
+  "tehero_index": {
+    "aliases": {},
+    "mappings": {
+      "_doc": {
+        "dynamic": "false",
+        "properties": {
+          "age": {
+            "type": "integer"
+          },
+          "createAt": {
+            "type": "date"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart"
+          }
+        }
+      }
+    },
+    "settings": {
+      "index": {
+        "refresh_interval": "2s",
+        "number_of_shards": "1",
+        "provided_name": "tehero_index",
+        "creation_date": "1589271136921",
+        "number_of_replicas": "2",
+        "uuid": "xueDIxeUQnGBQTms65wA6Q",
+        "version": {
+          "created": "6050499"
+        }
+      }
+    }
+  }
+}
+已经修改成功
+```
+
+## 4.删除索引
+
+```json
+# 删除索引
+DELETE /tehero_index
+# 验证索引是否存在
+HEAD tehero_index
+返回：404 - Not Found
+```
+
+# 二、操作文档
+
+## 1.添加文档
+
+```json
+# 新增单条数据，并指定es的id 为 1
+PUT /tehero_index/_doc/1?pretty
+{
+  "name": "Te Hero"
+}
+# 新增单条数据，使用ES自动生成id
+POST /tehero_index/_doc?pretty
+{
+  "name": "Te Hero2"
+}
+
+# 使用 op_type 属性，强制执行某种操作
+PUT tehero_index/_doc/1?op_type=create
+{
+     "name": "Te Hero3"
+}
+注意：op_type=create强制执行时，若id已存在，ES会报“version_conflict_engine_exception”。
+op_type 属性在实践中同步数据时是有用的，后面讲解数据库与ES的数据同步问题时，TeHero再为大家详细讲解。
+```
+
+> 我们查询数据，看下效果：GET /tehero_index/_doc/_search
+
+```json
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 2,
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "1",
+        "_score": 1,
+        "_source": {
+          "name": "Te Hero"
+        }
+      },
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "P7-FCHIBJxE1TMY0WNGN",
+        "_score": 1,
+        "_source": {
+          "name": "Te Hero2"
+        }
+      }
+    ]
+  }
+}
+```
+
+## 2.查询文档
+
+### 1.根据id获取单个数据
+
+```http
+GET /tehero_index/_doc/1
+```
+
+```json
+{
+  "_index": "tehero_index",
+  "_type": "_doc",
+  "_id": "1",
+  "_version": 5,
+  "found": true,
+  "_source": {
+    "name": "Te Hero-update",
+    "age": 18
+  }
+}
+```
+
+###  2.获取索引下的所有数据
+
+```http
+GET /tehero_index/_doc/_search
+```
+
+```json
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 3,
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "P7-FCHIBJxE1TMY0WNGN",
+        "_score": 1,
+        "_source": {
+          "name": "Te Hero2"
+        }
+      },
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "_update",
+        "_score": 1,
+        "_source": {
+          "name": "Te Hero3"
+        }
+      },
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "1",
+        "_score": 1,
+        "_source": {
+          "name": "Te Hero-update",
+          "age": 18
+        }
+      }
+    ]
+  }
+}
+```
+
+### 3.条件查询
+
+这里只简单展示一下，查询是我们最常用的。所以ES提供了功能更强大的条件查询，后面会对这部分进行详细介绍。
+
+```json
+GET /tehero_index/_doc/_search
+{
+  "query": {
+    "match": {
+      "name": "2"
+    }
+  }
+}
+```
+
+```json
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 1,
+    "max_score": 0.9808292,
+    "hits": [
+      {
+        "_index": "tehero_index",
+        "_type": "_doc",
+        "_id": "P7-FCHIBJxE1TMY0WNGN",
+        "_score": 0.9808292,
+        "_source": {
+          "name": "Te Hero2"
+        }
+      }
+    ]
+  }
+}
+```
+
+## 3.更新文档
+
+```json
+# 根据id，修改单条数据
+（ps：修改语句和新增语句相同，可以理解为根据ID，存在则更新；不存在则新增）
+PUT /tehero_index/_doc/1?pretty
+{
+  "name": "Te Hero-update"
+}
+
+# 根据查询条件id=10，修改name="更新后的name"
+（版本冲突而不会导致_update_by_query 中止）
+POST tehero_index/_update_by_query
+{
+  "script": {
+    "source": "ctx._source.name = params.name",
+    "lang": "painless",
+    "params":{
+      "name":"更新后的name"
+    }
+  },
+  "query": {
+    "term": {
+      "id": "10"
+    }
+  }
+}
+```
+
+> 关于文档的更新，Update By Query API，对于该API的使用，TeHero将其归类为进阶知识，后续章节将为大家更深入的讲解。
+
+## 4.删除文档
+
+```json
+# 1、根据id，删除单个数据
+DELETE /tehero_index/_doc/1
+
+# 2、delete by query
+POST tehero_index/_delete_by_query
+{
+  "query": { 
+    "match": {
+     "name": "2"
+    }
+  }
+}
+```
+
+# 三、批量操作 Bulk API
+
+```json
+# 批量操作
+POST _bulk
+{ "index" : { "_index" : "tehero_test1", "_type" : "_doc", "_id" : "1" } }
+{ "this_is_field1" : "this_is_index_value" }
+{ "delete" : { "_index" : "tehero_test1", "_type" : "_doc", "_id" : "2" } }
+{ "create" : { "_index" : "tehero_test1", "_type" : "_doc", "_id" : "3" } }
+{ "this_is_field3" : "this_is_create_value" }
+{ "update" : {"_id" : "1", "_type" : "_doc", "_index" : "tehero_test1"} }
+{ "doc" : {"this_is_field2" : "this_is_update_value"} }
+
+```
+
+> 注：POST _bulk 都做了哪些操作呢？
+> 1、若索引“tehero_test1”不存在，则创建一个名为“tehero_test1”的 index，同时若id = 1 的文档存在，则更新；不存在则插入一条 id=1 的文档；
+> 2、删除 id=2 的文档；
+> 3、插入 id=3 的文档；若文档已存在，则报异常；
+> 4、更新 id = 1 的文档。
+
+```json
+# 查询所有数据
+GET /tehero_test1/_doc/_search
+结果：
+{
+  "took": 33,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 2,
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "tehero_test1",
+        "_type": "_doc",
+        "_id": "1",
+        "_score": 1,
+        "_source": {
+          "this_is_field1": "this_is_index_value",
+          "this_is_field2": "this_is_update_value"
+        }
+      },
+      {
+        "_index": "tehero_test1",
+        "_type": "_doc",
+        "_id": "3",
+        "_score": 1,
+        "_source": {
+          "this_is_field3": "this_is_create_value"
+        }
+      }
+    ]
+  }
+}
+```
+
+ps：**批量操作在实践中使用是比较多的，因为减少了IO，提高了效率！**

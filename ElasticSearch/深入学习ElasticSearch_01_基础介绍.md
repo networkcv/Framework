@@ -1,5 +1,3 @@
-
-
 本篇我们简单介绍一下ES中的基本概念，以及它与我们所熟知的MySQL有什么关联。
 
 ## 1、ES 简介
@@ -50,7 +48,7 @@ ES将数据存储于一个或多个索引中，索引是具有类似特性的文
 
 类型是索引内部的逻辑分区(category/partition)，然而其意义完全取决于用户需求。因此，一个索引内部可定义一个或多个类型(type)。一般来说，类型就是为那些拥有相同的域的文档做的预定义。类比传统的关系型数据库领域来说，**类型相当于“表”**。
 
-**特别注意的是，**根据官网信息：在Elasticsearch 6.0.0或更高版本中创建的索引**只能包含一个映射类型**。在5.x中创建的具有多种映射类型的索引将继续像在Elasticsearch 6.x中一样工作。**类型将在Elasticsearch 7.0.0中的API中弃用，并在8.0.0中完全删除。**
+**特别注意的是，**根据官网信息：在Elasticsearch 6.0.0或更高版本中创建的索引**只能包含一个映射类型**。在5.x中创建的具有多种映射类型的索引将继续像在Elasticsearch 6.x中一样工作。**类型将在Elasticsearch 7.0.0中的API中弃用，并在8.0.0中完全删除，本系列教程使用的是ElasticSearch的版本是6.8.11对应的Kibana和IK分词器的版本也和ES一样。**
 
 **3）文档（Document）**
 
@@ -74,8 +72,6 @@ ES将数据存储于一个或多个索引中，索引是具有类似特性的文
 
 ![img](https://pic4.zhimg.com/80/v2-60e13437fac9b43c13fc2f33a8de817b_1440w.jpg)
 
-![es-index-type-mapping-document-field](https://github.com/doocs/advanced-java/raw/master/docs/high-concurrency/images/es-index-type-mapping-document-field.png)
-
 ## 4、ES的安装
 
 1. 使用 Homebrew 安装 ElasticSearch
@@ -90,5 +86,19 @@ ES将数据存储于一个或多个索引中，索引是具有类似特性的文
 
    ![image-20201102170625953](img/深入学习ElasticSearch_01_基础介绍/image-20201102170625953.png)
 
+3. Kibana的安装
 
+4. IK分词器的安装
 
+5. 环境变量的配置
+
+   ~/.bash_profile 配置环境变量可以快捷启动
+
+   ```shell
+   # Kibana_HOME
+   KIBANA_HOME=/usr/local/Cellar/kibana@6/6.8.11
+   export KIBANA
+   export PATH=$PATH:/usr/local/Cellar/kibana@6/6.8.11/bin
+   ```
+
+   source ~/.bash_profile  刷新配置文件重新加载

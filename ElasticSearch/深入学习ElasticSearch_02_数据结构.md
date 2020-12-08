@@ -192,51 +192,21 @@ GET /_analyze
     }
   ]
 }
-
-# 新增 字段类型 keyword
-PUT toherotest/_mapping/_doc 
-{
-  "properties": {
-    "field2": {
-      "type": "keyword"
-    }
-  }
-}
-# 新增数据
-PUT /toherotest/_doc/12
-{
-  "field2":"中国我爱你"
-}
-# 查询
-GET /toherotest/_doc/_search
-{
-  "query": {
-    "term": {
-      "field2": {
-        "value": "中国我爱你"
-      }
-    }
-  }
-}
 ```
-
-![img](https://pic2.zhimg.com/80/v2-c1061263e503bd03f2a90813ff922e89_720w.jpg)
 
 可以发现，类型为keyword，**通过term是可以查询到，说明ES对keyword是没有分词的。**
 
-## 2、时间类型 —— 可规定格式
+## 2、时间类型
 
-对于date类型，和mysql的几乎一样，唯一的注意点就是，**储存的格式，ES是可以控制的**。
+对于date类型，和mysql的几乎一样，唯一的注意点就是，**储存的格式，ES是可以控制的。并且可规定格式**
 
 ```text
 PUT my_index
 {
   "mappings": {
-    "_doc": {
       "properties": {
         "date": {
           "type": "date" 
-        }
       }
     }
   }
