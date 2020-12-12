@@ -332,7 +332,7 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 
 ## Index 文档
 
-![image-20201208001325110](img/ElasticSearch核心技术与实践一/image-20201208001325110.png)
+](img/ElasticSearch核心技术与实践一/image-20201208001325110.png)
 
 ## Update 文档
 
@@ -378,3 +378,90 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 
 ![image-20201208004714776](img/ElasticSearch核心技术与实践一/image-20201208004714776.png)
 
+# Analysis 与 Analyzer
+
+- Analysis 文本分析是把全文本转换一系列单词（term/token）的过程，也叫做分词
+- Analysis 是通过 Analyzer 来实现的，可以使用Elasticsearch 内置的英文分词器，也可以使用对中文有更好支持的中文分词器
+- 除了在数据写入时转换词条，匹配Query 语句的时候也需要用相同的分词器对查询语句进行分析
+
+![image-20201209003723096](img/ElasticSearch核心技术与实践一/image-20201209003723096.png)
+
+## Analyzer 的组成
+
+分词器是专门处理分词的组件，Analyzer 由三部分组成
+
+- Character Filters : 针对原始文本处理，例如去除html
+- Tokenizer : 按照规则切分为单词
+- Token Filter : 将切分的单词进行加工，小写，删除 stopwords，增加同义词
+- ![image-20201209004157180](img/ElasticSearch核心技术与实践一/image-20201209004157180.png) 
+
+## Elasticsearch 的内置分词器
+
+![image-20201209004412582](img/ElasticSearch核心技术与实践一/image-20201209004412582.png)
+
+## 使用 _analyzer API
+
+- 直接使用 Analyzer 进行测试
+- 指定索引的字段进行测试
+- 自定义分词器组合进行测试
+
+![image-20201209004750792](img/ElasticSearch核心技术与实践一/image-20201209004750792.png)
+
+## Standard Analyzer
+
+![image-20201209004934582](img/ElasticSearch核心技术与实践一/image-20201209004934582.png)
+
+## Simple Analyzer
+
+![image-20201209005049149](img/ElasticSearch核心技术与实践一/image-20201209005049149.png)
+
+## Keyword Analyzer
+
+![image-20201209005308218](img/ElasticSearch核心技术与实践一/image-20201209005308218.png)
+
+## 其他分词器
+
+- #Simple Analyzer – 按照非字母切分（符号被过滤），小写处理
+- #Stop Analyzer – 小写处理，停用词过滤（the，a，is）
+- #Whitespace Analyzer – 按照空格切分，不转小写
+- #Keyword Analyzer – 不分词，直接将输入当作输出
+- #Patter Analyzer – 正则表达式，默认 \W+ (非字符分隔)
+- #Language – 提供了30多种常见语言的分词器
+
+# Search API
+
+- URI Search
+  - 在URL 中使用查询参数
+- Request Body Search
+  - 使用Elasticsearch 提供的，基于JSON 格式的更加完备的 Query Domain Specific Language（DSL）
+
+## 指定查询的索引
+
+![image-20201209010305922](img/ElasticSearch核心技术与实践一/image-20201209010305922.png)
+
+## URI 查询 
+
+- 使用“q”，指定查询字符串
+- “query string syntax”，KV键值对
+
+![image-20201209010534801](img/ElasticSearch核心技术与实践一/image-20201209010534801.png)
+
+## Request Body 查询
+
+![image-20201209010559944](img/ElasticSearch核心技术与实践一/image-20201209010559944.png)
+
+## 查询 Response
+
+![image-20201209010710631](img/ElasticSearch核心技术与实践一/image-20201209010710631.png)
+
+## 搜索的相关性 Relevance
+
+![image-20201209010746850](img/ElasticSearch核心技术与实践一/image-20201209010746850.png)
+
+## URI Search 通过 URI query 实现搜索
+
+![image-20201209011204896](img/ElasticSearch核心技术与实践一/image-20201209011204896.png)
+
+## Query String Syntax
+
+![image-20201210085736817](img/ElasticSearch核心技术与实践一/image-20201210085736817.png)
