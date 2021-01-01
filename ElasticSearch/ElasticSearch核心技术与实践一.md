@@ -428,7 +428,7 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 - #Patter Analyzer – 正则表达式，默认 \W+ (非字符分隔)
 - #Language – 提供了30多种常见语言的分词器
 
-# Search API
+# Search
 
 - URI Search
   - 在URL 中使用查询参数
@@ -439,16 +439,45 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 
 ![image-20201209010305922](img/ElasticSearch核心技术与实践一/image-20201209010305922.png)
 
-## URI 查询 
+## Request Body Search
 
-- 使用“q”，指定查询字符串
-- “query string syntax”，KV键值对
+- 将查询语句通过HTTP Request Body 发送给 Elasticsearch
 
-![image-20201209010534801](img/ElasticSearch核心技术与实践一/image-20201209010534801.png)
+- Query DSL
 
-## Request Body 查询
+  ![image-20201212143428009](img/ElasticSearch核心技术与实践一/image-20201212143428009.png)
 
-![image-20201209010559944](img/ElasticSearch核心技术与实践一/image-20201209010559944.png)
+### 分页
+
+- from 从0 开始，默认返回10个结果
+- 获取靠后的翻页成本较高
+
+![image-20201212143902752](img/ElasticSearch核心技术与实践一/image-20201212143902752.png)
+
+### 排序
+
+- 最好在 数字型 与日期型 字段上排序
+
+![image-20201212144015010](img/ElasticSearch核心技术与实践一/image-20201212144015010.png)
+
+### _source filtering
+
+- 如果有_source 没有设置，那就只返回匹配的文档的元数据，可以通过 _source 来过滤出你关注的字段
+- _source 支持使用通配符 _source[“name*,desc*”]
+
+![image-20201212144223823](img/ElasticSearch核心技术与实践一/image-20201212144223823.png)
+
+### 脚本字段
+
+用例: 订单中有不同的汇率，需要结合汇率对 订单价格进行排序
+
+![image-20201212144722986](img/ElasticSearch核心技术与实践一/image-20201212144722986.png)
+
+### 使用查询表达式——X！！
+
+- Term 之间的关系是 OR，所以会查询出包括Last 和 Christmas的数据
+
+![image-20201212145237577](img/ElasticSearch核心技术与实践一/image-20201212145237577.png)
 
 ## 查询 Response
 
@@ -458,10 +487,283 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 
 ![image-20201209010746850](img/ElasticSearch核心技术与实践一/image-20201209010746850.png)
 
-## URI Search 通过 URI query 实现搜索
+# Mapping
 
-![image-20201209011204896](img/ElasticSearch核心技术与实践一/image-20201209011204896.png)
+##  Mapping的定义
 
-## Query String Syntax
+- Mapping 类似于数据库中的 schema 的定义，作用如下:
+  - 定义索引中的字段的名称
+  - 定义字段的数据类型，例如字符串，数字，布尔
+  - 字段，倒排索引的相关配置（Analyzed or Not Analyzed，Analyzer）
+- Mapping 会把 JSON 文档映射成 Lucene 所需要的扁平格式
+- 一个 Mapping 属于一个索引的 Type
+  - 每个文档都属于一个 Type
+  - 一个 Type 有一个 Mapping 定义
+  - 7.0 开始，不需要再 Mapping定义中指定 type信息
 
-![image-20201210085736817](img/ElasticSearch核心技术与实践一/image-20201210085736817.png)
+## 字段的数据类型
+
+- 简单类型
+  - Text / Keyword
+  - Date
+  - Integer / Floating
+  - Boolean
+  - IPv4 / IPv6
+- 复杂类型 - 对象和嵌套对象
+  - 对象类型 / 嵌套类型
+- 特殊类型
+  - geo_point & geo_shape / percolator
+
+## Dynamic Mapping
+
+- 在写入文档时候，如果索引不存在，会自动创建索引
+- Dynamic Mapping 的机制，使得我们无需手动定义Mappings，Elasticsearch 会自动根据文档信息，推算出字段的类型
+- 但是有时候会推算的不对，例如地理位置信息
+- 当类型如果设置不对时，会导致一些功能无法正常运行，例如 Range查询
+
+![image-20201212172350891](img/ElasticSearch核心技术与实践一/image-20201212172350891.png)
+
+## 类型的自动识别
+
+![image-20201212205207088](img/ElasticSearch核心技术与实践一/image-20201212205207088.png)
+
+## 能否更改Mapping的字段类型
+
+![image-20201212205538517](img/ElasticSearch核心技术与实践一/image-20201212205538517.png)
+
+## 控制 Dynamic Mappings
+
+![image-20201212205618513](img/ElasticSearch核心技术与实践一/image-20201212205618513.png)
+
+- 当 dynamic 被设置成false时候，存在新增字段的数据写入，该文档可以被索引，但新增字段会被丢弃，这里的丢弃是指无法被索引，但是还是会存在于source中
+- 当设置为 strict 模式时候，数据写入直接出错
+
+## 控制当前字段是否被索引
+
+- Index : 控制当前字段是否被索引，默认为true，如果设置为false，该字段不可被搜索，这样就可以节省很多物理磁盘的空间，这样该字段的倒排索引就不会被创建了。
+
+![image-20201212211315159](img/ElasticSearch核心技术与实践一/image-20201212211315159.png)
+
+四种不同级别的 Index Options 配置，可以控制倒排索引记录的内容:
+
+- docs —— 记录 doc id
+- freqs —— 记录 doc id 和term frequuencies
+- poisitions —— 记录 doc id / term frequuencies / term position
+- offsets  —— 记录 doc id / term frequuencies / term position /character offects
+
+Text 类型默认记录 postions，其他默认为 docs
+
+记录内容越多，中庸存储空间越大
+
+![image-20201212211652197](img/ElasticSearch核心技术与实践一/image-20201212211652197.png)
+
+
+
+## null_value
+
+用来对Null值进行搜索
+
+![image-20201212211827882](img/ElasticSearch核心技术与实践一/image-20201212211827882.png)
+
+## copy_to 设置
+
+![image-20201212211954407](img/ElasticSearch核心技术与实践一/image-20201212211954407.png)
+
+## 数组类型
+
+- Elasticsearch 中不提供专门的数组类型，但是任何字段，都可以包含多个相同类型的数值
+
+![image-20201212212127839](img/ElasticSearch核心技术与实践一/image-20201212212127839.png)
+
+## 多字段类型
+
+![image-20201212215705537](img/ElasticSearch核心技术与实践一/image-20201212215705537.png)
+
+## Exact Vlaues（精确值） & Full Text（全文本）
+
+![image-20201212215909578](img/ElasticSearch核心技术与实践一/image-20201212215909578.png)
+
+## Exact Values 不需要被分词
+
+![image-20201212220112665](img/ElasticSearch核心技术与实践一/image-20201212220112665.png)
+
+## 自定义分词
+
+- 当 Elasticsearch 自带的分词器无法满足时，可以自定义分词器，通过自组合不同的组件实现
+  - Character Filter
+  - Tokenizer
+  - Token Filter
+
+## Character Filter
+
+- 在 Tokenizer 之前对文本进行处理，例如增加删除及替换字符，可以配置多个 Character Filter，会影响 Tokenizer 的 position 和 offset 信息
+- ES 默认提供的 Character Filters
+  - HTML strip 去除html标签
+  - Mapping 字符串替换
+  - Pattern replace 正则匹配替换
+
+## Tokenizer
+
+- 将原始的文本按照一定的规则，切分为词（token 或 term）
+- Elasticsearch 内置的 Tokenizers
+  - whitespace / standard / pattern / keyword / path hierarchy
+- 可以用Java 开发插件，实现自己的 Tokenizer
+
+## Token Filter
+
+- 将 Tokenizer 输出的单词（term）进行增加，修改，删除
+- 自带的 Token Filters
+  - Lowercase （转小写）/ stop （去除停顿词）/  synonym（添加近义词）
+- 
+
+## 自定义分词案例
+
+### 使用自定义的Character Filter去除HTML标签
+
+```json
+POST _analyze
+{
+  "tokenizer":"keyword",
+  "char_filter":["html_strip"],
+  "text": "<b>hello world</b>"
+}
+```
+
+### 使用自定义的Character Filter进行字符替换
+
+```json
+POST _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+      {
+        "type" : "mapping",
+        "mappings" : [ "- => _"]
+      }
+    ],
+  "text": "123-456, I-test! test-990 650-555-1234"
+}
+```
+
+### 使用自定义的Character Filter进行正则表达式过滤
+
+```json
+GET _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+      {
+        "type" : "pattern_replace",
+        "pattern" : "http://(.*)",
+        "replacement" : "$1"
+      }
+    ],
+    "text" : "http://www.elastic.co"
+}
+```
+
+### 在Token Filter中设置 lowercase与stop
+
+```json
+GET _analyze
+{
+  "tokenizer": "whitespace",
+  "filter": ["lowercase","stop"],
+  "text": ["The gilrs in China are playing this game!"]
+}
+```
+
+## Index Template
+
+当你需要根据某种规则来自动创建索引的时候，Index Template就会派上用场，比如对每天的日志文件创建索引，这样可以更好的管理日志。Index Templates 帮助你设定 Mappings 和 Seettings，并按照一定的规则，自动匹配到新创建的索引之上。
+
+- 模版仅在一个索引被创建时，才会产生作用。修改模版不会影响已创建的索引
+- 你可以设定doge索引模版，这些设置会被“merge”在一起
+- 也可以指定“order”的数值，控制“merging”的过程
+
+**两个Index Templates示例**
+
+![image-20210101214156501](img/ElasticSearch核心技术与实践一/image-20210101214156501.png)
+
+### Index Template 的工作方式
+
+当一个索引被创建时：
+
+- 应用Elastcsearch 默认的 settings 和mappings
+- 应用order 数值低的Index Template 中的设定
+- 应用order 高地Index Template 中的设定，之前的设定会被覆盖
+- 应用创建索引时，用户所指定的 settings 和 mappings，并覆盖之前的模板中的设定
+
+## Dynamic Template
+
+设置该项可以提高数据动态推断时的精准度（开启根据文档动态创建所以的前提下），根据ES 识别的的数据类型，结合字段名称，来动态设定字段类型
+
+- 所有的字符串类型都设定为Keyword，或者关闭Keyword字段
+- is开头的字段都设置成boolean
+- long_开头的都设置为long型
+
+![image-20210101215220481](img/ElasticSearch核心技术与实践一/image-20210101215220481.png)  
+
+## 聚合（Aggregation）
+
+- ES的报表功能就是基于此项
+- ElasticSearch 除搜索以外，提供的针对ES数据进行统计分析的功能
+  - 实时性高
+  - Hadoop（T+1）
+- 通过聚合，我们会得到一个数据的概览，是分析和总结全套的数据，而不是寻找单个文档
+- 高性能，只需要一条语句，就可以从ElasticSearch得到分析结果，无需在客户端自己实现分析逻辑 
+
+### Kibana 可视化报表——聚合分析
+
+![image-20210101215951937](img/ElasticSearch核心技术与实践一/image-20210101215951937.png)
+
+### 集合的分类
+
+![image-20210101220036788](img/ElasticSearch核心技术与实践一/image-20210101220036788.png)
+
+### Bucket & Metric
+
+![image-20210101220124469](img/ElasticSearch核心技术与实践一/image-20210101220124469.png)
+
+### Bucket
+
+![image-20210101220144301](img/ElasticSearch核心技术与实践一/image-20210101220144301.png)
+
+### Metric
+
+![image-20210101220231959](img/ElasticSearch核心技术与实践一/image-20210101220231959.png)
+
+### 一个Bucket的例子
+
+![image-20210101220346517](img/ElasticSearch核心技术与实践一/image-20210101220346517.png) 
+
+### 加入Mertics
+
+![image-20210101220430813](img/ElasticSearch核心技术与实践一/image-20210101220430813.png)
+
+### 嵌套
+
+查看航班目的地的统计信息，平均票价，以及天气状况
+
+![image-20210101220924098](img/ElasticSearch核心技术与实践一/image-20210101220924098.png)
+
+
+
+# 总结
+
+## 基础概念
+
+![image-20210101221702806](img/ElasticSearch核心技术与实践一/image-20210101221702806.png)
+
+![image-20210101221719842](img/ElasticSearch核心技术与实践一/image-20210101221719842.png)
+
+## 搜索和聚合
+
+![image-20210101221823091](img/ElasticSearch核心技术与实践一/image-20210101221823091.png)
+
+##  文档的CRUD和Index Mapping
+
+![image-20210101222019455](img/ElasticSearch核心技术与实践一/image-20210101222019455.png)
+
+ 
+
