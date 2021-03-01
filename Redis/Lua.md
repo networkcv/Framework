@@ -46,6 +46,8 @@ Lua 5.2.3  Copyright (C) 1994-2013 Lua.org, PUC-Rio
 
 [lua基本语法学习链接](https://www.runoob.com/lua/lua-basic-syntax.html)
 
+[lua book](https://github.com/52fhy/lua-book)
+
 
 
 ## 4.cjson的安装
