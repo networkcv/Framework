@@ -1,4 +1,4 @@
-[go入门指南](http://www.topgoer.com/)
+[ go入门指南](http://www.topgoer.com/)
 
 # 一、快速入门
 
@@ -505,9 +505,83 @@ func TestObjectFunc(t *testing.T) {
 - type IntConvertionFunc func(n int) int
 - type MyPoint int 
 
+### 空接口与断言
+
+- 空接口可以表示任何类型，类似于 Java 中的 Object
+
+- 通过断言来将空接口转换为制定类型
+
+  ```go
+  v,ok :=p.(int) //ok=true 时转换成功
+  ```
+
+  ```go
+  func doSomething(p interface{}) {
+  	//if i, ok := p.(int); ok {
+  	//	println("int:", i)
+  	//}
+  	//if i, ok := p.(string); ok {
+  	//	println("string:", i)
+  	//}
+  	switch v := p.(type) {
+  	case int:
+  		println("int:", v)
+  	case string:
+  		println("string:", v)
+  	default:
+  		println("unKnow")
+  	}
+  }
+  
+  func TestEmptyInterface(t *testing.T) {
+  	doSomething(10)
+  	doSomething("10")
+  	doSomething(10.1)
+  	/*
+  		int: 10
+  		string: 10
+  		unKnow
+  	*/
+  }
+  ```
+
+### Go 接口的最佳实践
+
+- 倾向于使用小的接口定义，很多接口只包含一个方法
+
+  ```go
+  type Reader interface{
+    Read(p [] byte)(n int,err error)
+  }
+  type Writer interface{
+    Write(p [] byte)(n int,err error)
+  }
+  ```
+
+- 较大的接口的定义，可以由多个小接口定义组合而成
+
+  ```go
+  type ReadWriter interface{
+    Reader
+    Writer
+  }
+  ```
+
+- 只依赖于必要功能的最小接口
+
+  ```go
+  func StoreData(reader Reader) error{
+    ...
+  }
+  ```
+
+
+
 ## 继承
 
-Go 不支持继承，不过可以在结构体中引用其他结构体来调用对方方法
+Go 不支持继承，不能用父类引用指向子类对象。
+
+不过可以在结构体中引用其他结构体来复用方法。
 
 ```go
 type Pet struct {
@@ -522,7 +596,363 @@ func (p *Pet) SpeakTo(name string) {
 }
 
 type Dog struct {
-	 Pet
+	Pet
+}
+
+func (d *Dog) Speak() {
+	println("Wang!")
+}
+
+func TestObjectExtend(t *testing.T) {
+	dog := Dog{}
+	dog.SpeakTo("1")
+	dog.Speak()
+	/*
+		...
+		1
+		Wang!
+	*/
+}
+```
+
+## 多态
+
+多态是可以支持的。
+
+```go
+type Animal interface {
+	Speak()
+}
+
+type Cat struct {
+}
+
+func (c *Cat) Speak() {
+	println("喵!")
+}
+
+func AnimalSpeak(animal Animal) {
+	animal.Speak()
+	fmt.Printf("%T \n", animal)
+}
+
+func TestObjectExtendFunc(t *testing.T) {
+	cat := new(Cat)
+	//c := Cat{}
+	//AnimalSpeak(c)	//只能传 *Cat 指针类型 
+	AnimalSpeak(cat)
+}
+```
+
+# 八、Go的错误机制
+
+1. 没有异常机制
+
+2. error  类型实现了 error 接口
+
+   ```go
+   type error interface{
+     Error() string
+   }
+   ```
+
+3. 可以通过 errors.New 来快速创建错误实例
+
+   ```go
+   errors.New("...")
+   ```
+
+## panic 与 os.Exit
+
+- panic 用于不可恢复的错误
+- panic 推出前会执行 defer 指定的内容
+- os.Exit 退出时不会调用 defer 指定的函数
+- os.Exit 退出时不会输出当前调用栈信息
+
+## recover
+
+```go
+defer func(){
+  if err := recover(); err !=nil{
+    //恢复错误
+  }
+}
+```
+
+# 九、包 
+
+大写才能被包外访问
+
+## Init 方法
+
+- 在 main 被执行前，所有依赖的 package 的init 方法都会被执行
+- 不同包的 init 函数按照包导入的依赖关系决定执行顺序
+- 每个包可以有多个 init 函数
+- 包的每个源文件也可以有多个 init 函数，会按定义顺序执行
+
+## package
+
+1. 通过 go get 来获取远程依赖， get -u 强制从网络更新远程依赖
+2. go get 对于代码在 Github 上的组织形式，直接以代码路径开始，不要有 src
+
+## 依赖管理
+
+1.5之后，提供了vendor 这种解决方案，来解决无法使用指定版本包的问题
+
+查找依赖包路径的顺序如下：
+
+1. 当前包下的 vendor 目录
+2. 向上级目录查找，直到找到 src 下的 vendor 目录
+3. 在 GOPATH 下面查找依赖包
+4. 在 GOROOT 目录下查找
+
+# 十、并发
+
+## Thrad 与 Groutine
+
+### 1.创建时默认的 stack 的大小
+
+- JDK5 以后 Java Thread stack 默认为1M
+
+- Groutine 的 stack 初始化大小为2k
+
+### 2.和 KSE（kernel Space Entity，系统线程）的对应关系
+
+- Java Thread 是 1：1
+
+- Groutine 是 M：N
+
+  <img src="https://pic.networkcv.top/2021/03/15/image-20210315203941615.png" alt="image-20210315203941615" style="zoom:50%;" />
+
+```go
+func TestGroutine(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			println(i)
+		}(i)
+	}
+	time.Sleep(time.Second*2)
+}
+```
+
+## 共享内存并发机制
+
+### Mutex 和 RWLock
+
+这两者位于 package sync 下
+
+线程不安全的计数器
+
+```go
+func TestCounterThreadUnSafe(t *testing.T){
+	count := 0
+	for i:=0;i<5000;i++ {
+		go func() {
+			count++
+		}()
+	}
+	t.Log(count)
+	/*
+	  go_10_test.go:24: 4586
+	*/
+}
+```
+
+线程安全的计数器
+
+```go
+func TestCounterThreadSafe(t *testing.T){
+	var mut sync.Mutex
+	count := 0
+	for i:=0;i<5000;i++ {
+		go func() {
+			defer func() {
+				mut.Unlock()
+			}()
+			mut.Lock()
+			count++
+		}()
+	}
+	time.Sleep(time.Second*1) //这里需要手动休眠主线程，等待协程执行完毕
+	t.Log(count)
+	/*
+	   go_10_test.go:45: 5000
+	*/
+}
+```
+
+### WaitGroup
+
+同样位于 sync 包下，类似于 CountDownLatch，不用手动指定主线程的等待时间
+
+```go
+func TestCounterWaitGroup(t *testing.T) {
+	var wg sync.WaitGroup
+	var mut sync.Mutex
+	count := 0
+	for i := 0; i < 5000; i++ {
+		wg.Add(1)
+		go func() {
+			defer func() {
+				wg.Done()
+				mut.Unlock()
+			}()
+			mut.Lock()
+			count++
+		}()
+	}
+	wg.Wait()
+	t.Log(count)
+}
+```
+
+## CSP
+
+### <img src="https://pic.networkcv.top/2021/03/15/image-20210315211008813.png" alt="image-20210315211008813" style="zoom:50%;" />
+
+```go
+
+func service() string {
+	time.Sleep(time.Millisecond * 500)
+	return "service() ok"
+}
+
+func otherWork() string {
+	time.Sleep(time.Millisecond * 1000)
+	return "otherWork() ok"
+}
+
+func TestChannel(t *testing.T) {
+	result := service()
+	otherWork()
+	t.Log(result)
+}
+
+func AsyncService() chan string{
+	//retChan := make(chan string) //这样声明的channel是阻塞的，只有等到取出chan中的值，协程才释放
+  retChan := make(chan string,1) //buffedChan，非阻塞的，service() 执行完协程立刻释放
+	//var retChan string	//这里只是需要可以返回的地址，方便后边到这个地址取返回值
+	go func() {
+		res := service()
+		println("returned result")
+		retChan <- res
+    println("service exist")
+		//retChan = res
+	}()
+	return retChan
+}
+
+func TestAsyncChannel(t *testing.T) {
+	result := AsyncService()
+	otherWork()
+	t.Log(<-result)
+}
+```
+
+## 多路选择和超时控制
+
+### 多渠道的选择
+
+```go
+select {
+  case ret:= <-retCh1:
+ 		 t.Logf("result %s",ret)
+  case ret:= <-retCh2:
+ 		 t.Logf("result %s",ret)
+  default:
+  t.Error("NO one returned")
+}
+```
+
+### 超时控制
+
+```go
+select {
+  case ret:= <-retCh1:
+ 		 t.Logf("result %s",ret)
+  case <-time.After(time.Second * 1):
+	  t.Error("time out")
+}
+```
+
+## channel 的关闭和广播
+
+### channel 的关闭
+
+- 向关闭的 channel 发送数据，会导致 panic
+- v，ok <- channerl   ok 为 bool 值，true 表示正常接受，false 表示通道关闭
+- 所有的 channel 接受者都会在 channel 关闭时，立刻从阻塞等待中返回且 ok 值为 fasle。这个广播机制常被用来向多个订阅者同时发送信号。
+
+## Context 与任务的取消
+
+### Context
+
+- 根 Context : 通过 context.Background（）创建
+
+- 子 Context : context.WithCancel（parentContext）创建
+
+  ctx，cancel := context.WithCancel（context.Background()）
+
+- 当前 Context     被取消时，基于它的子 context 都会被取消
+
+- 接收取消通知 <- ctx.Done()
+
+```go
+func isCancelled(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
+	}
+}
+
+func TestCancel(t *testing.T) {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	for i := 0; i < 5; i++ {
+		go func(i int, ctx context.Context) {
+			for {
+				if isCancelled(ctx) {
+					break
+				}
+				time.Sleep(time.Millisecond * 5)
+			}
+			println(i, "Cancelled")
+		}(i, ctx)
+	}
+	cancelFunc()
+	time.Sleep(time.Millisecond * 5)
+}
+```
+
+## 只执行一次
+
+```go
+type Singleton struct{
+}
+
+var singleInstance *Singleton
+var once sync.Once
+
+func GetSingletonObj() *Singleton{
+	once.Do(func(){
+		println("create obj")
+		singleInstance = new(Singleton)
+	})
+	return singleInstance
+}
+
+func TestGetSingletonObj(t *testing.T){
+	var wg sync.WaitGroup
+	for i:=0 ;i<10;i++{
+		wg.Add(1)
+		go func(){
+			obj := GetSingletonObj()
+			fmt.Printf("%d\n",unsafe.Pointer(obj))
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 ```
 
