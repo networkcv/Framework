@@ -956,3 +956,235 @@ func TestGetSingletonObj(t *testing.T){
 }
 ```
 
+## 任意任务完成时返回
+
+```go
+func runTask(id int) string {
+	time.Sleep(10 * time.Millisecond)
+	return fmt.Sprintf("The result is from %d", id)
+}
+
+func FirstResponse() string {
+	numOfRunner := 10
+	ch := make(chan string) //这个channel不是bufferedChannel
+  //ch := make(chan string,numOfRunner) //bufferedChannel
+	for i := 0; i < numOfRunner; i++ {
+		go func(i int) {
+			ret := runTask(i)
+			ch <- ret
+		}(i)
+	}
+	return <-ch //在第一个往channerl中放入数据之前，监听channel的协程会阻塞在那里，直到channel中有数据存入 
+}
+
+func TestFirstResponse(t *testing.T) {
+	t.Log("before:", runtime.NumGoroutine())
+	t.Log(FirstResponse())
+	time.Sleep(1 * time.Second)
+	t.Log("after:", runtime.NumGoroutine())
+	/*
+	    go_10_test.go:179: before: 2	还有一个是main线程
+	    go_10_test.go:180: The result is from 3
+	    go_10_test.go:182: after: 11
+	    这里的11代表创建的10个协程都没有被关闭，因为没有消费者消费channel中的消息，所以生产者会阻塞，直到有消费者
+	    这里很容易造成系统资源泄漏。
+	 */
+}
+```
+
+## 所有任务都完成
+
+```go 
+func AllResponse() string {
+   numOfRunner := 5
+   ch := make(chan string)
+   //ch := make(chan string,numOfRunner)
+   for i := 0; i < numOfRunner; i++ {
+      go func(i int) {
+         ret := runTask(i)
+         ch <- ret
+      }(i)
+   }
+   result :=""
+   for i:=0;i<numOfRunner;i++ {
+      result += "\n"+<-ch
+   }
+   return result
+}
+
+func TestAllResponse(t *testing.T) {
+   t.Log("before:", runtime.NumGoroutine())
+   t.Log(AllResponse())
+   time.Sleep(1 * time.Second)
+   t.Log("after:", runtime.NumGoroutine())
+   /*
+      go_10_test.go:212: before: 2
+      go_10_test.go:213:
+          The result is from 4
+          The result is from 2
+          The result is from 1
+          The result is from 3
+          The result is from 0
+      go_10_test.go:215: after: 2
+   */
+}
+```
+
+## 对象池
+
+使用 buffered channel 实现对象池
+
+```go
+
+type ReusableObj struct {
+}
+type ObjPool struct {
+	bufChan chan *ReusableObj //用于缓存可重用对象
+}
+
+func NewObjPool(numOfObj int) *ObjPool {
+	objPool := ObjPool{}
+	objPool.bufChan = make(chan *ReusableObj, numOfObj)
+	for i := 0; i < numOfObj; i++ {
+		objPool.bufChan <- &ReusableObj{}
+	}
+	return &objPool
+}
+
+func (p *ObjPool) GetObj(timeout time.Duration) (*ReusableObj, error) {
+	select {
+	case res := <-p.bufChan:
+		return res, nil
+	case <-time.After(timeout): //超时控制
+		return nil, errors.New("time out")
+	}
+}
+
+func (p *ObjPool) ReleaseObj(obj *ReusableObj) error {
+	select {
+	case p.bufChan <- obj:
+		return nil
+	default:
+		return errors.New("overflow")
+	}
+}
+
+func TestObjPool(t *testing.T) {
+	pool := NewObjPool(10)
+	if err := pool.ReleaseObj(&ReusableObj{}); err != nil {
+		t.Error(err)
+	}
+	for i := 0; i < 11; i++ {
+		if v, err := pool.GetObj(time.Second * 1); err != nil {
+			t.Error(err)
+		} else {
+			t.Logf("%T", v)
+			if err := pool.ReleaseObj(v); err != nil {
+				t.Error(err)
+			}
+		}
+	}
+}
+```
+
+## sync.pool
+
+###  对象缓存
+
+<img src="https://pic.networkcv.top/2021/03/16/image-20210316222511290.png" alt="image-20210316222511290" style="zoom:50%;" />
+
+
+
+- 私有对象协程安全；共享池协程不安全，需要加锁访问
+- 先尝试从私有对象中获取
+- 私有对象不存在，尝试从当当前 Processor 的共享池获取
+- 如果当前 Processor 共享池也是空的，那么就尝试去其他 Processor 的共享池获取
+- 如果所有子池都是空的，最后就用同户指定的 New 函数产生一个新的对象返回
+
+### 对象的放回
+
+- 如果私有对象不存在则保存为私有对象
+- 如果私有对象存在，放入当前 Processor 子池的共享池中
+
+### sync.Pool 对象的生命周期
+
+- 每次 GC 会清除 sync.pool 缓存的对象
+- 对象的缓存有效期为下次 GC 之前
+
+```go
+func TestSyncPool(t *testing.T) {
+	pool := &sync.Pool{
+		New: func() interface{} {
+			fmt.Println("create a new object")
+			return 100
+		},
+	}
+
+	v := pool.Get().(int)
+	fmt.Println(v)
+	pool.Put(3)
+	runtime.GC() //GC 会清除sync.pool中缓存的对象
+	v1, _ := pool.Get().(int)
+	fmt.Println(v1)
+}
+```
+
+### sync.Pool 总结
+
+- 适合于通过复用，降低复杂对象的创建和 GC 代价
+- 协程安全，会有锁的开销 
+- 生命周期受 GC 影响，不适合做连接池，需要自己管理生命周期的资源池化
+
+# 十一、测试
+
+## 代码覆盖率 
+
+```go
+go test -v -cover
+```
+
+## 断言
+
+## batchmark
+
+性能测试
+
+```go
+func BenchmarkConcatStringByAdd(b &testing.B){
+  //与性能测试无关的代码
+  b.ResetTimer()
+  for i:=0;i<b.N;i++{
+    //测试代码
+  }
+  b.StopTime()
+  //与性能测试无关的代码
+}
+```
+
+```go
+go test -bench=. [-benchmem]
+```
+
+# 十二、反射
+
+## reflect.TypeOf 与 reflect.ValueOf
+
+- reflect.TypeOf（）  返回类型（reflect.Type）
+- reflect.ValueOf（） 返回值（reflect.Value）
+- 可以从 reflect.Value 获得类型
+- 通过 kind 来判断类型
+
+## 利用反射编写灵活的代码
+
+按名称访问结构的成员
+
+```go
+reflect.ValueOf(*e).FieldByName("Name")
+```
+
+按名称访问结构的方法
+
+```go
+Reflect.ValueOf(e).MethodByName("UpdateAge").Call([]reflect.Value{reflect.ValueOf(1)})
+```
+
