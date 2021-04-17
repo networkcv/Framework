@@ -340,6 +340,8 @@ func TestStringsFunc(t *testing.T) {
 
 # 六、函数
 
+## 函数特性
+
 1. 可以有多个返回值
 
 2. 所有参数都是值传递：slice，map，channel 会有传引用的错觉
@@ -369,26 +371,80 @@ func TestStringsFunc(t *testing.T) {
    }
    ```
 
-4. defer 函数 
+## 函数参数的传递方式
 
-   延时执行的函数，类似于 Java 中的 finally 语句块，可以用来执行释放资源或锁
+默认为值类型：基本数据类型、数组和结构体
 
-   ```go
-   func TestDeferFunc(t *testing.T) {
-   	defer func() {
-   		t.Log("clean")
-   	}()
-   	t.Log("do")
-   	panic("Fatal error")
-   	/**
-   	    go_test.go:162: do
-   	    go_test.go:160: clean
-   	--- FAIL: TestDeferFunc (0.00s)
-   	panic: Fatal error [recovered]
-   		panic: Fatal error
-   	*/
-   }
-   ```
+默认为引用类型：指针、slice切片、map、chan管道、interface
+
+```go
+func changNum(i int) {
+	i++
+}
+func changNumByAddress(i *int) {
+	*i++
+}
+func TestChangNum(t *testing.T) {
+	i := 1
+	changNum(i)
+	t.Log(i)
+	i2 := 1
+	changNumByAddress(&i2)
+	t.Log(i2)
+}
+```
+
+## defer 函数 
+
+延时执行的函数，类似于 Java 中的 finally 语句块，可以用来执行释放资源或锁，当执行到 defer 函数的时候，会将 defer 函数压入到独立的 defer 栈，等待方法执行完成后，再对 defer 栈进行出栈操作，先入后出的方式执行 defer 函数。
+
+在将 defer 语句压栈时，也会将相关的值拷贝。
+
+```go
+func TestDeferFunc(t *testing.T) {
+	defer func() {
+		t.Log("clean")
+	}()
+	t.Log("do")
+	panic("Fatal error")
+	/**
+	    go_test.go:162: do
+	    go_test.go:160: clean
+	--- FAIL: TestDeferFunc (0.00s)
+	panic: Fatal error [recovered]
+		panic: Fatal error
+	*/
+}
+```
+
+## 闭包
+
+闭包就是一个函数和与其相关的引用环境组合的一个整体（实体）
+
+```go
+func AddUpper() func(int) int {
+	n := 10
+	return func(i int) int {
+		n += i
+		return n
+	}
+}
+func TestClosePackage(t *testing.T) {
+	f := AddUpper()
+	t.Log(f(1))
+	t.Log(f(1))
+	t.Log(f(1))
+	/*
+	    go_10_test.go:301: 11
+	    go_10_test.go:302: 12
+	    go_10_test.go:303: 13
+	 */
+}
+```
+
+AddUpper 是一个函数，返回的数据类型是一个函数，这个函数引用到了外面的变量 n，因此这个匿名函数就和变量 n 形成了一个整体，构成闭包。 
+
+闭包的好处：闭包可以保留上次引用的某个值，传入一次就可以反复使用。
 
 # 七、面向对象
 
