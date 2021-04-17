@@ -1480,7 +1480,7 @@ public  void findByRegexp() throws IOException {
 }
 ```
 
-##### 6.4 深分页 scrol l
+##### 6.4 深分页 scroll
 
 ```
 ES 对from +size时又限制的，from +size 之和 不能大于1W,超过后 效率会十分低下
