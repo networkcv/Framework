@@ -332,7 +332,7 @@ sudo ./logstash -f /Users/networkcavalry/Documents/GitHub/geektime-ELK/part-1/2.
 
 ## Index 文档
 
-](img/ElasticSearch核心技术与实践一/image-20201208001325110.png)
+![](img/ElasticSearch核心技术与实践一/image-20201208001325110.png)
 
 ## Update 文档
 
