@@ -34,7 +34,7 @@
         <ostrich.version>1.0</ostrich.version>
         <pulsar.version>1.6</pulsar.version>
         <guava.version>20.0</guava.version>
-        <mysql.version>8.0.15</mysql.version>
+        <mysql.version>8.0.16</mysql.version>
         <redisson.version>3.10.7</redisson.version>
         <common.log.version>1.0.5</common.log.version>
         <reflectasm.version>1.11.3</reflectasm.version>
