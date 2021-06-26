@@ -1,0 +1,104 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+service ProductManageService {
+
+  // 创建商品基础信息
+  rpc createProduct (CreateProductRequest) returns (CreateProductResponse);
+
+  // 编辑商品基础信息
+  rpc updateProduct (UpdateProductRequest) returns (UpdateProductResponse);
+
+  // 查询商品基础资料列表
+  rpc queryProductList (QueryProductListRequest) returns (QueryProductListResponse);
+
+  // 查询商品基础资料详情
+  rpc queryProductDetail (QueryProductDetailRequest) returns (QueryProductDetailResponse);
+
+}
+
+
+message CreateProductRequest {
+
+    ProductDTO productDTO = 1;
+    // 创建人
+    string creator = 2;
+}
+
+message CreateProductResponse {
+
+  bool success = 1;
+
+  string productCode = 2;
+
+  Error error = 3;
+}
+
+message UpdateProductRequest {
+
+    ProductDTO productDTO = 1;
+    // 修改人
+    string operator = 2;
+}
+
+message UpdateProductResponse {
+
+  bool success = 1;
+
+  bool result = 2;
+
+  Error error = 3;
+}
+
+message QueryProductListRequest {
+
+    ProductQueryCondition condition = 1;
+
+    PageInfo pageInfo = 2;
+}
+
+message ProductQueryCondition {
+
+  // 复合条件：名称、plu码、编码、条码
+  string queryCriteria = 1;
+  // 类目编码
+  int64 categoryId = 2;
+  // 品牌id
+  int64 brandId = 3;
+  // 是否称重
+  int32 weightType = 4;
+  // 是否生鲜
+  int32 freshType = 5;
+}
+
+message QueryProductListResponse {
+
+  bool success = 1;
+
+    QueryProductListResult result = 2;
+
+    Error error = 3;
+}
+
+message QueryProductListResult {
+
+    repeated ProductDTO productDTO = 1;
+
+    PageInfo pageInfo = 2;
+}
+
+message QueryProductDetailRequest {
+
+  // 主键id
+  int64 id = 1;
+}
+
+message QueryProductDetailResponse {
+
+  bool success = 1;
+
+  ProductDTO productDTO = 2;
+
+  Error error = 3;
+}

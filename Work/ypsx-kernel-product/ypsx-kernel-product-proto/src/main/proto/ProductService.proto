@@ -1,0 +1,45 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+
+service ProductService {
+
+  // 根据 productId 查询单个主档
+  rpc queryProductByCode (QueryProductByCodeRequest) returns (QueryProductByCodeResponse);
+
+    // 根据 productId 列表批量查询主档
+    rpc batchQueryProductByCodes (BatchQueryProductByCodesRequest) returns (BatchQueryProductByCodesResponse);
+
+}
+
+
+message QueryProductByCodeRequest {
+  // 商品编码
+  string productCode = 1;
+}
+
+message QueryProductByCodeResponse{
+
+  bool success = 1;
+
+  ProductDTO productDTO = 2;
+
+  Error error = 3;
+}
+
+
+message BatchQueryProductByCodesRequest {
+
+  // 商品编码
+  repeated string productCode = 1;
+}
+
+message BatchQueryProductByCodesResponse{
+
+  bool success = 1;
+
+  repeated ProductDTO productDTO = 2;
+
+  Error error = 3;
+}

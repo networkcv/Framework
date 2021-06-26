@@ -1,0 +1,194 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+import "BackCategoryService.proto";
+import "google/protobuf/timestamp.proto";
+
+service CategoryBoxManageService {
+
+    //保存档案配置箱子记录
+    rpc createCategoryBoxes (CreateCategoryBoxesRequest) returns (CreateCategoryBoxesResponse);
+
+    //查询档案配置箱子列表
+    rpc queryCategoryBoxList(QueryCategoryBoxListRequest) returns (QueryCategoryBoxListResponse);
+
+    //更新档案配置箱子列表
+    rpc batchUpdateCategoryBoxes(BatchUpdateCategoryBoxesRequest) returns (BatchUpdateCategoryBoxesResponse);
+
+    //根据id查询档案配置箱子列表
+    rpc queryCategoryBoxesByIds(QueryCategoryBoxesByIdsRequest) returns (QueryCategoryBoxesByIdsResponse);
+
+    //根据Id和categoryIds查询档案配置箱子列表
+    rpc queryBoxByCategoryIds(QueryBoxByCategoryIdsRequest) returns (QueryBoxByCategoryIdsResponse);
+
+    //根据Id和categoryIds查询档案配置箱子列表
+    rpc queryBoxByCategoryIdAndBoxType(QueryBoxByCategoryIdAndBoxTypeRequest) returns (QueryBoxByCategoryIdAndBoxTypeResponse);
+
+}
+
+message CreateCategoryBoxesRequest {
+
+    repeated CategoryBoxDTO CategoryBoxes = 1;
+
+}
+
+message CategoryBoxDTO{
+
+    //主键
+    int64 id = 1;
+
+    //类目id
+    int64 categoryId = 2;
+
+    //箱子类型
+    string boxType = 3;
+
+    //档案配置的箱子数
+    int32 BoxNum = 4;
+
+    //建议货架节数
+    string suggestGoodsNum = 5;
+
+    //扩展字段
+    string extendFields = 6;
+
+    //操作人
+    string operator = 7;
+
+    //更新时间
+    int64 modifiedTime = 8;
+
+}
+
+
+message CreateCategoryBoxesResponse {
+
+    bool success = 1;
+
+    //行数
+    repeated CategoryBoxDTO result = 2;
+
+    Error error = 3;
+}
+
+message QueryCategoryBoxListRequest {
+
+    //类目id
+    repeated int64 categoryId = 1;
+
+    //箱子类型
+    string boxType = 2;
+
+    //操作人
+    string operator = 3;
+
+    //更新开始时间
+    int64 modifiedStartTime = 4;
+
+    //更新结束时间
+    int64 modifiedEndTime = 5;
+
+    //页码
+    int32 page = 6;
+
+    //每页大小
+    int32 pageSize = 7;
+
+}
+
+message QueryCategoryBoxListResponse {
+
+    bool success = 1;
+
+    // 返回结果
+    repeated CategoryBoxDTO result = 2;
+
+    // 页码
+    int32 page = 3;
+    // 分页数
+    int32 pageSize = 4;
+    // 总数量
+    int64 total = 5;
+
+    Error error = 6;
+}
+
+message BatchUpdateCategoryBoxesRequest {
+
+    repeated UpdateCategoryBoxDTO updateCategoryBoxDTO = 1;
+
+    string operator = 2;
+}
+
+message UpdateCategoryBoxDTO {
+
+    //记录id
+    int64 id = 1;
+
+    //档案配置的箱子数
+    int32 boxNum = 2;
+
+    //建议货架节数
+    string suggestGoodsNum = 3;
+
+}
+
+message BatchUpdateCategoryBoxesResponse {
+
+    bool success = 1;
+
+    bool result = 2;
+
+    Error error = 3;
+}
+
+message QueryCategoryBoxesByIdsRequest {
+
+    //记录id
+    repeated int64 id = 1;
+
+}
+
+message QueryCategoryBoxesByIdsResponse {
+
+    bool success = 1;
+
+    // 返回结果
+    repeated CategoryBoxDTO result = 2;
+
+    Error error = 3;
+}
+
+message QueryBoxByCategoryIdsRequest {
+
+    repeated int64 categoryId = 1;
+
+}
+
+message QueryBoxByCategoryIdsResponse {
+
+    bool success = 1;
+
+    // 返回结果
+    repeated CategoryBoxDTO result = 2;
+
+    Error error = 3;
+}
+
+message QueryBoxByCategoryIdAndBoxTypeRequest {
+
+    int64 categoryId = 1;
+
+    string boxType = 2;
+
+}
+
+message QueryBoxByCategoryIdAndBoxTypeResponse {
+
+    bool success = 1;
+
+    // 返回结果 正常情况下只有一个
+    repeated CategoryBoxDTO result = 2;
+
+    Error error = 3;
+}

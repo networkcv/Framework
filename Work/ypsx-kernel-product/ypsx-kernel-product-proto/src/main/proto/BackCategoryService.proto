@@ -1,0 +1,116 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+
+service BackCategoryService {
+//  //根据类目编码查询类目信息
+//  rpc queryBackCategoryByCategoryId (BackCategoryByCategoryIdRequest) returns (BackCategoryByCategoryIdResponse);
+  //根据类目编码批量查询类目信息
+  rpc batchQueryBackCategory (BatchQueryBackCategoryRequest) returns (BatchQueryBackCategoryResponse);
+//  //查询类目链集合(按类目层级排序)
+//  rpc queryBackCategoryChain (BackCategoryChainRequest) returns (BackCategoryChainResponse);
+  //批量查询类目链集合(按类目层级排序)
+  rpc batchQueryBackCategoryChain (BatchQueryBackCategoryChainRequest) returns (BatchQueryBackCategoryChainResponse);
+  //根据类目层级，查询类目列表
+  rpc queryBackCategoryListByLevel (BackCategoryListByLevelRequest) returns (BackCategoryListByLevelResponse);
+  //根据类目编码查询完整类目结构(包括父类及子类)
+  rpc queryCompleteCategory (QueryCompleteCategoryRequest) returns (QueryCompleteCategoryResponse);
+  //根据类目编码查询子类目集合
+  rpc queryChildBackCategoryList (ChildBackCategoryListRequest) returns (ChildBackCategoryListResponse);
+  //获取完整的后台类目树
+  rpc getBackCategoryTree (BackCategoryTreeRequest) returns (BackCategoryTreeResponse);
+}
+
+message BackCategoryByCategoryIdRequest {
+  //类目id
+  int64 categoryId = 1;
+}
+
+message BackCategoryByCategoryIdResponse {
+  bool success = 1;
+  BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message BatchQueryBackCategoryRequest {
+  repeated int64 categoryId = 1;
+}
+
+message BatchQueryBackCategoryResponse {
+  bool success = 1;
+  repeated BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message BackCategoryChainRequest {
+  //类目id
+  int64 categoryId = 1;
+}
+
+message BackCategoryChainResponse {
+  bool success = 1;
+  BackCategoryChainDTO result = 2;
+  Error error = 3;
+}
+
+message BackCategoryChainDTO {
+  //类目id
+  int64 categoryId = 1;
+  //类目集合（按类目层级排序）
+  repeated BackCategoryDTO result = 2;
+}
+
+message BatchQueryBackCategoryChainRequest {
+  //类目id
+  repeated int64 categoryId = 1;
+}
+
+message BatchQueryBackCategoryChainResponse {
+  bool success = 1;
+  repeated BackCategoryChainDTO result = 2;
+  Error error = 3;
+}
+
+message BackCategoryListByLevelRequest {
+  // 类目层级
+  int32 level = 1;
+  int32 businessType = 2;
+}
+
+message BackCategoryListByLevelResponse {
+  bool success = 1;
+  repeated BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message QueryCompleteCategoryRequest {
+  int64 categoryId = 1;
+}
+
+message QueryCompleteCategoryResponse {
+  bool success = 1;
+  BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message ChildBackCategoryListRequest {
+  int64 categoryId = 1;
+}
+
+message ChildBackCategoryListResponse {
+  bool success = 1;
+  repeated BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message BackCategoryTreeRequest {
+  int32 businessType = 1;
+}
+
+message BackCategoryTreeResponse {
+  bool success = 1;
+  BackCategoryDTO result = 2;
+  Error error = 3;
+
+}

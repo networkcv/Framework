@@ -1,0 +1,93 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+service BrandManageService {
+  // 新增品牌
+  rpc createBrand (CreateBrandRequest) returns (CreateBrandResponse);
+  // 更新品牌
+  rpc updateBrand (UpdateBrandRequest) returns (UpdateBrandResponse);
+  //查询品牌详情
+  rpc queryBrandDetail (QueryBrandDetailRequest) returns (QueryBrandDetailResponse);
+  //查询品牌列表
+  rpc queryBrandListByCondition(QueryBrandListByConditionRequest) returns (QueryBrandListByConditionResponse);
+  //  // 根据名称获取品牌
+  //  rpc queryBrandByName (QueryBrandByNameRequest) returns (QueryBrandByNameResponse);
+  //  // 根据id获取品牌
+  //  rpc queryBrandById (QueryBrandByIdRequest) returns (QueryBrandByIdResponse);
+}
+
+message CreateBrandRequest {
+  // 品牌名称
+  string brandName = 1;
+  // 状态
+  int32 status = 2;
+  // 操作人
+  string operator = 3;
+  //logo
+  string logo = 4;
+  //描述
+  string description = 5;
+}
+
+message CreateBrandResponse {
+  bool success = 1;
+  bool result = 2;
+  Error error = 3;
+}
+
+message UpdateBrandRequest {
+  // 品牌 id
+  int64 brandId = 1;
+  // 品牌名称
+  string brandName = 2;
+  // 状态
+  int32 status = 3;
+  // 操作人
+  string operator = 4;
+  // logo
+  string logo = 5;
+  //描述
+  string description = 6;
+}
+
+message UpdateBrandResponse {
+  bool success = 1;
+  bool result = 2;
+  Error error = 3;
+}
+
+
+message QueryBrandDetailRequest {
+  int64 brandId = 1;
+}
+
+message QueryBrandDetailResponse {
+  bool success = 1;
+  Error error = 2;
+  BrandDTO brandDTO = 3;
+}
+
+message QueryBrandListByConditionRequest{
+  // 品牌名称
+  string brandName = 1;
+  // 状态
+  int32 status = 2;
+  // 分页信息
+  PageInfo pageInfo = 3;
+
+}
+message QueryBrandListByConditionResponse{
+  bool success = 1;
+
+  QueryBrandListByConditionResult result = 2;
+
+  Error error = 3;
+}
+
+message QueryBrandListByConditionResult{
+
+  repeated BrandDTO brandDTO = 1;
+
+  PageInfo pageInfo = 2;
+}

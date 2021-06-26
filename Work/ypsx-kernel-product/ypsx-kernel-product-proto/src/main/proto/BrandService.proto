@@ -1,0 +1,61 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+service BrandService {
+  // 分页查询品牌列表
+  rpc pageQueryBrandList (QueryBrandListRequest) returns (QueryBrandListResponse);
+  // 根据名称模糊查询品牌
+  rpc fuzzyQueryBrandByName (FuzzyQueryBrandByNameRequest) returns (FuzzyQueryBrandByNameResponse);
+  // 根据id批量获取品牌
+  rpc batchQueryBrandByIds (BatchQueryBrandByIdsRequest) returns (BatchQueryBrandByIdsResponse);
+}
+
+message QueryBrandListRequest {
+  // 分页查询条件
+  QueryBrandListCondition condition = 1;
+  // 分页信息
+  PageInfo pageInfo = 2;
+}
+
+message QueryBrandListCondition{
+  // 品牌名称
+  string brandName = 1;
+  // 品牌状态
+  int32 status = 2;
+}
+
+message QueryBrandListResponse {
+  bool success = 1;
+  QueryBrandListResult result = 2;
+  Error error = 3;
+}
+message QueryBrandListResult{
+  repeated BrandDTO brandDTO = 1;
+  PageInfo pageInfo = 2;
+}
+
+message FuzzyQueryBrandByNameRequest {
+  string brandName = 1;
+}
+
+message FuzzyQueryBrandByNameResponse {
+  bool success = 1;
+  repeated BrandDTO brandDTO = 2;
+  Error error = 3;
+}
+
+message BatchQueryBrandByIdsRequest {
+  repeated int64 brandId = 1;
+}
+message BatchQueryBrandByIdsResponse {
+  bool success = 1;
+  repeated BrandDTO brandDTO = 2;
+  Error error = 3;
+}
+
+
+
+
+
+

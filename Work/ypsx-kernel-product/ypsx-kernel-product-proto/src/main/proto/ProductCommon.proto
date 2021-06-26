@@ -1,0 +1,222 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "google/protobuf/timestamp.proto";
+
+message Error {
+
+  int32 code = 1;
+
+  string message = 2;
+}
+
+message PageInfo {
+
+  int32 page = 1;
+
+  int32 size = 2;
+
+  int32 total = 3;
+}
+
+message Sort {
+
+  // 排序字段
+  string field = 1;
+  // 正序/逆序
+  SortType sort = 2;
+}
+
+enum SortType {
+
+  UNKNOWN_SORT = 0;
+  // 升序
+  ASC = 1;
+  // 降序
+  DESC = 2;
+}
+
+//通用请求返回结果
+message CommonResponse {
+
+  bool success = 1;
+
+  bool result = 2;
+
+  Error error = 3;
+}
+
+message BackCategoryDTO {
+  //主键id
+  int64 id = 1;
+  //类目编码
+  int64 categoryId = 2;
+  //类目名称
+  string categoryName = 3;
+  //父类目id
+  int64 parentId = 4;
+  //状态
+  int32 status = 5;
+  //层级
+  int32 level = 6;
+  //是否叶子节点
+  int32 leafFlag = 7;
+  //渠道
+  int32 businessType = 8;
+  //创建人
+  string creator = 9;
+  //操作人
+  string operator = 10;
+  //创建时间
+  int64 gmtCreated = 11;
+  //修改时间
+  int64 gmtModified = 12;
+  //是否删除
+  bool isDeleted = 13;
+  //子类目集合
+  repeated BackCategoryDTO childBackCategory = 14;
+}
+
+message ProductDTO {
+  // 主键
+  int64 id = 1;
+  // 主档编码
+  string productCode = 2;
+  // 商品名称
+  string productName = 3;
+  // plu编码
+  string pluCode = 4;
+  // 商品单位
+  string unit = 5;
+  // 类目编码
+  int64 categoryId = 6;
+  // 品牌id
+  int64 brandId = 7;
+  // 规格描述
+  string specDesc = 8;
+  // 包装含量
+  int32 validPeriod = 9;
+  // 长
+  int32 length = 10;
+  // 宽
+  int32 width = 11;
+  // 高
+  int32 height = 12;
+  // 体积
+  int32 volume = 13;
+  // 毛重
+  string grossWeight = 14;
+  // 净重
+  string netWeight = 15;
+  // 商品类型
+  int32 productType = 16;
+  // 是否称重
+  int32 weightType = 17;
+  // 是否生鲜
+  int32 freshType = 18;
+  // 存储类型
+  int32 storageType = 19;
+  // 是否多单位
+  int32 multiUnitType = 20;
+  // 是否季节商品
+  int32 seasonType = 21;
+  // 季节开始时间
+  google.protobuf.Timestamp seasonStartTime = 22;
+  // 季节结束时间
+  google.protobuf.Timestamp seasonEndTime = 23;
+  // 税务编码
+  string taxCode = 24;
+  // 进项税率
+  string costTaxRate = 25;
+  // 销项税率
+  string saleTaxRate = 26;
+  // 征税方式 0-非免税  1-免税 2-不征税
+  int32 taxMode = 27;
+  // 创建人
+  string creator = 28;
+  // 修改人
+  string operator = 29;
+  // 条码列表
+  repeated ProductBarcodeDTO productBarcodeDTO = 30;
+}
+
+message ProductBarcodeDTO {
+  // 主键
+  int64 id = 1;
+  // 主档编码
+  int64 productId = 2;
+  // 条码
+  string productCode = 3;
+  // 条码
+  string barcode = 4;
+  // 产地
+  string produceArea = 5;
+  // 创建人
+  string creator = 6;
+  // 修改人
+  string operator = 7;
+}
+
+// 属性值对象
+message ItemPropertyDTO {
+  // 属性 id
+  int64 itemPropertyId = 1;
+  // 属性 id
+  int64 propertyId = 2;
+  // 属性 name
+  string property = 3;
+  // 属性类型 1：可选，2：自定义
+  int32 type = 4;
+  // 属性值
+  string value = 5;
+}
+
+message BrandDTO {
+  // 品牌 id
+  int64 brandId = 1;
+  // 品牌名称
+  string brandName = 2;
+  // 状态
+  int32 status = 3;
+  //操作人
+  string operator = 4;
+  //记录创建时间
+  google.protobuf.Timestamp gmtCreated = 5;
+  //记录修改时间
+  google.protobuf.Timestamp gmtModified = 6;
+  //logo
+  string logo = 7;
+  //描述
+  string description = 8;
+  //前台类目id
+  string receptionId = 9;
+  //前台类目名称
+  string receptionName = 10;
+}
+
+message PropertyDTO {
+  //主键id
+  int64 propertyId = 1;
+  //属性名
+  string propertyName = 2;
+  //状态，1-启用、2-不启用
+  int32 status = 3;
+  //属性值类型(1-选择，2-手动输入)
+  int32 type = 4;
+  //属性下面绑定的值列表
+  repeated PropertyValueDTO propertyValueDTO = 5;
+  // 创建人
+  string creator = 6;
+  // 修改人
+  string operator = 7;
+}
+
+message PropertyValueDTO {
+  //属性值id
+  int64 propertyValueId = 1;
+  //属性id
+  int64 propertyId = 2;
+  //属性值
+  string propertyValueName = 3;
+  //别名
+  string alias = 4;
+}

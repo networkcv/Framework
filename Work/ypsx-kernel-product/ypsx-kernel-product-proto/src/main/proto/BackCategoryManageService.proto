@@ -1,0 +1,81 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+
+service BackCategoryManageService {
+  //创建后台类目
+  rpc createBackCategory (BackCategoryCreateRequest) returns (BackCategoryCreateResponse);
+  //修改后台类目
+  rpc updateBackCategory (BackCategoryUpdateRequest) returns (BackCategoryUpdateResponse);
+  //查询类目详情
+  rpc queryBackCategoryDetail (queryBackCategoryDetailRequest) returns (queryBackCategoryDetailResponse);
+  //根据名称查询类目（包含父类目及子类目）
+  rpc queryBackCategoryByName (QueryBackCategoryByNameRequest) returns (QueryBackCategoryByNameResponse);
+}
+
+message BackCategoryCreateRequest {
+  //类目编码
+  int64 categoryId = 1;
+  //类目名称
+  string categoryName = 2;
+  //父类目id，0-代表根节点
+  int64 parentId = 3;
+  //状态
+  int32 status = 4;
+  //层级
+  int32 level = 5;
+  //渠道
+  int32 businessType = 6;
+  //操作人
+  string operator = 7;
+}
+
+message BackCategoryCreateResponse {
+  bool success = 1;
+  bool result = 2;
+  Error error = 3;
+}
+
+message BackCategoryUpdateRequest {
+  //主键id
+  int64 id = 1;
+  //类目编码
+  int64 categoryId = 2;
+  //类目名称
+  string categoryName = 3;
+  //类目状态
+  int32 status = 4;
+  //操作人
+  string operator = 5;
+}
+
+message BackCategoryUpdateResponse {
+  bool success = 1;
+  bool result = 2;
+  Error error = 3;
+}
+
+message queryBackCategoryDetailRequest {
+  //类目id
+  int64 categoryId = 1;
+}
+
+message queryBackCategoryDetailResponse {
+  bool success = 1;
+  BackCategoryDTO result = 2;
+  Error error = 3;
+}
+
+message QueryBackCategoryByNameRequest {
+  //类目名称
+  string categoryName = 1;
+  //业态
+  int32 businessType = 2;
+}
+
+message QueryBackCategoryByNameResponse {
+  bool success = 1;
+  repeated BackCategoryDTO result = 2;
+  Error error = 3;
+}

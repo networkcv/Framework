@@ -1,0 +1,94 @@
+syntax = "proto3";
+package com.ypshengxian.kernel.product.proto;
+import "ProductCommon.proto";
+
+service PropertyManageService {
+  //创建属性
+  rpc createProperty (CreatePropertyRequest) returns (CommonResponse);
+  //更新属性
+  rpc updateProperty (UpdatePropertyRequest) returns (CommonResponse);
+  //属性详情查看
+  rpc queryPropertyDetail (PropertyDetailRequest) returns (PropertyDetailResponse);
+  //分页查询属性列表
+  rpc pageQueryPropertyList (QueryPropertyListRequest) returns (QueryPropertyListResponse);
+  //批量启用或停用属性
+  rpc batchUpdateStatus (BatchUpdatePropertyStatusRequest) returns (CommonResponse);
+}
+
+message PropertyDetailRequest {
+  int64 propertyId = 1;
+}
+
+message PropertyDetailResponse {
+  bool success = 1;
+  PropertyDTO result = 2;
+  Error error = 3;
+}
+
+message QueryPropertyListRequest {
+  // 分页查询条件
+  QueryPropertyListCondition condition = 1;
+  // 分页信息
+  PageInfo pageInfo = 2;
+}
+
+message QueryPropertyListCondition{
+  //key id
+  int64 propertyId = 1;
+  //属性名
+  string propertyName = 2;
+  //是否启用
+  int32 status = 3;
+}
+
+message QueryPropertyListResponse {
+  //是否成功
+  bool success = 1;
+  //返回结果
+  QueryPropertyListResult result = 2;
+  //错误信息
+  Error error = 3;
+}
+
+message QueryPropertyListResult{
+  //分页结果
+  repeated PropertyDTO propertyDTO = 1;
+  // 分页信息
+  PageInfo pageInfo = 2;
+}
+
+message CreatePropertyRequest {
+  //属性名
+  string propertyName = 1;
+  //类型
+  int32 type = 2;
+  //属性值集合
+  repeated PropertyValueDTO propertyValueDTO = 3;
+  //操作人
+  string operator = 4;
+}
+
+message BatchUpdatePropertyStatusRequest {
+  //属性主键id
+  repeated int64 propertyId = 1;
+  //需更新的状态
+  int32 status = 2;
+  //操作人
+  string operator = 3;
+}
+
+message UpdatePropertyRequest {
+  //属性主键id
+  int64 propertyId = 1;
+  //属性名
+  string propertyName = 2;
+  //类型
+  int32 type = 3;
+  //属性值集合
+  repeated PropertyValueDTO propertyValueDTO = 4;
+  //操作人
+  string operator = 5;
+}
+
+
+
