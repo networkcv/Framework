@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<mapper namespace="user">
+
+    <select id="selectOne" parameterType="com.lwj.orm.client._02_orm_core.model.User"
+            resultType="com.lwj.orm.client._02_orm_core.model.User">
+        select * from user where id = #{id} and username =#{username}
+    </select>
+
+    <select id="selectList" resultType="com.lwj.orm.client._02_orm_core.model.User">
+        select * from user
+    </select>
+</mapper>

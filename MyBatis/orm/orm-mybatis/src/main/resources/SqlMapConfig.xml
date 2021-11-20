@@ -1,0 +1,45 @@
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+        <settings>
+<!--     有效值: true|false，默认值为true -->
+            <setting name="cacheEnabled" value="true"/>
+<!--     有效值：SESSION|STATEMENT，默认值为SESSION -->
+            <setting name="localCacheScope" value="SESSION"/>
+            <setting name="logImpl" value="SLF4J"/>
+        </settings>
+
+    <plugins>
+        <plugin interceptor="com.lwj.plugin.MyPlugin">
+            <property name="name" value="jack"/>
+        </plugin>
+        <!--注意：分⻚助⼿的插件 配置在通⽤mapper之前*-->
+        <plugin interceptor="com.github.pagehelper.PageHelper">
+            <!-- 指定⽅⾔ -->
+            <property name="dialect" value="mysql"/>
+        </plugin>
+    </plugins>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql:///orm"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--扫描使⽤注解的类-->
+    <!--    <mappers>-->
+    <!--        <mapper resource="com/lwj/mapper/UserMapper.xml"/>-->
+    <!--    </mappers>-->
+
+    <!--扫描使⽤注解的类所在的包-->
+    <mappers>
+        <package name="com.lwj.mapper"></package>
+    </mappers>
+</configuration>
