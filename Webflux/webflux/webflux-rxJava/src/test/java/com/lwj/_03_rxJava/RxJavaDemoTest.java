@@ -6,7 +6,11 @@ import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.junit.Test;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Date: 2021/11/22
@@ -87,5 +91,57 @@ public class RxJavaDemoTest {
                 }))
                 .forEach(System.out::println);
     }
+
+    @Test
+    public void intervalTest() throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        //创建基于时间的异步响应流
+        Disposable subscribe = Observable.interval(1, TimeUnit.SECONDS)
+                .subscribe(System.out::println);
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (subscribe.isDisposed()) {
+                subscribe.dispose();
+            }
+            countDownLatch.countDown();
+        }).start();
+        System.out.println("====");
+        countDownLatch.await();
+        System.out.println("----");
+    }
+
+    @Test
+    public void zipTest() {
+        //通过指定的函数将多个Observable发送的元素组合在一起，并根据此函数的结果作为每个组合发出的单个数据项，如果凑不齐组合则会丢弃对应元素
+        Observable.zip(
+                Observable.just(1, 2, 3),
+                Observable.just(1, 2, 3), Integer::sum
+        ).forEach(System.out::println);
+        /* output
+            2
+            4
+            6
+         */
+    }
+
+    @Test
+    public void subscribeOnTest() {
+        //将传统的同步慢查询包装起来，走异步的响应流
+        Observable.fromCallable(this::doSyncSlowQuery)
+                .subscribeOn(Schedulers.io())
+                .subscribe(this::processResult);
+    }
+
+    private String doSyncSlowQuery() {
+        return "queryResult";
+    }
+
+    private void processResult(String integer) {
+    }
+
 
 }
