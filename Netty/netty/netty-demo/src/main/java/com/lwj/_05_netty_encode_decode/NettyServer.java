@@ -1,4 +1,4 @@
-package com.lwj._05_netty_dcode;
+package com.lwj._05_netty_encode_decode;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -30,7 +30,10 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {//7. 创建一个通道初始化对象
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        //InboundHandler是按照Pipleline的加载顺序的顺序执行, OutboundHandler 是按照Pipeline的加载顺序，逆序执行
                         socketChannel.pipeline().addLast(new MessageDecoder());
+                        socketChannel.pipeline().addLast(new MessageEncoder());
+
                         //8. 向pipeline中添加自定义业务处理handler
                         socketChannel.pipeline().addLast(new NettyServerInHandler());
                     }

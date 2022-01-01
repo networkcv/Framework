@@ -1,9 +1,7 @@
-package com.lwj._05_netty_dcode;
+package com.lwj._05_netty_encode_decode;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandler;
-import io.netty.util.CharsetUtil;
 
 /**
  * Date: 2021/12/29
@@ -12,22 +10,16 @@ import io.netty.util.CharsetUtil;
  *
  * @author liuWangjie
  */
-public class NettyServerInHandler implements ChannelInboundHandler {
+public class NettyClientHandler implements ChannelInboundHandler {
+
+    @Override
+    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
+        channelHandlerContext.writeAndFlush("this is client msg");
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
         System.out.println(o);
-    }
-
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
-        channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer("this is a server msg ", CharsetUtil.UTF_8));
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
-        throwable.printStackTrace();
-        channelHandlerContext.close();
     }
 
     @Override
@@ -40,16 +32,17 @@ public class NettyServerInHandler implements ChannelInboundHandler {
 
     }
 
-    @Override
-    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
-
-    }
 
     @Override
     public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
 
     }
 
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
@@ -71,5 +64,8 @@ public class NettyServerInHandler implements ChannelInboundHandler {
 
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
 
+    }
 }

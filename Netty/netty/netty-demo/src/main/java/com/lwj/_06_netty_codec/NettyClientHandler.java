@@ -1,10 +1,7 @@
-package com.lwj._05_netty_dcode;
+package com.lwj._06_netty_codec;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandler;
-import io.netty.util.CharsetUtil;
 
 /**
  * Date: 2021/12/29
@@ -17,11 +14,12 @@ public class NettyClientHandler implements ChannelInboundHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
-        channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer("this is a client msg", CharsetUtil.UTF_8));
+        channelHandlerContext.writeAndFlush("this is client msg");
     }
 
     @Override
     public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+
         System.out.println(o);
     }
 

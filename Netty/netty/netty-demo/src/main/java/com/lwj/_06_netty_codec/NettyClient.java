@@ -1,4 +1,4 @@
-package com.lwj._05_netty_dcode;
+package com.lwj._06_netty_codec;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -26,7 +26,7 @@ public class NettyClient {
                 .handler(new ChannelInitializer<SocketChannel>() {//5. 创建一个通道初始化对象
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        socketChannel.pipeline().addLast(new MessageDecoder());
+                        socketChannel.pipeline().addLast(new MessageCodec());
                         socketChannel.pipeline().addLast(new NettyClientHandler());//6. 向pipeline中添加自定义业务处理handler
                     }
                 })

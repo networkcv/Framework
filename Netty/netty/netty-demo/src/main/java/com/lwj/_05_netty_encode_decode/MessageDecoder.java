@@ -1,4 +1,4 @@
-package com.lwj._05_netty_dcode;
+package com.lwj._05_netty_encode_decode;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
