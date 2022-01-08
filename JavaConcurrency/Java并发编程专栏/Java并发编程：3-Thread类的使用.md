@@ -245,10 +245,66 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
 **无法响应中断的阻塞**
 
 - 执行同步的SocketI/O无法响应中断。  
-
 - InputStream和OutputStream的read和write等方法都不会响应中断，但可以通过关闭底层的套接字，使因read或write等方法被阻塞的线程抛出一个SocketException。  
-
 - 等待获得内置锁（synchronized）而阻塞，无法响应中断。但使用Lock类中提供了lockInterruptibly方法，该方法允许在等待一个锁的同时仍能响应中断。
+
+**中断方法**
+
+- Thread.currentThread().isInterrupted()
+
+  返回调用该方法线程的中断状态
+
+  ```java
+  public boolean isInterrupted() {
+  return isInterrupted(false);
+  }
+  ```
+
+- Thread.interrupted()	
+
+  返回调用该方法线程的中断状态，然后直接把线程的中断状态清除了，设置为false
+
+  ```java
+  public static boolean interrupted() {
+    return currentThread().isInterrupted(true);
+  }
+  ```
+
+- Thread.currentThread().interrupt()
+
+  中断调用该方法所在的线程，将该线程的中断状态调整为true，如果线程在阻塞时，能够感知中断信号，就会抛出InterruptedException异常，如果线程处于运行状态，发生中断时，线程本身不会立即停止或者抛出异常，因为这可能会导致业务处理了一半，因此我们需要在循环处理业务前，判断线程的中断状态。如果已经中断了，则退出线程。这样可以保证正在处理的业务能够继续处理完。
+
+  ```java
+  public void interrupt() {
+    if (this != Thread.currentThread())
+      checkAccess();
+  
+    synchronized (blockerLock) {
+      Interruptible b = blocker;
+      if (b != null) {
+        interrupt0();           // Just to set the interrupt flag
+        b.interrupt(this);
+        return;
+      }
+    }
+    interrupt0();
+  }
+  ```
+
+  **能感知中断信号的方法**
+
+  ```java
+  Object.wait()/wait(long)/wait(long,int);
+  Thread.sleep(long)/sleep(long,int);
+  Thread.join()/join(long)/join(long,int);
+  java.util.concurrent.BlockingQueue.take()/put(E)
+  java.util.concurrent.locks.Lock.lockInterruptibly()
+  java.util.concurrent.CountDownLatch.await()
+  java.util.concurrent.CyclicBarrier.await()
+  java.util.concurrent.Exchanger.exchange(V)
+  java.nio.channels.InterruptibleChannel相关方法
+  java.nio.channels.Selector的相关方法
+  ```
 
 ### 2.5 wait()和notify()/notifyAll()
 调用这三个方法的前提是调用者持有锁，不然会抛出IllegalMonitorStateException异常。
