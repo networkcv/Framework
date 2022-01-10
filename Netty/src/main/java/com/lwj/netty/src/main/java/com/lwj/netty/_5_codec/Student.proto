@@ -1,6 +1,0 @@
-syntax = "proto3";
-option java_outer_classname = "StudentPoJO";
-message Student{
-   int32 id = 1;
-   string name = 2;
-}
