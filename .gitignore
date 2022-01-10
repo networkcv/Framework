@@ -20,13 +20,6 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-
 out
-/Project/springdata/*.iml
-/Project/springdata/.gitignore
-/Project/wx-order/.gitignore
-/Project/wx-order/target
-/Project/JavaSE/aricraft-buttle/*.iml
-.DS_Store
+Netty/netty-source
+
