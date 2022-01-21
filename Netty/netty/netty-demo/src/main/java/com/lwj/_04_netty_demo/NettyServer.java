@@ -1,6 +1,5 @@
 package com.lwj._04_netty_demo;
 
-import com.sun.xml.internal.ws.util.CompletedFuture;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

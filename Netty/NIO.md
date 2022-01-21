@@ -72,7 +72,7 @@ public class BIOServer {
 
 - 每个请求都需要创建独立的线程，与对应的客户端进行数据Read，业务处理，数据Write。
 - 当并发数较大时，需要 **创建大量线程来处理连接**，系统资源占用较大。
--  连接建立后，如果当前线程暂时没有数据可读，则线程就阻塞在Read操作上，造成线程资源浪费。
+- 连接建立后，如果当前线程暂时没有数据可读，则线程就阻塞在Read操作上，造成线程资源浪费。
 
 
 
@@ -210,13 +210,14 @@ public void test2() throws IOException {
 ```
 
 如何释放直接缓冲区的内存  ：
+
 - 手动释放内存  
-    通过反射调用DirectByteBuffer的cleaner,获取执行清理方法的对象，调用该对象的clean方法,立即回收内存
-    
+  通过反射调用DirectByteBuffer的cleaner,获取执行清理方法的对象，调用该对象的clean方法,立即回收内存
+
 - 交给JVM来处理  
-    不做处理，等待JVM的GC垃圾回器进行垃圾回收
-    
-    
+  不做处理，等待JVM的GC垃圾回器进行垃圾回收
+
+  
 
 #### 3.1.4 ByteBuffer 方法列表
 
@@ -472,7 +473,6 @@ public final void close();//关闭通道
 #### 3.3.4 SelectionKey 类
 
 ```java
-
 public abstract class SelectionKey {
     protected SelectionKey() { }
     
