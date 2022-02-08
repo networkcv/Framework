@@ -22,5 +22,4 @@
 
 out
 Netty/netty-source
-Spring/spring-framework-5.1.x
-
+Spring/spring-5.1.x_ch/**/out
