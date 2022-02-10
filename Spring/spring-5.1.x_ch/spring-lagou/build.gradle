@@ -5,7 +5,7 @@ plugins {
 group 'org.springframework'
 version '5.1.21.BUILD-SNAPSHOT'
 
-sourceCompatibility=11
+sourceCompatibility=8
 
 repositories {
     mavenCentral()
@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     compile(project(":spring-context"))
+    compile(project(":spring-aop"))
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }

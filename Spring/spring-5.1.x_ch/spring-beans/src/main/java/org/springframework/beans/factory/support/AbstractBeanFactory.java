@@ -243,7 +243,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
-		// 单纯理解尝试从缓存中获取 bean
+		// 单纯理解尝试从缓存中获取 bean（这里的缓存分三级，一级缓存registeredSingletons 二级缓存earlySingletonObjects 三级缓存singletonFactories）
 		Object sharedInstance = getSingleton(beanName);
 		// 如果已经存在则返回
 		if (sharedInstance != null && args == null) {

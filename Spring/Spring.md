@@ -142,8 +142,6 @@ xml文件 'destroy-method' 指定 destroyMethod ...
 */
 ```
 
-# Spring 源码解读
-
 ```java
 import com.lagou.edu.LagouBean;
 import org.junit.Test;
@@ -188,3 +186,8 @@ public class IocTest {
 
 ```
 
+# Spring 源码
+
+事务传播 案例
+
+事务的原理

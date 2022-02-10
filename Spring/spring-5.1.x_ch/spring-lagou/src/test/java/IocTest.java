@@ -1,4 +1,6 @@
 import com.lagou.edu.LagouBean;
+import com.lagou.edu.LazyBean;
+import com.lagou.edu.TransactionTest;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -30,14 +32,28 @@ public class IocTest {
 	}
 
 
+	@Test
+	public void testLazyBean() {
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+		LazyBean lazyBean = applicationContext.getBean(LazyBean.class);
+		System.out.println(lazyBean);
+	}
+
 
 	/**
-	 *  Ioc 容器源码分析基础案例
+	 * Ioc 容器源码分析基础案例
 	 */
 	@Test
 	public void testAOP() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
 		LagouBean lagouBean = applicationContext.getBean(LagouBean.class);
 		lagouBean.print();
+	}
+
+	@Test
+	public void testTransaction() {
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+		TransactionTest transactionTest = applicationContext.getBean(TransactionTest.class);
+		transactionTest.transferCount();
 	}
 }
