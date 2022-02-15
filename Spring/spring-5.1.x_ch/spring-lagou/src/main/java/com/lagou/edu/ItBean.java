@@ -5,9 +5,9 @@ package com.lagou.edu;
  */
 public class ItBean {
 
-	private LagouBean lagouBean;
+	private Print lagouBean;
 
-	public void setLagouBean(LagouBean lagouBean) {
+	public void setLagouBean(Print lagouBean) {
 		this.lagouBean = lagouBean;
 	}
 

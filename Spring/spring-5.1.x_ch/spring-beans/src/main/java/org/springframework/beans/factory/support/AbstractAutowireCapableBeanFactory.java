@@ -1429,7 +1429,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			checkDependencies(beanName, mbd, filteredPds, pvs);
 		}
-
+		//设置属性值（成员变量）
 		if (pvs != null) {
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}

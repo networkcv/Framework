@@ -5,36 +5,30 @@
         https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
 
 	<!--懒加载-->
-	<bean id="lazyBean" class="com.lagou.edu.LazyBean"/>
+<!--	<bean id="lazyBean" class="com.lagou.edu.LazyBean"/>-->
 
-<!--	&lt;!&ndash;循环依赖问题&ndash;&gt;-->
-<!--	<bean id="lagouBean" class="com.lagou.edu.LagouBean">-->
-<!--		<property name="ItBean" ref="itBean"/>-->
-<!--	</bean>-->
-<!--	<bean id="itBean" class="com.lagou.edu.ItBean">-->
-<!--		<property name="LagouBean" ref="lagouBean"/>-->
-<!--	</bean>-->
-
-
-<!--	<bean id="configTest" class="com.lagou.edu.ConfigTest"/>-->
-<!--	<bean id="transactionTest" class="com.lagou.edu.TransactionTest"/>-->
-
-	<!--<bean id="myBeanFactoryPostProcessor" class="com.lagou.edu.MyBeanFactoryPostProcessor"/>
-	<bean id="myBeanPostProcessor" class="com.lagou.edu.MyBeanPostProcessor"/>-->
-
-
-	<bean id="lagouBean" class="com.lagou.edu.LagouBean"/>
-
-	<!--aop配置-->
-	<!--横切逻辑-->
-	<bean id="logUtils" class="com.lagou.edu.LogUtils">
+	<!--循环依赖问题-->
+	<bean id="lagouBean" class="com.lagou.edu.LagouBean">
+		<property name="ItBean" ref="itBean"/>
+	</bean>
+	<bean id="itBean" class="com.lagou.edu.ItBean">
+		<property name="LagouBean" ref="lagouBean"/>
 	</bean>
 
-	<aop:config>
-		<aop:aspect ref="logUtils">
-			<aop:before method="beforeMethod" pointcut="execution(public void com.lagou.edu.LagouBean.print())"/>
-		</aop:aspect>
-	</aop:config>
+	<bean id="myBeanPostProcessor" class="com.lagou.edu.MyBeanPostProcessor"/>
+
+<!--	<bean id="myBeanFactoryPostProcessor" class="com.lagou.edu.MyBeanFactoryPostProcessor"/>-->
+
+<!--	&lt;!&ndash;aop配置&ndash;&gt;-->
+<!--	&lt;!&ndash;横切逻辑&ndash;&gt;-->
+<!--	<bean id="logUtils" class="com.lagou.edu.LogUtils">-->
+<!--	</bean>-->
+
+<!--	<aop:config>-->
+<!--		<aop:aspect ref="logUtils">-->
+<!--			<aop:before method="beforeMethod" pointcut="execution(public void com.lagou.edu.LagouBean.print())"/>-->
+<!--		</aop:aspect>-->
+<!--	</aop:config>-->
 
 
 </beans>
