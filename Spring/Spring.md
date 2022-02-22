@@ -186,8 +186,145 @@ public class IocTest {
 
 ```
 
-# Spring 源码
+# SpringBean的创建调用链
 
-事务传播 案例
+- 创建 BeanFactory，并加载BeanDefinition
 
-事务的原理
+- 从 AbstractRefreshableApplicationContext 获取 BeanFactory
+
+- 添加 ApplicationContextAwareProcessor，让继承自 ApplicationContextAware 的 Bean 对象都能感知所属的 ApplicationContext
+
+- 执行BeanFactoryPostProcessor 修改BeanDefinition
+
+- 注册BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
+
+- 初始化事件发布者
+
+- 提前实例化单例对象（AbstractAutowireCapableBeanFactory）
+
+  - 从 DefaultSingletonBeanRegistry 中的 singletonObjects 中获取单例对象
+
+  - 取到的话，如果实现 FactoryBean，则从 FactoryBean取 getObject 代理后的Bean，不然直接返回
+
+  - 取不到时，获取 BeanDifinition，进行 Bean 创建
+
+    - 根据实例化策略创建Bean，Java反射或者Cglib创建
+
+    - Bean 的属性填充，如果 A 依赖 B，则先对 B 进行实例化
+
+    - 执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法
+
+      - 执行Aware方法，填充对应的容器对象 
+
+      - 执行 BeanPostProcessor before 处理
+
+        applicationContext的填充是通过 BeanPostProcessor 来实现的
+
+      - 执行Bean 自定义的初始化方法（xml指定或者 InitializingBean 接口）
+
+      - 执行 BeanPostProcessor after 处理 
+
+    - 注册实现了 DisposableBean 接口的非单例 Bean 对象，注册销毁的钩子，
+
+      这里有个有趣的设计。ConfigurableBeanFactory 中定义了销毁单例对象的方法入口 destroySingletons，AbstractBeanFactory 实现了 ConfigurableBeanFactory接口，但destroySingletons 的具体实现是由 AbstractBeanFactory 的父类 DefaultSingletonBeanRegistry 来完成的。
+
+    - 将单例对象添加到 DefaultSingletonBeanRegistry 的 singletonObjectsMap 
+
+  - 创建后，如果实现 FactoryBean，则从 FactoryBean取 getObject 代理后的Bean ，不然直接返回
+
+
+
+
+
+# @Configuration 和 @Component 区别
+
+一句话概括就是 `@Configuration` 中所有带 `@Bean` 注解的方法都会被动态代理，因此调用该方法返回的都是同一个实例。
+
+下面 userInfo() 中调用 country() 时，大家会认为这里的 Country 和上面 @Bean 方法返回的 Country 可能不是同一个对象，因此可能会通过下面的方式来替代这种方式：
+
+@Autowired
+private Country country;
+
+实际上不需要这么做（后面会给出需要这样做的场景），直接调用 country() 方法返回的是同一个实例。
+
+```java
+@Configuration
+public class MyBeanConfig {
+
+    @Bean
+    public Country country(){
+        return new Country();
+    }
+
+    @Bean
+    public UserInfo userInfo(){
+        return new UserInfo(country());
+    }
+
+}
+
+```
+
+`@Component` 注解并没有通过 cglib 来代理`@Bean` 方法的调用，因此像下面这样配置时，就是两个不同的 country。
+
+```java
+@Component
+public class MyBeanConfig {
+
+    @Bean
+    public Country country(){
+        return new Country();
+    }
+
+    @Bean
+    public UserInfo userInfo(){
+        return new UserInfo(country());
+    }
+
+}
+```
+
+# 三级缓存解决循环依赖
+
+A依赖B ，B依赖A
+
+一级缓存（也就是对象池 singletonObjects） 二级缓存（earlySingletonObjects） 三级缓存（singletonFactories）
+
+创建A——将不完整的A加入三级缓存——填充A的属性发现依赖B——容器（包括一二三级缓存）中拿不到B——创建B——将不完整的B加入三级缓存——填充B的属性发现依赖A——一级缓存和二级缓存中没有，但发现三级缓存里有A的引用——于是返回A对象引用，这样就完成了B对象的创建——B对象创建完成后就可以完成A对象的属性填充——最后完成A对象。
+
+
+
+# 往容器加入Bean的几种方式
+
+1. @Bean
+
+2. @Import
+
+3. @Configuration  
+
+4. 实现ImportSelector
+
+   ```java
+   public class MyImportSelector implements ImportSelector {
+       @Override
+       public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+           return new String[]{"import_test.JavaBeanB"};
+       }
+   }
+   ```
+
+   
+
+5. 实现ImportBeanDefinitionRegistrar接口
+
+   ```java
+   public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+       @Override
+       public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+           RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(JavaBeanA.class);
+           registry.registerBeanDefinition("javaBeanA", rootBeanDefinition);
+       }
+   }
+   ```
+
+   

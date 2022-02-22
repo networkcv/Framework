@@ -12,7 +12,7 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * @author skywalker
  */
-@Configuration
+//@Configuration
 public class StudentConfig implements ImportAware {
 
     @Bean
