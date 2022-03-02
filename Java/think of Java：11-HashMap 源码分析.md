@@ -628,6 +628,8 @@ public void test() {
 
 ###  扩容造成死循环分析过程
 
+https://www.jianshu.com/p/4d1cad21853b
+
 
 
 ###  扩容造成数据丢失分析过程

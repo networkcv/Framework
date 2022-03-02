@@ -16,7 +16,7 @@
 
     <bean id="simpleMethodInterceptor" class="aop.SimpleMethodInterceptor" />
 
-    <bean class="aop.SimpleAopBean" />
+    <bean id="simpleAopBean" class="aop.SimpleAopBean" />
 
     <aop:config expose-proxy="true">
         <aop:advisor advice-ref="simpleMethodInterceptor" pointcut="execution(* aop.SimpleAopBean.*(..))" />
