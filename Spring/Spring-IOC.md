@@ -277,6 +277,130 @@ private TestDao testDao;
 
 Spring自带的@Autowired的缺省情况等价于JSR-330的@Inject注解； Spring自带的@Qualifier的缺省的根据Bean名字注入情况等价于JSR-330的@Named注解； Spring自带的@Qualifier的扩展@Qualifier限定描述符注解情况等价于JSR-330的@Qualifier注解。
 
+
+
+
+
+## Spring如何完成依赖注入
+
+Spring IoC 不止帮我们做了这些，我们在 Spring 的配置文件定义这些依赖关系。
+
+```java
+<beans>
+    <bean id="car" class="spring.tutorial.Car">
+        <property name="framework">
+            <ref local="framework1"/>
+        </property>
+    </bean>
+    <bean id="framework1" class="spring.tutorial.Framework">
+        <property name="name">
+            <value>my framkework</value>
+        </property>
+    </bean>
+</beans>
+```
+
+spring 会在程序启动时，先去读取这些配置文件，然后进行解析，它会首先创建那些没有依赖其他类的对象，然后再通过反射，根据用户的配置的依赖注入方式，将这些对象（framework）注入依赖它们的对象中。
+
+再后来，由于配置xml配置文件写起来不够方便，而且有时候想知道哪个类被注入了还需要查看配置文件，
+
+Spring 加入了注解配置，启动时进行注解扫描，将类上标有@Bean @Component @Controller @Services @Repstory @Configuration 等注解的对象都会由 Spring 来创建对象。 而我们常用的 成员变量的注解 @Autowired 会自动注入，这个自动也是有一定能要求的，它会根据类型（默认）和名称去 Spring 容器中挑选合适的 Bean 注入，如果可选的 Bean 有多个或者一个都没有就会报错。
+
+@Quilify 会指定具体名称的Bean进行注入
+
+@Primary 这个注解是使用在 注入类上的，表示在没有指定具体类的情况下，该类会被优先注入。
+
+以上这些注解都是 Spring 提供的，所以需要搭配 Spring 容器使用。
+
+@Resource  这个是由 J2EE 提供的注解，默认通过 name 属性匹配，找不到再按 type 匹配。功能不如 @Autowired 灵活和强大。
+
+@inject 这个注解是第三方jar包提供的注入注解，适合非Spring项目使用。
+
+## 依赖注入的多种实现方式
+
+- 构造器注入
+
+  ```java
+  class Car{
+  	private Framework framework;
+      Car(Framework framework){
+          this.framework=framework;
+      }
+      ...
+  }
+  class Framework{
+      ...
+  }
+  ```
+
+  ```java
+  class Client{
+  	public static void main(String [] args){
+  		Framework framework = new Framework();
+      	Car car = new Car(framework);    
+      }
+  }
+  ```
+
+- Setter注入
+
+  ```java
+  class Car{
+  	private Framework framework;
+  	public void setFramework(Framework framework){
+          this.framework=framework;
+      }
+      ...
+  }
+  class Framework{
+      ...
+  }
+  ```
+
+  ```java
+  class Client{
+  	public static void main(String [] args){
+  		Framework framework = new Framework();
+      	Car car = new Car();    
+          car.setFramework(framkework);
+      }
+  }
+  ```
+
+- 接口注入
+
+  ```java
+  interface Aware{
+      void aware(Framework framework);
+  }
+  class Car implements Aware{
+  	private Framework framework;
+      
+      @overwrite
+  	public void aware(Framework framework){
+          this.framework=framework;
+      }
+      ...
+  }
+  class Framework{
+      ...
+  }
+  ```
+
+  ```java
+  class Client{
+  	public static void main(String [] args){
+  		Framework framework = new Framework();
+      	Car car = new Car();    
+          car.aware(framkework);
+      }
+  }
+  ```
+
+从以上三个例子可以看出，依赖注入的本质是通过调用被注入类（Car）的方法来将需要进行注入类（Framework）作为参数传入，我们当然也可以直接将成员变量声明为 public，不过这样就违背了面向对象封装的特性了。
+
+
+
 ## 练习
 ```java
 // 1. 组件扫描 的方式的添加组件
@@ -541,10 +665,10 @@ refresh() ->
 - ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();    创建并返回beanFactory 　　　
     - refreshBeanFactory();
         - DefaultListableBeanFactory beanFactory = createBeanFactory(); 　　　DefaultListableBeanFactory类是构造Bean的核心类  
-　DefaultListableBeanFactory的继承结构  
-　![DefaultListableBeanFactory](./img/DefaultListableBeanFactory.png)  
-　DefaultListableBeanFactory中存储的对象  
-　![DefaultListableBeanFactory的对象](./img/DefaultListableBeanFactory的对象.jpg)
+        　DefaultListableBeanFactory的继承结构  
+        　　![DefaultListableBeanFactory](./img/DefaultListableBeanFactory.png)  
+        　　DefaultListableBeanFactory中存储的对象  
+        　　![DefaultListableBeanFactory的对象](./img/DefaultListableBeanFactory的对象.jpg)
 - finishBeanFactoryInitialization(beanFactory);    完成非懒加载的单例bean的创建   
     - beanFactory.preInstantiateSingletons();   实例化所有剩余的(非惰性初始化)单例bean    
         - getMergedLocalBeanDefinition(beanName)　　RootBeanDefinition 继承 AbstractBeanDefinition，该方法是将Spring默认创建的AbstractBeanDefinition转为RootBeanDefinition

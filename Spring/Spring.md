@@ -250,7 +250,7 @@ public static void invokeBeanFactoryPostProcessors(
 
 ## SpringBean的生命周期
 
-![wecom-temp-eaa9892cad9edb70cdc20c75ca21ad73](https://pic.networkcv.top/2022/03/01/wecom-temp-eaa9892cad9edb70cdc20c75ca21ad73.png)
+
 
 ![image-20220208115525757](https://pic.networkcv.top/2022/02/08/image-20220208115525757.png)
 
@@ -695,10 +695,6 @@ public class OrderComparator implements Comparator<Object> {
 
 
 
-## AOP实现原理
-
-在初始化Bean的过程中 BeanPostProcessor#postProcessAfterInitialization 方法，由 AbstractAutoProxyCreator对原始对象进行包装，产生包含通知的代理类。
-
 ## 往容器加入Bean的几种方式
 
 1. @Bean
@@ -731,6 +727,29 @@ public class OrderComparator implements Comparator<Object> {
        }
    }
    ```
+
+## @Autowired 按什么来装配
+
+spring会有两个地方完成自动装配，：
+第一：**构造方法自动装配**
+第二：**populateBean方法中进行自动装配**
+
+在上篇博客中也有提到，spring的依赖注入主要包含如下几个方面：
+
+| 常见依赖注入类型                                | 对应的值 | 备注                 |
+| ----------------------------------------------- | -------- | -------------------- |
+| **AbstractBeanDefinition.AUTOWIRE_NO**          | 0        | 不开启自动装配功能   |
+| **AbstractBeanDefinition.AUTOWIRE_BY_NAME**     | 1        | 根据变量名来自动装配 |
+| **AbstractBeanDefinition.AUTOWIRE_BY_TYPE**     | 2        | 根据类型自动装配     |
+| **AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR** | 3        | 根据构造方法自动装配 |
+
+## Lookup-method
+
+和InitMethod一样，lookup-method也是Bean标签里的子元素，通常称为“获取器注入”。
+
+获取器注入是一种特殊的方法注入,它是把一个方法声明为返回某种类型的bean,但实际上,返回的bean是配置文件里面配置的,此方法可用在设计一些可插拔的功能上,解除程序依赖
+
+https://www.cnblogs.com/mjorcen/p/3647209.html
 
 ## Spring的初始化器-ApplicationContextInitializer
 
