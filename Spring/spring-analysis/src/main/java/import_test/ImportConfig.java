@@ -11,7 +11,10 @@ import org.springframework.context.annotation.Import;
  * @author liuWangjie
  */
 @Configuration
-@Import({MyImportBeanDefinitionRegistrar.class, MyImportSelector.class})
+//@Import({MyImportBeanDefinitionRegistrar.class})
+//@Import({MyImportSelector.class})
+//@Import({JavaBeanA.class})
+@Import(JavaFactoryBeanA.class)
 public class ImportConfig {
-    private Integer age=1;
 }
+

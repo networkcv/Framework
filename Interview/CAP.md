@@ -1,4 +1,7 @@
+
+
 ## ACID
+
 https://www.cnblogs.com/zhoujinyi/p/3437475.HTML
 
 事务控制
@@ -32,59 +35,59 @@ https://www.cnblogs.com/zhoujinyi/p/3437475.HTML
     以上4个级别的隔离性依次增强，分别解决不同的问题。事务隔离级别越高，就越能保证数据的完整性和一致性，但同时对并发性能的影响也越大。
 	
     隔离性：
-		本质就是多个线程操作一个资源造成的多线程并发安全问题，加锁可以保证隔离性，但会造成数据库性能下降
-		
-		两个事务并发修改：必须隔离
-		两个事务并发查询：不用隔离
-
-		一个修改，一个查询：
-
-		  脏读：一个事务读取到另一个事务未提交的数据
-		   -------
-		   a  1000
-		   b  1000
-		   -------
-			a: 
-			start transaction;
-			update account set money = money-100 where name ='a';
-			update account set money = money+100 where name ='b';
-			------
-				b:
-				start transaction;
-				select * from account;
-					------
-					a 900
-					b 1100
-					-------
-				commit;
-			a:
-			rollback;
-		 
-		  不可重复读：一个事务多次读取同一条记录，读取的结果不相同(一个事务读取到另一个事务已经提交的数据)
-		   -----------------
-		   a  1000 1000 1000
-		   -----------------
-		   b:
-			start transaction;
-			select 活期 from account where name ='a';
-			select 定期 from account where name ='a';
-			select 固定 from account where name ='a';
-			-------
-			a：
-				start transaction;
-				update account set 活期=活期-1000 where name='a';
-		   		comit;
-			------- 
-		   select 活期+定期+固定 from account where name = 'a';
-		   commit;
-	
-		  虚读(幻读)问题:一个事务多次查询整表达数据，由于其他事务的update，导致多次查询记录条数不同	
-
-	四大隔离级别  不同的隔离级别防止不同的问题
-	    read uncommitted 不做隔离，具有脏读，不可重复读，虚读问题
-	    read committed 可以防止脏读 ，不能防止不可重复读，虚读问题
-	    repeatable read 可以防止脏读，不可重复读，不能防止虚读问题
-	    serializable 数据库运行在串行化未实现，所有都没问题，但是性能比较低 
+    	本质就是多个线程操作一个资源造成的多线程并发安全问题，加锁可以保证隔离性，但会造成数据库性能下降
+    	
+    	两个事务并发修改：必须隔离
+    	两个事务并发查询：不用隔离
+    
+    	一个修改，一个查询：
+    
+    	  脏读：一个事务读取到另一个事务未提交的数据
+    	   -------
+    	   a  1000
+    	   b  1000
+    	   -------
+    		a: 
+    		start transaction;
+    		update account set money = money-100 where name ='a';
+    		update account set money = money+100 where name ='b';
+    		------
+    			b:
+    			start transaction;
+    			select * from account;
+    				------
+    				a 900
+    				b 1100
+    				-------
+    			commit;
+    		a:
+    		rollback;
+    	 
+    	  不可重复读：一个事务多次读取同一条记录，读取的结果不相同(一个事务读取到另一个事务已经提交的数据)
+    	   -----------------
+    	   a  1000 1000 1000
+    	   -----------------
+    	   b:
+    		start transaction;
+    		select 活期 from account where name ='a';
+    		select 定期 from account where name ='a';
+    		select 固定 from account where name ='a';
+    		-------
+    		a：
+    			start transaction;
+    			update account set 活期=活期-1000 where name='a';
+    	   		comit;
+    		------- 
+    	   select 活期+定期+固定 from account where name = 'a';
+    	   commit;
+    
+    	  虚读(幻读)问题:一个事务多次查询整表达数据，由于其他事务的update，导致多次查询记录条数不同	
+    
+    四大隔离级别  不同的隔离级别防止不同的问题
+        read uncommitted 不做隔离，具有脏读，不可重复读，虚读问题
+        read committed 可以防止脏读 ，不能防止不可重复读，虚读问题
+        repeatable read 可以防止脏读，不可重复读，不能防止虚读问题
+        serializable 数据库运行在串行化未实现，所有都没问题，但是性能比较低 
 
 
 
@@ -130,7 +133,7 @@ BASE是Basically Available(基本可用）、Soft state(软状态）和Eventuall
     基本可用是指分布式系统在出现不可预知故障的时候，允许损失部分可用性——但请注意，这绝不等价于系统不可用。一下就是两个"基本可用"的例子。
 
     响应时间上的损失：正常情况下，一个在线搜索引擎需要在0.5秒之内返回给用户相应的查询结果，但由于出现故障（比如系统部分机房发生断电或断网故障），查询结果的响应时间增加到了1~2秒。
-
+    
     功能上的损失：正常情况下，在一个电子商务网站（比如淘宝）上购物，消费者几乎能够顺利地完成每一笔订单。但在一些节日大促购物高峰的时候（比如双十一、双十二），由于消费者的购物行为激增，为了保护系统的稳定性（或者保证一致性），部分消费者可能会被引导到一个降级页面，如下：
 
 软状态

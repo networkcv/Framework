@@ -13,6 +13,6 @@ import org.springframework.core.type.AnnotationMetadata;
 public class MyImportSelector implements ImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-        return new String[]{"import_test.JavaBeanB"};
+        return new String[]{"import_test.Beans.JavaBeanB"};
     }
 }
