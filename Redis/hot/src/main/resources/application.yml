@@ -1,0 +1,31 @@
+#开发配置
+spring:
+  #数据源配置
+  datasource:
+    url: jdbc:mysql://192.168.72.128:3306/demo?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+
+
+#公共配置与profiles选择无关
+mybatis:
+  typeAliasesPackage: com.lagou.hot.po
+  mapperLocations: classpath:mapper/*.xml
+
+spring.redis:
+  database: 0 # Redis数据库索引（默认为0）
+  timeout: 10000 # 连接超时时间（毫秒）
+  pool:
+    max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
+    max-idle: 8 # 连接池中的最大空闲连接
+    max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+    min-idle: 0 # 连接池中的最小空闲连接
+  cluster:
+    nodes:
+      - 192.168.72.128:7001
+      - 192.168.72.128:7002
+      - 192.168.72.128:7003
+
