@@ -168,15 +168,15 @@ I/O完成端口的设计理论依据是并发编程的线程数必须有一个�
 
 ### 阻塞式I/O
 
-阻塞I/O模型：最常用的I/O模型就是阻塞I/O模型，缺省情形下，所有文件操作都是阻塞的。在进程空间中调用recvfrom，其系统调用直到数据包到达且被复制到应用进程的缓冲区中或者发生错误时才返回（最常见的错误是系统调用被信号中断），在此期间一直会等待，进程在从调用recvfrom开始到它返回的整段时间内都是被阻塞的，因此被称为阻塞I/O模型。
+阻塞I/O模型：最常用的I/O模型就是阻塞I/O模型，缺省情形下，所有文件操作都是阻塞的。在进程空间中调用recvfrom，**其系统调用直到数据包到达且被复制到应用进程的缓冲区中或者发生错误时才返回**（最常见的错误是系统调用被信号中断），在此期间一直会等待，进程在从调用recvfrom开始到它返回的整段时间内都是被阻塞的，因此被称为阻塞I/O模型。
 
-<img src="https://pic.networkcv.top/2022/01/19/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_6226df70-f84a-4e7a-9665-2fc198af5bf0.png" alt="企业微信截图_6226df70-f84a-4e7a-9665-2fc198af5bf0" style="zoom:50%;" />
+<img src="img/Netty权威指南/image-20220307113420011.png" alt="image-20220307113420011" style="zoom:50%;" />
 
 ### 非阻塞式I/O
 
 非阻塞I/O模型：进程把一个套接字设置成非阻塞是在通知内核：当系统调用recvfrom从应用层到内核的时候，如果该缓冲区没有数据的话，就直接返回一个EWOULDBLOCK错误，而不是让该进程睡眠。一般都对非阻塞I/O模型进行轮询检查这个状态，看内核是不是有数据到来。
 
-<img src="https://pic.networkcv.top/2022/01/19/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_bc52f7a8-de81-4691-bbac-0f6a9b0c3ce6.png" alt="企业微信截图_bc52f7a8-de81-4691-bbac-0f6a9b0c3ce6" style="zoom:50%;" />
+<img src="img/Netty权威指南/image-20220307113451004.png" alt="image-20220307113451004" style="zoom:50%;" />
 
 前两次调用recvfrom 时没有数据可返回，因此内核转而立即返回一个EWOULDBLOCK 错误。第三次调用recvfrom 时已有一个数据报准备好，它被复制到应用进程缓冲区，于是recvfrom 成功返回。我们接着处理数据。
 
@@ -188,7 +188,7 @@ I/O复用模型：Linux提供select/poll，进程通过将一个或多个fd传�
 
 select/poll是顺序扫描fd是否就绪，而且支持的fd数量有限（默认1024），因此它的使用受到了一些制约。Linux还提供了一个epoll系统调用，epoll使用基于事件驱动方式代替顺序扫描，因此性能更高。当有fd就绪时，立即回调函数rollback。
 
-<img src="https://pic.networkcv.top/2022/01/19/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_a2b6a3c2-fa4d-43f0-adee-15ffb24c2aac.png" alt="企业微信截图_a2b6a3c2-fa4d-43f0-adee-15ffb24c2aac" style="zoom:50%;" />
+<img src="img/Netty权威指南/image-20220307113503572.png" alt="image-20220307113503572" style="zoom:50%;" />
 
 与I/O复用密切相关的另一种I/O模型是在多线程中使用阻塞式I/O，这里暂称其为伪异步I/O。这种模型与上述模型极为相似，但它没有使用select 阻塞在多个文件描述符上，而是使用多个线程（每个文件描述符一个线程），这样每个线程都可以自由地调用诸如recvfrom 之类的阻塞式I/O系统调用了。
 
@@ -202,13 +202,13 @@ select/poll是顺序扫描fd是否就绪，而且支持的fd数量有限（默�
 
 信号驱动I/O模型：首先开启套接口信号驱动I/O功能，并通过系统调用sigaction执行一个信号处理函数（此系统调用立即返回，进程继续工作，它是非阻塞的）。当数据准备就绪时，就为该进程生成一个SIGIO信号，通过信号回调通知应用程序调用recvfrom来读取数据，并通知主循环函数处理数据。
 
-<img src="https://pic.networkcv.top/2022/01/19/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_f7e58802-7544-4430-b4e3-c98447a6284a.png" alt="企业微信截图_f7e58802-7544-4430-b4e3-c98447a6284a" style="zoom:50%;" />
+<img src="img/Netty权威指南/image-20220307113518488.png" alt="image-20220307113518488" style="zoom:50%;" />
 
 ### 异步I/O
 
 异步I/O：告知内核启动某个操作，并让内核在整个操作完成后（包括将数据从内核复制到用户自己的缓冲区）通知我们。这种模型与信号驱动模型的主要区别是：信号驱动I/O由内核通知我们何时可以开始一个I/O操作；异步I/O模型由内核通知我们I/O操作何时已经完成。
 
-<img src="https://pic.networkcv.top/2022/01/19/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_fc286666-9240-4fd7-acbc-3878bf4839f9.png" alt="企业微信截图_fc286666-9240-4fd7-acbc-3878bf4839f9" style="zoom:50%;" />
+<img src="img/Netty权威指南/image-20220307104629461.png" alt="image-20220307104629461" style="zoom:50%;" />
 
 
 

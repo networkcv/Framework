@@ -581,6 +581,10 @@ Bean 容器利用 Java Reflection API 创建一个 Bean 的实例。
 
 当要销毁 Bean 的时候，如果 Bean 在配置文件中的定义包含 destroy-method 属性，执行指定的方法。
 
+## Bean后置处理器的9次调用
+
+![image-20220314171112781](img/Spring-Interview/image-20220314171112781.png)
+
 ## Spring中Bean的作用域
 
 - **singleton** : 唯一 bean 实例，Spring 中的 bean 默认都是单例的，对单例设计模式的应用。
