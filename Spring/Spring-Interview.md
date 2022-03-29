@@ -64,6 +64,138 @@ public class Human {
 
 上面代码中，我们将 father 对象作为构造函数的一个参数传入。在调用 Human 的构造方法之前外部就已经初始化好了 Father 对象。像这种非自己主动初始化依赖，而通过外部来传入依赖的方式，我们就称为依赖注入。
 
+## ！spring中Bean的生命周期
+
+![image-20220303210458250](img/Spring-Interview/image-20220303210458250.png)
+
+Bean 容器找到配置文件中 Spring Bean 的定义。
+
+Bean 容器利用 Java Reflection API 创建一个 Bean 的实例。
+
+如果涉及到一些属性值 利用 `set()`方法设置一些属性值。
+
+如果 Bean 实现了 `BeanNameAware` 接口，调用 `setBeanName()`方法，传入 Bean 的名字。
+
+如果 Bean 实现了 `BeanClassLoaderAware` 接口，调用 `setBeanClassLoader()`方法，传入 `ClassLoader`对象的实例。
+
+如果 Bean 实现了 `BeanFactoryAware` 接口，调用 `setBeanFactory()`方法，传入 `BeanFactory`对象的实例。
+
+与上面的类似，如果实现了其他 `*.Aware`接口，就调用相应的方法。
+
+如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessBeforeInitialization()` 方法
+
+如果 Bean 实现了`InitializingBean`接口，执行`afterPropertiesSet()`方法。
+
+如果 Bean 在配置文件中的定义包含 init-method 属性，执行指定的方法。
+
+如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessAfterInitialization()` 方法
+
+当要销毁 Bean 的时候，如果 Bean 实现了 `DisposableBean` 接口，执行 `destroy()` 方法。
+
+当要销毁 Bean 的时候，如果 Bean 在配置文件中的定义包含 destroy-method 属性，执行指定的方法。
+
+## ！三级缓存解决循环依赖
+
+[循环依赖](https://zhuanlan.zhihu.com/p/377878056)
+
+**核心原理**
+
+将未完成创建的对象引用提前暴露出来，来完成循环依赖中一方的对象创建，从而打破循环依赖。
+
+背景：A依赖B ，B依赖A
+
+名词：一级缓存（也就是对象池 singletonObjects） 二级缓存（earlySingletonObjects） 三级缓存（singletonFactories）
+
+一级缓存存放完整的bean对象，二级缓存存放提前暴露的bean对象（有aop的话存放的是代理对象），三级缓存存放的是对应bean的工厂方法#getEarlyBeanReference，该方法在获取提前暴露时会触发生成代理对象。
+
+**二级缓存能解决吗？**
+
+- 二级缓存可以实现，一个缓存用于存放成品对象，另外一个缓存用于存放半成品对象。
+- A 在创建半成品对象后存放到缓存中，接下来补充 A 对象中依赖 B 的属性。
+- B 继续创建，创建的半成品同样放到缓存中，在补充对象的 A 属性时，可以从半成品缓存中获取，现在 B 就是一个完整对象了，而接下来像是递归操作一样 A 也是一个完整对象了。
+
+<img src="img/Spring-Interview/image-20220329173859020.png" alt="image-20220329173859020" style="zoom:67%;" />
+
+**为什么是三级缓存？**
+
+<img src="img/Spring-Interview/image-20220329173507332.png" alt="image-20220329173507332" style="zoom:77%;" />
+
+二级缓存能解决能循环依赖，但是会影响aop代理对象的创建。
+
+Java 对象创建流程是 实例化，属性赋值，初始化，提前暴露对象引用的过程是发生在实例化和属性赋值之间的。
+通过二级缓存，也可以实现AOP，原本spirng 生成代理对象是在初始化bean的beanPost后置处理阶段，将获取代理对象的时机提前至实例化后和暴露属性之前，这样引用这个对象的bean就能拿到该对象的代理引用了，但这样会违背spring设计aop的原则，将aop的实现和bean的生命周期耦合了。
+
+![image-20220329172729625](img/Spring-Interview/image-20220329172729625.png)
+
+
+
+
+
+
+
+## Spirng容器刷新源码解析
+
+```java
+// Prepare this context for refreshing.
+//  进行容器刷新前的准备工作, 记录下容器的启动时间、标记“已启动”状态、处理配置文件中的占位符
+prepareRefresh();
+
+// Tell the subclass to refresh the internal bean factory.
+//  获取BeanFactory，实例类型为DefaultListableBeanFactory
+// 这步比较关键，这步完成后，配置文件就会解析成一个个 Bean 定义，注册到 BeanFactory 中，
+// 当然，这里说的 Bean 还没有实例化，只是配置信息都提取出来了，
+// 注册也只是将这些信息都保存到了注册中心(说到底核心是一个 beanName-> beanDefinition 的 map)
+ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+// Prepare the bean factory for use in this context.
+//  对BeanFactory做一些准备工作，如准备类加载器和配置BeanFactory的容器回调
+// 设置 BeanFactory 的类加载器，添加几个 BeanPostProcessor，手动注册几个特殊的 bean
+prepareBeanFactory(beanFactory);
+
+// Allows post-processing of the bean factory in context subclasses.
+//  允许在上下文子类中对bean工厂进行后处理
+// 【这里需要知道 BeanFactoryPostProcessor 这个知识点，Bean 如果实现了此接口，
+// 那么在容器初始化以后，Spring 会负责调用里面的 postProcessBeanFactory 方法。】
+// 这里是提供给子类的扩展点，到这里的时候，所有的 Bean 都加载、注册完成了，但是都还没有初始化
+// 具体的子类可以在这步的时候添加一些特殊的 BeanFactoryPostProcessor 的实现类或做点什么事
+postProcessBeanFactory(beanFactory);
+
+// Invoke factory processors registered as beans in the context.
+//在所有非懒加载的单例Bean实例化之前调用一次实现BeanFactoryPostProcessor接口的方法，对实现了PriorityOrdered、Order和没有实现Order接口的方法的优先级区分
+invokeBeanFactoryPostProcessors(beanFactory);
+
+// Register bean processors that intercept bean creation.
+//  注册实现了BeanPostProcessor接口的方法，也进行了优先级的区分，实现控制调用顺序
+registerBeanPostProcessors(beanFactory);
+
+// Initialize message source for this context.
+//  initMessageSource方法用于初始化MessageSource，MessageSource是Spring定义的用于实现访问国际化的接口
+initMessageSource();
+
+// Initialize event multicaster for this context.
+//  initApplicationEventMulticaster方法是用于初始化上下文事件广播器的，观察者模式的经典示例
+initApplicationEventMulticaster();
+
+// Initialize other special beans in specific context subclasses.
+ // 从方法名就可以知道，典型的模板方法(钩子方法)，
+// 具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）
+onRefresh();
+
+// Check for listener beans and register them.
+//  用于注册监听器
+registerListeners();
+
+// Instantiate all remaining (non-lazy-init) singletons.
+// *完成非懒加载单实例Bean的实例化和初始化
+finishBeanFactoryInitialization(beanFactory);
+
+// Last step: publish corresponding event.
+//  结束Spring上下文刷新
+finishRefresh();
+```
+
+
+
 ## Spring属性注入几种方式
 
 [Bean注入属性几种方式](https://www.cnblogs.com/tuyang1129/p/12873492.html)
@@ -551,35 +683,7 @@ public class MyBeanFactory {
 </beans>
 ```
 
-## spring中Bean的生命周期
 
-![image-20220303210458250](img/Spring-Interview/image-20220303210458250.png)
-
-Bean 容器找到配置文件中 Spring Bean 的定义。
-
-Bean 容器利用 Java Reflection API 创建一个 Bean 的实例。
-
-如果涉及到一些属性值 利用 `set()`方法设置一些属性值。
-
-如果 Bean 实现了 `BeanNameAware` 接口，调用 `setBeanName()`方法，传入 Bean 的名字。
-
-如果 Bean 实现了 `BeanClassLoaderAware` 接口，调用 `setBeanClassLoader()`方法，传入 `ClassLoader`对象的实例。
-
-如果 Bean 实现了 `BeanFactoryAware` 接口，调用 `setBeanFactory()`方法，传入 `BeanFactory`对象的实例。
-
-与上面的类似，如果实现了其他 `*.Aware`接口，就调用相应的方法。
-
-如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessBeforeInitialization()` 方法
-
-如果 Bean 实现了`InitializingBean`接口，执行`afterPropertiesSet()`方法。
-
-如果 Bean 在配置文件中的定义包含 init-method 属性，执行指定的方法。
-
-如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessAfterInitialization()` 方法
-
-当要销毁 Bean 的时候，如果 Bean 实现了 `DisposableBean` 接口，执行 `destroy()` 方法。
-
-当要销毁 Bean 的时候，如果 Bean 在配置文件中的定义包含 destroy-method 属性，执行指定的方法。
 
 ## Bean后置处理器的9次调用
 
@@ -713,81 +817,6 @@ spring的依赖注入主要包含如下几个方面：
 | **AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR** | 3        | 根据构造方法自动装配 |
 
 
-
-## 三级缓存解决循环依赖
-
-**核心原理**
-
-将未完成创建的对象引用提前暴露出来，来完成循环依赖中一方的对象创建，从而打破循环依赖。
-
-背景：A依赖B ，B依赖A
-
-名词：一级缓存（也就是对象池 singletonObjects） 二级缓存（earlySingletonObjects） 三级缓存（singletonFactories）
-
-创建A——将不完整的A加入三级缓存——填充A的属性发现依赖B——容器（包括一二三级缓存）中拿不到B——创建B——将不完整的B加入三级缓存——填充B的属性发现依赖A——一级缓存和二级缓存中没有，但发现三级缓存里有A的引用——于是返回A对象引用，这样就完成了B对象的创建——B对象创建完成后就可以完成A对象的属性填充——最后完成A对象。
-
-**为什么是三级缓存？二级缓存能解决吗？**
-
-## Spirng容器刷新源码解析
-
-```java
-// Prepare this context for refreshing.
-//  进行容器刷新前的准备工作, 记录下容器的启动时间、标记“已启动”状态、处理配置文件中的占位符
-prepareRefresh();
-
-// Tell the subclass to refresh the internal bean factory.
-//  获取BeanFactory，实例类型为DefaultListableBeanFactory
-// 这步比较关键，这步完成后，配置文件就会解析成一个个 Bean 定义，注册到 BeanFactory 中，
-// 当然，这里说的 Bean 还没有实例化，只是配置信息都提取出来了，
-// 注册也只是将这些信息都保存到了注册中心(说到底核心是一个 beanName-> beanDefinition 的 map)
-ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
-
-// Prepare the bean factory for use in this context.
-//  对BeanFactory做一些准备工作，如准备类加载器和配置BeanFactory的容器回调
-// 设置 BeanFactory 的类加载器，添加几个 BeanPostProcessor，手动注册几个特殊的 bean
-prepareBeanFactory(beanFactory);
-
-// Allows post-processing of the bean factory in context subclasses.
-//  允许在上下文子类中对bean工厂进行后处理
-// 【这里需要知道 BeanFactoryPostProcessor 这个知识点，Bean 如果实现了此接口，
-// 那么在容器初始化以后，Spring 会负责调用里面的 postProcessBeanFactory 方法。】
-// 这里是提供给子类的扩展点，到这里的时候，所有的 Bean 都加载、注册完成了，但是都还没有初始化
-// 具体的子类可以在这步的时候添加一些特殊的 BeanFactoryPostProcessor 的实现类或做点什么事
-postProcessBeanFactory(beanFactory);
-
-// Invoke factory processors registered as beans in the context.
-//在所有非懒加载的单例Bean实例化之前调用一次实现BeanFactoryPostProcessor接口的方法，对实现了PriorityOrdered、Order和没有实现Order接口的方法的优先级区分
-invokeBeanFactoryPostProcessors(beanFactory);
-
-// Register bean processors that intercept bean creation.
-//  注册实现了BeanPostProcessor接口的方法，也进行了优先级的区分，实现控制调用顺序
-registerBeanPostProcessors(beanFactory);
-
-// Initialize message source for this context.
-//  initMessageSource方法用于初始化MessageSource，MessageSource是Spring定义的用于实现访问国际化的接口
-initMessageSource();
-
-// Initialize event multicaster for this context.
-//  initApplicationEventMulticaster方法是用于初始化上下文事件广播器的，观察者模式的经典示例
-initApplicationEventMulticaster();
-
-// Initialize other special beans in specific context subclasses.
- // 从方法名就可以知道，典型的模板方法(钩子方法)，
-// 具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）
-onRefresh();
-
-// Check for listener beans and register them.
-//  用于注册监听器
-registerListeners();
-
-// Instantiate all remaining (non-lazy-init) singletons.
-// *完成非懒加载单实例Bean的实例化和初始化
-finishBeanFactoryInitialization(beanFactory);
-
-// Last step: publish corresponding event.
-//  结束Spring上下文刷新
-finishRefresh();
-```
 
 
 

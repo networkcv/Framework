@@ -298,7 +298,7 @@ public class FinalizeEscapeGC {
 - Young GC 主要是对Eden区进行GC，**它在Eden空间耗尽时会被触发**。在这种情况下Eden空间的数据移动到 Survivor空间中如果 Survivor 空间不够,Eden空间的部分数据会直接晋升到老年代空间。 Survivor区的数据移动到新的 Survivor 区中,也有部分数据晋升到老年代空间中。最终Eden空间的数据为空,GC完成工作,应用线程继续执行;
 - 如果仅仅 GC 新生代对象,我们如何找到所有的根对象呢?老年代的所有对象都是根么?那这样扫描下来会耗费大量的时间。于是，G1引进了 RSet 的概念。它的全称是 Remembered set，作用是跟踪指向某个堆内的对象引用
 
-![image-20191218205128114](D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218205128114.png)
+![image-20191218205128114](.img/JVMNotes/JVM 垃圾回收.resource/image-20191218205128114.png)
 
 - 在 CMS 中,也有RSet的概念,**在老年代中有一块区域用来记录指向新生代的引用这是一种 point-out**,在进行 Young Go时扫描根时,仅仅需要扫描这一块区域,而不需要扫描整个老年代
 

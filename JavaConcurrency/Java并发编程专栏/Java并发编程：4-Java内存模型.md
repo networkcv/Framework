@@ -207,6 +207,7 @@ public class SingleClass{
 ### 3.2 volatile
 我们已经知道volatile可以保证可见性和有序性，那么它是如何做到的。
 首先要了解一个CPU指令，内存屏障(Memory Barrier)，也可以被称为内存栅栏。
+
 - 它可以保证特定操作的执行顺序。
 Happens-Before中，通过在需要保证可见性的指令之间插入内存屏障，来禁止在内存屏障前后的指令执行重排序优化。
 - 保证某些变量的内存可见性。
@@ -231,7 +232,7 @@ public class SynchronizedDemo {
 }
 ```
 
-![](D:\study\Framework\Java\img\19-synchronized原理.jpg)
+![](.\img\19-synchronized原理.jpg)
 
 &emsp;&emsp;**synchronized 同步语句块的实现使用的是 monitorenter 和 monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。** 当执行 monitorenter 指令时，线程试图获取锁也就是获取 monitor(monitor对象存在于每个Java对象的对象头中，synchronized 锁便是通过这种方式获取锁的，也是为什么Java中任意对象可以作为锁的原因) 的持有权。当计数器为0则可以成功获取，获取后将锁计数器设为1也就是加1。相应的在执行 monitorexit 指令后，将锁计数器设为0，表明锁被释放。如果获取对象锁失败，那当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
 
@@ -245,7 +246,7 @@ public class SynchronizedDemo2 {
 }
 ```
 
-![](D:\study\Framework\Java\img\20-synchronized原理.jpg)
+![](img\20-synchronized原理.jpg)
 
 &emsp;&emsp;synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，取得代之的确实是 ACC_SYNCHRONIZED 标识，该标识指明了该方法是一个同步方法，JVM 通过该 ACC_SYNCHRONIZED 访问标志来辨别一个方法是否声明为同步方法，从而执行相应的同步调用。
 

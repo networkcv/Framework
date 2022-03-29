@@ -1,3 +1,5 @@
+# [B站Pulsar视频](https://www.bilibili.com/video/BV1CF411v7Dh?p=13&spm_id_from=pageDriver)
+
 # 云原生
 
 DevOps + 持续交付 + 微服务 + 容器
@@ -26,7 +28,7 @@ DevOps + 持续交付 + 微服务 + 容器
 
 ![image-20220326235733033](img/Pulsar/image-20220326235733033.png)
 
-## 灵活的消息系统
+## 灵活的消息模型
 
 - **Pulsar 做了队列模型和流模型的统一**，在 Topic 级别只需保存一份数据，同一份数据可多次消费。以流式、队列等方式计算不同的订阅模型大大提升了灵活度。
   - 队列模型就是我们平时使用的消息队列，消息先进先出。
@@ -36,7 +38,7 @@ DevOps + 持续交付 + 微服务 + 容器
 
 ![image-20220327000117844](img/Pulsar/image-20220327000117844.png)
 
-## 云原生架构
+## 存储与计算分离！
 
 Pulsar 使用计算与**存储分离的云原生架构**，数据不在 Broker 里，而是存在共享存储内部。上层是无状态 Broker，复制消息分发和服务；下层是持久化的存储层 Bookie 集群。Pulsar 存储是分片的，这种构架可以避免扩容时受限制，实现数据的独立扩展和快速恢复
 
@@ -61,6 +63,8 @@ Pulsar 中的跨地域复制是将 Pulsar 中持久化的消息在多个集群�
 # Pulsar 相关组件
 
 ## 层级存储
+
+数据分级存储。可以将一些老的数据存到冷盘中。
 
 - Infinite Stream：以流的方式永久保存原始数据
 
@@ -105,7 +109,7 @@ Pulsar Functions 的设计灵感来自于 Heron 这样的流处理引擎，Pulsa
 - Kafka: producer - topic -  consumer group - consumer（可以将多个消费者放在一个消费组里）
 - Pulsar: producer - topic - subsciption - consumer（一个订阅里也可以有多个消费者）
 
-## 消息消费模式
+## 消息消费模式！
 
 - Kafka：主要集中在流（Stream）模式，对单个 partitionz 是独占消费，没有共享（Queue）的消费模式。简单来说，对于一个分区，消费组间是多播，组内是单播，只有一个消费者能拿到消息消费，具体的话可以让这个消费者开多线程去消费。
 
@@ -123,11 +127,25 @@ Pulsar Functions 的设计灵感来自于 Heron 这样的流处理引擎，Pulsa
 - Kafka：根据设置的保留期来删除消息，有可能消息没被消费，过期后被删除，不支持 TTL 
 - Pulsar：消息只有被所有订阅消费后才会删除，不会丢失数据，也运行设置保留期，保留被消费的数据，支持 TTL
 
-##  数据存储
+##  数据存储！
 
-​	两者都有类似的消息概念，客户端通过topic与消息系统交互，每个topic都可以分多个分区。不同的是：
+​	两者都有类似的消息概念，客户端通过topic与消息系统交互，每个topic都可以分多个分区partition。partition又可以细分为segment，不同的是：
 
-- Kafka：按 partition 来存储到 broker 中
+- Kafka：按 partition 来存储到 broker 中。集群扩容时会将 partition 复制到新的broker里 。
+
+-  [Kafka文件存储机制](https://tech.meituan.com/2015/01/13/kafka-fs-design-theory.html)
+
+- [Kafka集群partitions/replicas默认分配解析](https://blog.csdn.net/lizhitao/article/details/41778193)
+
+  当集群节点中包含4个分区partition，2个副本replication时：
+
+  <img src="img/Pulsar/image-20220328104636803.png" alt="image-20220328104636803" style="zoom: 67%;" />
+
+  当集群新增节点时，Partition增加到6个broker时：
+
+  <img src="img/Pulsar/image-20220328104731788.png" alt="image-20220328104731788" style="zoom:67%;" />
+
+  
 
 - Pulsar：将 partition 细分为一个个的 segment 片段来存储，没有存在 broker 中，而是单独放到了 bookie 中。
 
