@@ -97,6 +97,10 @@ SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCKS;
 SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCK_WAITS;
 ```
 
+
+
+
+
 ## 为什么要分库分表（设计高并发系统的时候，数据库层面该如何设计）？
 
 |     场景     |          分库分表前          |                  分库分表后                  |
