@@ -47,6 +47,8 @@ class RemoveNthNodeFromEndOfList {
     public static void main(String[] args) {
         Solution solution = new RemoveNthNodeFromEndOfList().new Solution();
         ListNode listNode = ListNodeUtils.get(123);
+        solution.removeNthFromEnd(listNode,3);
+        solution.removeNthFromEnd(listNode,1);
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 
@@ -62,7 +64,20 @@ class RemoveNthNodeFromEndOfList {
      */
     class Solution {
         public ListNode removeNthFromEnd(ListNode head, int n) {
-            return null;
+            //构建一个虚拟头节点，从这个节点遍历，就可以将删除头节点这一情况规避掉
+            ListNode res = new ListNode();
+            ListNode first = res;
+            ListNode slow = res;
+            res.next = head;
+            while (n-- > 0) {
+                first = first.next;
+            }
+            while (first.next != null) {
+                first = first.next;
+                slow = slow.next;
+            }
+            slow.next = slow.next.next;
+            return res.next;
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)
