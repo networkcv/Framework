@@ -50,20 +50,7 @@ package com.lwj.algo.leetcode.editor.cn;
 class MergeKSortedLists {
     public static void main(String[] args) {
         Solution solution = new MergeKSortedLists().new Solution();
-        ListNode one1 = new ListNode(1);
-        ListNode one2 = new ListNode(3);
-        ListNode one3 = new ListNode(5);
-        ListNode two1 = new ListNode(1);
-        ListNode two2 = new ListNode(2);
-        ListNode two3 = new ListNode(6);
-        ListNode three1 = new ListNode(4);
-        ListNode three2 = new ListNode(5);
-        one1.next = one2;
-        one2.next = one3;
-        two1.next = two2;
-        two2.next = two3;
-        three1.next = three2;
-        ListNode[] listNodes = {one1, two1, three1};
+        ListNode[] listNodes = {ListNodeUtils.get(135), ListNodeUtils.get(126), ListNodeUtils.get(45)};
         System.out.println(solution.mergeKLists(listNodes));
     }
     //leetcode submit region begin(Prohibit modification and deletion)

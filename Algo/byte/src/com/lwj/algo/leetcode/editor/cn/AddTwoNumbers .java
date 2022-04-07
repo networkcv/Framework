@@ -69,11 +69,8 @@ class AddTwoNumbers {
 
 
     public static void main(String[] args) {
-        AddTwoNumbers addTwoNumbers = new AddTwoNumbers();
         Solution solution = new AddTwoNumbers().new Solution();
-        ListNode node = addTwoNumbers.num2node(new BigDecimal("9999999"));
-        ListNode node2 = addTwoNumbers.num2node(new BigDecimal("99"));
-        System.out.println(solution.addTwoNumbers(node, node2));//89990001
+        System.out.println(solution.addTwoNumbers(ListNodeUtils.get(99999999), ListNodeUtils.get(9999)));//89990001
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 
