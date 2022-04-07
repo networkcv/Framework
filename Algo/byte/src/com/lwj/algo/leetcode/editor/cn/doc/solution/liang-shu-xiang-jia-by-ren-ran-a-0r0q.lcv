@@ -1,0 +1,48 @@
+### 整体思路
+
+1. 创建一个新的链表listNode，不管三七二十一直接给出的两个链表的每个节点的val值相加，不管最终节点val值是否大于10。
+2. 遍历链表，如果该节点的val值大于10，就将下一节点的val值加1。
+3. 一些细节处理请看代码。
+
+### 代码实现
+
+* java
+
+```java
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode m = l1, n = l2;
+        ListNode listNode = new ListNode(0, null);
+        ListNode head = listNode;
+
+        do {
+            if (m != null && n != null) {
+                listNode.next = new ListNode(m.val + n.val, null);
+                listNode = listNode.next;
+                m = m.next;
+                n = n.next;
+            }
+        } while (m != null && n != null);
+        if (m == null && n != null) {
+            listNode.next = n;
+        } else if (m != null){
+            listNode.next = m;
+        }
+
+        ListNode result = head;
+        while (head != null) {
+            if (head.val >= 10) {
+                head.val = head.val % 10;
+                if (head.next != null) {
+                    head.next.val += 1;
+                } else {
+                    head.next = new ListNode(1, null);
+                }
+            }
+            head = head.next;
+        }
+
+        return result.next;
+    }
+```
+
+最后，这种方法复杂度不高，但是内存消耗还是有些大

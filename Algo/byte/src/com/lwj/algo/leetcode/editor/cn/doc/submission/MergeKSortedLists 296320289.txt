@@ -1,0 +1,48 @@
+
+    /**
+     * Definition for singly-linked list.
+     * public class ListNode {
+     * int val;
+     * ListNode next;
+     * ListNode() {}
+     * ListNode(int val) { this.val = val; }
+     * ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+     * }
+     */
+    class Solution {
+        public ListNode mergeKLists(ListNode[] lists) {
+            //1.迭代合并，将多个链表和简化为多次两个链表的合并 时间复杂度（）
+            if (lists.length==0){
+                return null;
+            }
+            if (lists.length==1){
+                return lists[0];
+            }
+            ListNode res = mergeList(lists[0], lists[1]);
+            for (int i = 2; i < lists.length; i++) {
+                res = mergeList(res, lists[i]);
+            }
+            //2.
+            return res;
+        }
+
+        public ListNode mergeList(ListNode node1, ListNode node2) {
+            ListNode res = new ListNode();
+            ListNode cur = res;
+            while (node1 != null && node2 != null) {
+                if (node1.val < node2.val) {
+                    cur.next = node1;
+                    node1 = node1.next;
+                } else {
+                    cur.next = node2;
+                    node2 = node2.next;
+                }
+                cur = cur.next;
+            }
+            cur.next = node1 == null ? node2 : node1;
+            return res.next;
+        }
+    }
+
+//runtime:99 ms
+//memory:43.4 MB

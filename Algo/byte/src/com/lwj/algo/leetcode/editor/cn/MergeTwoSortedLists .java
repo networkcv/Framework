@@ -78,12 +78,7 @@ class MergeTwoSortedLists {
                 }
                 cur = cur.next;
             }
-            if (list1 == null) {
-                cur.next = list2;
-            }
-            if (list2 == null) {
-                cur.next = list1;
-            }
+            cur.next = list1 == null ? list2 : list1;
             return res.next;
         }
     }
