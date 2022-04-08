@@ -86,9 +86,9 @@ class AddTwoNumbers {
      */
     class Solution {
         public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
-            //1.链表转化为数字再相加
+            //1.链表转化为数字再相加 可能数据溢出
 //            return num2node(node2num(l1).add(node2num(l2)));
-            //2.直接链表每个节点相加
+            //2.直接链表每个节点相加，模拟进位
             return fun2(l1, l2);
             //3.直接将结点加起来，不考虑进位，最后统一遍历节点做进位
         }
