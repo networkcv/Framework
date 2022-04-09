@@ -47,7 +47,7 @@ package com.lwj.algo.leetcode.editor.cn;
 class ReverseLinkedList {
     public static void main(String[] args) {
         Solution solution = new ReverseLinkedList().new Solution();
-        ListNode res = solution.reverseList(ListNodeUtils.get(12345));
+        ListNode res = solution.reverseList(ListNodeUtils.get(123));
         System.out.println(res);
     }
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -76,9 +76,22 @@ class ReverseLinkedList {
 //            }
 //            return preNode;
             //2.递归
-            ListNode preNode = null;
-            return reverseNode(head, preNode);
+//            ListNode preNode = null;
+//            return reverseNode(head, preNode);
+            //3.递归2
+            return reverse(head);
         }
+
+        public ListNode reverse(ListNode head) {
+            if (head == null || head.next == null) {
+                return head;
+            }
+            ListNode newHead = reverse(head.next);
+            head.next.next = head;
+            head.next = null;
+            return newHead;
+        }
+
 
         private ListNode reverseNode(ListNode head, ListNode preNode) {
             if (head == null) {
