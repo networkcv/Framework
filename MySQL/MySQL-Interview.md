@@ -16,15 +16,24 @@ start transaction with consistent snapshot
 show VARIABLES like 'TRANSACTION_ISOLATION';
 # 查看事务隔离级别
 select @@tx_isolation;
+# 设置事务隔离级别
+set tx_isolation='READ-UNCOMMITTED';
+set tx_isolation='READ-COMMITTED'; 
+set tx_isolation='REPEATABLE-READ';
+set tx_isolation='SERIALIZABLE';
+
 # 查看锁的概况
 select * from information_schema.innodb_locks;
 # InnoDB整体状态，其中包括锁的情况
 show engine innodb status;
+
 # 查看事务状态
 SELECT * FROM information_schema.INNODB_TRX;
-# 查看正在锁的事务
+# 查看行锁信息（8.0）
+select * from performance_schema.data_locks; 
+# 查看正在锁的事务(5.x)
 SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCKS;
-# 查看等待锁的事务
+# 查看等待锁的事务(5.x)
 SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCK_WAITS;
 
 # 查询表中索引信息
@@ -82,7 +91,7 @@ select * from t force index(a) where a between 10000 and 20000;
 
 # redolog 和 binlog
 
-## redolog TODO
+## redolog
 
 **redo log 出现背景**
 
@@ -111,19 +120,9 @@ redo log 是一种预写式日志，它会将所有的修改先写入日志，�
 - 1：每次事务提交时，**同步** 将缓冲区的 redo 日志写入到磁盘
 - 2：每次事务提交时，**异步** 将缓冲区的 redo 日志写入到磁盘
 
-
-
-我可以认为redo log 记录的是这个行在这个页更新之后的状态，binlog 记录的是sql吗？
-
-SQL是面向用户的语义化命令，你可以理解为高级编程语言。高级编程语言最终会被执行去完成磁盘上数据的操作。我理解redo log记录的是磁盘上数据的物理变化，binlog记录的是当时所执行的高级编程语言。
-
-redo log，可以理解为，因为其记录的是对物理页的修改，一个物理页16kb，那redo log里记录的可以这么理解：16kb，换算出byte，就是16 * 1024,这么多个字节，假设文件开始为第0个字节，简称为offset 0； redo log，可能会这么记录，offset x开始，写入长度为n的字节数组，要写入的字节数组为byteArray[n]。我们平时对数组操作也会有类似api，对吧
-
-redo log具体记录的就是表空间号，数据页号，偏移量，修改了几个字节的值和具体的修改值
-
 ## redolog 和 binlog 区别
 
-1. redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎 都可以使用。
+1. redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
 2. redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1 ”。
 3. redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。
 
@@ -261,9 +260,7 @@ MySQL 支持4种事务隔离级别，包括读未提交（Read uncommitted）、
 **事务隔离性问题**
 
 - 脏读：读取到其他事务未提交的数据。
-
 - 不可重复读：读到其他其他事务已经提交的数据。
-
 - 幻读：同一个事务中多次执行同一个select, 读取到的数据行发生改变。也就是行数减少或者增加了(被其它事务delete/insert并且提交)。
 
 ### 一致性
@@ -339,21 +336,178 @@ MySQL5.5版本引入MDL锁，不需要显示使用，在访问一个表的时候
 
 实现方式上，还是会去检查所依赖的线程是否被别人锁住，如此循环，判断出是否循环等待。也就是死锁。
 
+## 幻读
 
+```mysql
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL,
+  `c` int(11) DEFAULT NULL,
+  `d` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `c` (`c`)
+) ENGINE=InnoDB;
 
-## 间隙锁
+insert into t values(0,0,0),(5,5,5),
+(10,10,10),(15,15,15),(20,20,20),(25,25,25);
+```
 
-查看间隙锁开启状态，默认关闭
+幻读指的是一个事务在 前后两次查询同一个范围的时候，后一次查询看到了前一次查询没有看到的行。（可能是新插入的，也可能是更新的）
+
+![image-20220411115622292](img/MySQL-Interview/image-20220411115622292.png)
+
+是同一个事务中，T1，T3，T5读到的数据行不一致。这个就是幻读现象。
+
+- 在可重复读隔离级别下，普通的查询是快照读，是不会看到别的事务插入的数据的。因此，幻读在“当前读”下才会出现。
+-  session B 的修改结果，被 session A 之后的 select 语句用“当前读”看到，不能称为幻读。幻读仅专指“新插入的行”。
+
+## **幻读的问题**
+
+**1.语义上的破坏**
+
+T1 的语句是要锁住所有d=5的数据行，不让别的事务进行读写操作。而实际上幻读破坏了这个语义。
+
+db中已经有一条id=5 d=5 c=5的数据。sessionA锁住了db中当前符合d=5条件的记录行，但是sessionB 将其他的记录行的d值改为了5、sessionC 直接创建了一条d=5的记录。这两条记录就不在之前sessionA的锁定范围内了，这样就发生了幻读问题。
+
+<img src="img/MySQL-Interview/image-20220411115532176.png" alt="image-20220411115532176" style="zoom: 67%;" />
+
+**2.数据一致性的破坏**
+
+<img src="img/MySQL-Interview/image-20220411132057993.png" alt="image-20220411132057993" style="zoom:67%;" />
+
+上图中按时间顺序执行完后，db中的数据：（5，5，100），（0，5，5），（1，5，5），看起来好像没什么问题，这时候来看binlog中的数据。
+
+T2 时刻，session B 事务提交，写入了两条语句；
+
+T4 时刻，session C 事务提交，写入了两条语句；
+
+T6 时刻，session A 事务提交，写入了 update t set d=100 where d=5 这条语句。
+
+按顺序整理起来：
+
+```mysql
+update t set d=5 where id=0; /*(0,0,5)*/
+
+update t set c=5 where id=0; /*(0,5,5)*/
+
+insert into t values(1,1,5); /*(1,1,5)*/
+
+update t set c=5 where id=1; /*(1,5,5)*/
+
+update t set d=100 where d=5;/* 所有 d=5 的行， d 改成 100*/
+```
+
+这个语句序列，无论拿到备库执行，还是通过binlog来克隆库，这三行的结果会变成（5，5，100），（0，5，100），（1，5，100）这样就发生了数据不一致性。
+
+## 幻读的解决
+
+产生幻读的原因是，行锁只能锁住行，但是新插入记录这个动作，要更新的是记录之间的“间隙”。因此，为了解决幻读问题，InnoDB 只好引入新的锁，也就是 间隙锁 (Gap Lock)。
+
+### 间隙锁
+
+Gap Lock，锁住两条数据之间的空隙。是开区间。间隙锁之间不会冲突，也就是可以有多个事务持有间隙锁，间隙锁只会和 往这个间隙中插入一条记录 这个操作冲突。
+
+**间隙锁会降低并发度，还可能会造成死锁。**
+
+![image-20220411144723205](img/MySQL-Interview/image-20220411144723205.png)
+
+![image-20220411172233778](img/MySQL-Interview/image-20220411172233778.png)
+
+上图中，SessionA先去查id=9的并加锁，如果不存在对应记录则会加上间隙锁（5，10）。
+
+SessionB同样也会加上（5，10）的间隙锁，然后SessionB要插入的（9，9，9）数据的时候，被SessionA的间隙锁阻塞了，只好进入等待。
+
+SessionA要插入相同数据，被SessionB阻挡了，这样就形成死锁了。当InnoDB的死锁检测发现后，就让SessionA的插入语句报错返回。
+
+**间隙锁是在可重复读隔离级别下才会生效。**
+
+如果读提交的隔离级别够用，也就是业务不需要可重复读的保证，为了提高并发度，可以调整隔离级别。
+
+如果把隔离级别设置为读 提交的话，就没有间隙锁了。同时，需要解决可能出现的数据和日志不一致问题，就要把 binlog 格式设置为 row。
+
+**间隙锁的查看和配置**
+
+根据innodb_locks_unsafe_for_binlog查看间隙锁开启状态，为OFF时开启间隙锁，默认开启，
 
 ```mysql
  show variables like 'innodb_locks_unsafe_for_binlog'; 
 ```
 
-开启间隙锁，在my.cnf中配置，重启mysql服务
+关闭间隙锁，在my.cnf中配置，重启mysql服务
 
 ```bash
 [mysqld]
 innodb_locks_unsafe_for_binlog = 1
+```
+
+### Next-key Lock
+
+间隙锁和行锁合称 next-key lock。间隙锁锁的是从上一条记录开始到这一条记录之间。该锁是前开后闭区间。
+
+![image-20220411144723205](img/MySQL-Interview/image-20220411144723205.png)
+
+如果执行` select * from t where c= 7 lock in share mode`语句。t 表中没有 c=7 的这条记录，因此加的间隙锁是 （5，10）。如果存在 c=7 这条记录，那么间隙锁就变成了（5，7）再加上 c=7 的的记录行。加锁的区间就变成了 （5，7]了，也就是Next-key Lock。
+
+## 加锁规则
+
+https://blog.csdn.net/javaanddonet/article/details/111187345
+
+加锁规则：
+
+- 原则 1：加锁的基本单位是临键锁next-key lock。next-key lock是前开后闭区间。
+
+- 原则 2：查找过程中访问到的对象才会加锁。
+
+- 原则 3：读锁不回表则不会加到主键索引上，写锁一定会加在主键索引上。
+
+- 优化 1：索引内部的等值查询，给唯一索引加锁的时候，next-key lock 退化为行锁。
+
+- 优化 2：索引内部的等值查询，向右遍历时且最后一个值不满足等值条件的时候，next-key lock 退化为间隙锁。
+
+  **注意：**上边说的索引内部的等值查询，并不是指 `where id = 12` ，而是指通过索引树的搜索去定位数据的方法叫做等值查询，例如 `where id < 12`，索引也会用到等值查询的方法，引擎内部它会先去找 `id = 12` 的记录（这个就是等值查询），找到的话从该记录向左遍历就是我们要找的数据，如果发现id为10的下一条数据 `id = 15`，那么说明 `id = 12` 的数据不存在，那么就会去加（10，15]的间隙锁。
+
+- 一个 bug：唯一索引上的范围查询会访问到不满足条件的第一个值为止，这个在MySQL8.0以后已经修复，但是在MySQL5.7版本中有这个问题。
+
+在执行过程中，通过树搜索的方式定位记录的时候，用的是“等值查询”的方法。例如先找到“第一个 id<12 的值”。这个过程是通过索引树的搜索过程得到的，在引擎内部，其实是要找到 id=12 的这个 值，只是最终没找到，但找到了 (10,15) 这个间隙。
+
+加锁结论：
+
+- 查询只在一个索引上返回不回表，加读锁，就只加这个索引；如果回表查到其他索引(主键)就其他索引也加读锁；
+- 加写锁就直接加到主键索引上
+- 默认先加next-key lock，然后根据条件进行优化，将锁的范围变小。
+- 锁是加在索引上的，如果锁发生在覆盖索引上，就不会去锁主键索引了。如果锁的行，在返回数据时发生了回表操作，也会锁定主键索引中对应的行。
+- 根据主键等值查询，next-key lock 会退化为行锁。
+- 如果发生了索引失效的情况，会锁全表。ps：对索引字段进行显式（month函数）或隐式（字段和查询参数类型不一致）的函数运算会导致索引失效。
+
+```mysql
+# SessionA
+START TRANSACTION;
+SELECT * from userinfo where id<11  for UPDATE;
+SELECT * from userinfo where id<11 ORDER BY id desc for UPDATE;
+
+#SessionB
+SELECT * from userinfo where id=15 for UPDATE;
+```
+
+测试数据：
+
+```mysql
+CREATE TABLE `userinfo` (
+  `id` int(11) NOT NULL COMMENT '主键',
+  `name` varchar(255) DEFAULT NULL COMMENT '姓名',
+  `age` int(11) DEFAULT NULL COMMENT '年龄，普通索引列',
+  `phone` varchar(255) DEFAULT NULL COMMENT '手机，唯一索引列',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_userinfo_phone` (`phone`) USING BTREE COMMENT '手机号码，唯一索引',
+  KEY `idx_user_info_age` (`age`) USING BTREE COMMENT '年龄，普通索引'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (0, 'mayun', 20, '0000', '马云');
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (5, 'liuqiangdong', 23, '5555', '刘强东');
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (10, 'mahuateng', 18, '1010', '马化腾');
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (15, 'liyanhong', 27, '1515', '李彦宏');
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (20, 'wangxing', 23, '2020', '王兴');
+INSERT INTO `userinfo`(`id`, `name`, `age`, `phone`, `remark`) VALUES (25, 'zhangyiming', 38, '2525', '张一鸣');
 ```
 
 
@@ -600,13 +754,21 @@ https://xiaomi-info.github.io/2019/12/24/mysql-implicit-conversion/
 
 ```mysql
 select * from tradelog where tradeid=110717;
-# 发生类型转换，相当于对索引字段做函数操作，优化器会放弃走索引树的搜索功能。
+```
+
+发生类型转换，相当于对索引字段做函数操作，优化器会放弃走索引树的搜索功能。
+
+```mysql
 select * from tradelog where CAST(tradid AS signed int) = 110717;
 ```
 
 MySQL中字符串和数据做比较的话，默认是将字符串转成数字。
 
-# 
+**查询时传入超过字段最大长度的参数**
+
+例如 对一个 varchar(10) 的字段，查询参数是 超过10位的，那么查询结果会直接返回
+
+varchar(10) 表示该字段的最大长度是10个字符，如果where条件里改字段的查询参数超过了10个字节，在传给引擎执行时，会做字符串截断，例如查询参数 name='1234567890abc'，查询参数一共13位，但字段的最大长度是10位，所以传给引擎的是一个截断后的字符串，也就是 ’1234567890‘。根据name索引返回满足该条件的数据id，做完回表后返回的整行数据，到server层一条一条判断，是否与'1234567890abc' 相等，显然这个是一个永远不相等的判断，所以最终返回的结果是空，让数据库白白做了很多无用的计算。
 
 # Other
 
@@ -664,8 +826,6 @@ MySQL查询优化器会根据统计信息，估算SQL要查询到结果需要扫
 
 表示查询使用了索引的字节数量。可以判断是否全部使用了组合索引。
 
-# 
-
 ## 收缩表空间
 
 如果要收缩一个表，只是 delete 掉表里面不用的数据的话，表文件的大小是不会变的，因为只是将数据做删除标记，下次有数据进来的时候可能会复用这个位置，但是磁盘文件的大小并不会缩小。
@@ -679,6 +839,10 @@ alter table t engine=InnoDB；
 重建后的表其实会比之前的更紧凑，这里的紧凑并不意味着填满整个数据页，而是每个页都会留1/16，以便后续数据插入。
 
 <img src="img/MySQL-Interview/image-20220408015323433.png" alt="image-20220408015323433" style="zoom:50%;" />
+
+## on duplicate key update
+
+https://www.cnblogs.com/better-farther-world2099/articles/11737376.html
 
 ## count
 
@@ -720,8 +884,6 @@ MySQL会给每个线程分配一块内存用于排序，称为 sort_buffer。
 如果 MySQL 认为内存足够大，会优先选择全字段排序，把需要的字段都放到 sort_buffer 中，这样排序后就会直接从内存里面返回查询结果了，不用再回到原表去取数据。
 
 这也就体现了 MySQL 的一个设计思想：如果内存够，就要多利用内存，尽量减少磁盘访问。
-
-
 
 ## 存储过程批量插入数据
 
