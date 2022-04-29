@@ -1639,3 +1639,4 @@ Redis 通过**IO 多路复用程序** 来监听来自客户端的大量连接（
 
 ![image-20220324001257557](img/Redis-Interview/image-20220324001257557.png)
 
+![image-20220421154643735](img/Redis-Interview/image-20220421154643735.png)

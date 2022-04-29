@@ -1103,6 +1103,79 @@ public class BeanConfig {
 }
 ```
 
+## @AliasFor
+
+将被标注的属性作为别的属性的别名，既可以是当前注解内的别的属性，也可以是不同注解的别的属性。
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@Documented
+public @interface AliasFor {
+	@AliasFor("attribute")
+	String value() default "";
+  
+	@AliasFor("value")
+	String attribute() default "";
+
+  //默认是当前注解类，也可以指定别的注解类
+	Class<? extends Annotation> annotation() default Annotation.class;
+}
+
+```
+
+**AliasFor将一个注解中的两个属性互为别名。**
+
+```java
+public @interface ComponentScan {
+	@AliasFor("basePackages")
+	String[] value() default {};
+	
+	@AliasFor("value")
+	String[] basePackages() default {};
+	...
+}
+
+@ComponentScan("com.binecy")
+public class SimpleAlias {
+
+    public static void main(String[] args) {
+        ComponentScan ann = AnnotationUtils.getAnnotation(SimpleAlias.class, ComponentScan.class);
+        System.out.println(ann.value()[0]);
+        System.out.println(ann.basePackages()[0]);
+    }
+}
+//结果都是com.binecy
+```
+
+`@ComponentScan("com.binecy")` 其实是 `@ComponentScan(value="com.binecy")`，指定了 value 是 basePackages 的别名，所以用value 也可以拿到扫描包路径。
+
+**跨注解的属性别名**
+
+不仅是一个注解内不同属性可以声明别名，不同注解的属性也可以声明别名。
+
+```java
+@Component
+public @interface Service {
+	@AliasFor(annotation = Component.class)
+	String value() default "";
+}
+
+@Service("serviceAlias")
+public class ServiceAlias {
+
+    public static void main(String[] args) {
+        Component component = AnnotationUtils.getAnnotation(ServiceAlias.class, Component.class);
+        System.out.println(component);
+				Component component2 = AnnotatedElementUtils.getMergedAnnotation(ServiceAlias.class, Component.class);
+        System.out.println(component2);
+    }
+}
+
+// @org.springframework.stereotype.Component(value=)
+// @org.springframework.stereotype.Component(value=serviceAlias)
+```
+
 ## @Autowired和@Resource的区别 TODO
 
 

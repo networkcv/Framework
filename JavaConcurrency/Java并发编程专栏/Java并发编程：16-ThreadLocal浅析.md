@@ -237,9 +237,7 @@ es.execute(()->{
 
 2. 保证 SimpleDateFormat 的线程安全，
 
-   因为SimpleDateFormat 在解析和格式化日期时，其中会涉及到非原子性操作，因此在并发时，可能导致程序抛出异常。关于这一点，阿里的Java开发手册中有明确说明：
-
-   ![81657c3d316b3c512d04b31c3864e10](D:\Download\TyporaPicture\ThreadLocal\81657c3d316b3c512d04b31c3864e10.png)
+   因为SimpleDateFormat 在解析和格式化日期时，其中会涉及到非原子性操作，因此在并发时，可能导致程序抛出异常。
 
 2. Spring事务管理保存事务信息
 
@@ -257,9 +255,84 @@ es.execute(()->{
 如果你需要子线程继承父线程的线程变量，可以使用 InheritableThreadLocal 来支持这种特性，InheritableThreadLocal是ThreadLocal子类，所以用法和
 ThreadLocal相同，原理是在创建子线程时将父线程中 InheritableThreadLocal 中的 ThreadLocalMap 拷贝到了子线程。
 
-这里就不多介绍了。
+## 七、TransmittableThreadLocal
 
-## 七、最后
+TransmittableThreadLocal 是 阿里开源，针对 非父子线程传递 ThreadLocal 变量的解决方案。可以看作是 InheritableThreadLocal 的增强版。
+
+## 八、自己实现TTL
+
+实现思路：在 Runnable 任务提交到线程池之前，由当前线程对任务进行封装，这样就有机会获取当前线程中的 ThreadLocal 变量集合，将获取的 ThreadLocal 集合和 原本的任务封装成一个新的任务，这个新任务就像一个代理，而被代理对象就是原本的任务。所以它的 run 方法里还是要去调用原本任务的 run 方法，不过在调用之前可以将提交线程传入的 ThreadLocal 变量重新设置在当前执行线程中。
+
+简单的代码示例：
+
+```java
+public class MThreadLocalDemo {
+    public static void main(String[] args) throws InterruptedException {
+        MThreadLocal<Integer> mThreadLocal = new MThreadLocal<>();
+        mThreadLocal.set(1);
+        MThreadLocal<String> mThreadLocal2 = new MThreadLocal<>();
+        mThreadLocal2.set("abc");
+        new Thread(MRunnable.get(() -> {
+            System.out.println(mThreadLocal.get());
+            System.out.println(mThreadLocal2.get());
+        })).start();
+    }
+}
+
+class MThreadLocal<T> extends ThreadLocal<T> {
+    public static Set<ThreadLocal<Object>> keys = new HashSet<>();
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void set(T value) {
+        super.set(value);
+        keys.add((ThreadLocal<Object>) this);
+    }
+
+    public static SnapShot copy() {
+        HashMap<ThreadLocal<Object>, Object> hashMap = new HashMap<>();
+        for (ThreadLocal<Object> key : keys) {
+            hashMap.put(key, key.get());
+        }
+        return new SnapShot(hashMap);
+    }
+
+    public static void replay(SnapShot snapShot) {
+        HashMap<ThreadLocal<Object>, Object> hashMap = snapShot.threadLocalValueMap;
+        hashMap.forEach(ThreadLocal::set);
+    }
+
+    public static class SnapShot {
+        private final HashMap<ThreadLocal<Object>, Object> threadLocalValueMap;
+
+        public SnapShot(HashMap<ThreadLocal<Object>, Object> threadLocalValueMap) {
+            this.threadLocalValueMap = threadLocalValueMap;
+        }
+    }
+}
+
+
+class MRunnable implements Runnable {
+    private Runnable runnable;
+    private MThreadLocal.SnapShot snapShot;
+
+    @Override
+    public void run() {
+        MThreadLocal.replay(snapShot);
+        runnable.run();
+    }
+
+    public static MRunnable get(Runnable runnable) {
+        MRunnable mRunnable = new MRunnable();
+        MThreadLocal.SnapShot snapShot = MThreadLocal.copy();
+        mRunnable.runnable = runnable;
+        mRunnable.snapShot = snapShot;
+        return mRunnable;
+    }
+}
+```
+
+## 九、最后
 
 由于项目和时间的缘故，本次分享就到此为止。感谢大家的参与，也感谢 @永恺 给我的这次分享机会。
 

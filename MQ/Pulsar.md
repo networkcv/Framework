@@ -175,6 +175,12 @@ Bookie集群负责消息的持久化存储。
 
 zookeeper集群用来处理多个 Pulsar集群（broker集群）之间的协调任务。
 
+- Producer：数据生成者，即发送消息的一方。生产者负责创建消息，将其投递到 Pulsar 中。
+- Consumer：数据消费者，即接收消息的一方。消费者连接到 Pulsar 并接收消息，进行相应的业务处理。
+- Broker：无状态的服务层，负责接收消息、传递消息、集群负载均衡等操作，Broker 不会持久化保存元数据。
+- BookKeeper：有状态的持久层，负责持久化地存储消息。
+- ZooKeeper：存储 Pulsar 、 BookKeeper 的元数据，集群配置等信息，负责集群间的协调(例如：Topic 与 Broker 的关系)、服务发现等。
+
 ## Brokers
 
 Pulsar 的 broker 是一个无状态组件，主要负责运行另外的两个组件：

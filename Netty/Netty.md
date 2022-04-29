@@ -1,3 +1,75 @@
+## 为什么Netty使用NIO而不是AIO？**
+
+1. Netty不看重Windows上的使用，在Linux系统上，AIO的底层实现仍使用EPOLL，没有很好实现AIO，因此在性能上没有明显的优势，而且被JDK封装了一层不容易深度优化
+2. Netty整体架构是reactor模型, 而AIO是proactor模型, 混合在一起会非常混乱,把AIO也改造成reactor模型看起来是把epoll绕个弯又绕回来
+3. AIO还有个缺点是接收数据需要预先分配缓存, 而不是NIO那种需要接收时才需要分配缓存, 所以对连接数量非常大但流量小的情况, 内存浪费很多
+4. Linux上AIO不够成熟，处理回调结果速度跟不到处理需求，比如外卖员太少，顾客太多，供不应求，造成处理速度有瓶颈
+
+## protobuf 优点
+
+1. 在谷歌内部长期使用，产品成熟度高；
+2. 跨语言、支持多种语言，包括C++、Java和Python；
+3. 编码后的消息更小，更加有利于存储和传输；
+4. 编解码的性能非常高；
+5. 支持不同协议版本的前向兼容；
+
+
+
+## Netty的历史
+
+### Netty3
+
+1. 创建过多对象，在JVM堆上创建，然后进行内存复制到直接内存里，再交给socket，虽然会有垃圾回收器来处理，但也会给服务器带来系统压力。
+2. 只使用了Java 提供的NIO接口，无法满足一些个性化的需求，比如只在Linux上才支持的某些特性。
+3. 线程模型也不合理。InBound发生在同一个线程里，但OutBound发生了调用线程里。
+
+### Netty4
+
+1. 产生更少的内存垃圾。
+2. 针对Linux操作系统做了传输层的优化。通过JNI来实现。
+3. 实现了高性能的BufferPool，用于直接内存。
+4. InBound和OutBound发生在同一个线程里。
+
+## Netty核心组件
+
+Channel 是对 Socket 的抽象，Channel 可以写操作，数据会走到 socket，然后调用 write 系统操作将数据发送出去。 
+
+每个 Channel 都拥有一个 ChannelPipline，ChannelPipline 是一个包含不同 ChannelHandler 的双向链表。
+
+
+
+## Netty简单介绍
+
+Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **NIO** 来实现的  **网络** 应用框架。
+
+可扩展的事件驱动模型
+
+通用的通信API
+
+零拷贝以及字节缓冲区
+
+1、首先，要有编、解码器，这应该是一个网络框架最基本的组件了，基本原理涉及到TCP协议的本质（基于流的可靠协议），它在应用层会有粘包现象发生，需要开发者设计识别的约定，比如定长，分片等，这些Netty已经做好了，只不过Netty的可就复杂多了，它提供的编、解码器不仅种类多，而且细节更完善
+
+2、其次，就是NIO线程池，Netty中叫NioEventLoopGroup，基于异步无锁化模式设计，而且封装了Netty自己的线程NioEventLoop，NioEventLoop表面上只是一个普通的类，但是其内部绑定了一个Netty的线程，叫FastThreadLocalThread，之所以这样设计，是因为Netty重写了JDK的ThreadLocal类，叫FastThreadLocal，重写的原因简单说就是因为Netty作者觉得JDK的ThreadLocal性能不行，自己就搞了更好的。而且Netty线程池还很好的同时处理了定时任务，异步任务等的分片执行和聚合逻辑，并为它实现了负载均衡。可以认为NioEventLoopGroup+NioEventLoop是Netty的心脏，因为最核心的新连接接入（select也叫I/O多路复用器）和I/O事件处理（processSelectedKey）逻辑，就是依靠的它俩完成的
+
+3、基于2，Netty的服务端用法是实现两个线程池，一个是接入线程池，一个是I/O处理线程池，这个模式也叫Reactor模型
+
+4、再次，Netty重新设计和封装了JDK底层的Socket/ServerSocket和ServerSocketChannel/SocketChannel等I/O相关的类，并设计了自己的Channel类，这样的设计灵活，方便业务代码使用。
+
+5、再次，Netty设计了handler处理器，其基于责任链设计模式组装了一套业务逻辑链，底层是一个双向链表，这样设计的目的是为了方便业务代码的灵活扩展，可以让用户自己扩展实现不同的业务逻辑单元——Netty里叫ChannelHandler，将其加入handler链里（Netty里叫pipeline）被处理即可，并且该逻辑链底层是双向链表，可以让请求来回流动，可以看做是Netty的动脉。
+
+6、再次，Netty更是重新设计了NIO的buffer，虽然NIO的buffer已经具备了I/O的常用API，但是还不够灵活和优秀，Netty对其进行了全方面的改造，消除了晦涩的设计，封装了自己的输入、输出流。
+
+7、最后，Netty在自己封装的buffer的基础上，实现了自己的内存管理体系，不再强依赖Java的GC。而是大胆的使用了堆外内存管理技术，并设计了很多工具类，使其尽最大可能复用内存（内存池化技术），提高GC性能。
+
+8、还有一点就是Netty修复了JDK NIO的所有已知bug！这是非常重要的，避免了开发人员直接使用NIO API而走弯路。
+
+
+
+类比到通信，整个 I/O 过程只在调用 select、poll 这些函数的时候才会阻塞，收发客户消息是不会阻塞的，BIO中会阻塞在accept获取连接时和read读取消息时。
+
+I/O复用模型：Linux提供select/poll，进程通过将一个或多个fd传递给select或poll系统调用，阻塞在select操作上，而不是阻塞在真正的I/O系统调用上。这样select/poll可以帮我们侦测多个fd是否处于就绪状态，等待数据报套接字变为可读。当select 返回套接字可读这一条件时，我们调用recvfrom 把所读数据报复制到应用进程缓冲区。
+
 ## 1. Netty 概述
 
 Netty 是由JBOSS提供的一个Java开源框架。
@@ -276,16 +348,6 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 3. 服务器可以回复消息给客户端 "Hello! 我是服务器 5 " , 并对特定请求资源进行过滤。
 4. 目的：Netty 可以做Http服务开发，并且理解Handler实例和客户端及其请求的关系。
 
-代码链接：
-
-```java
-
-
-
-```
-
-
-
 ### **Bootstrap 和 ServerBootstrap**
 
 - Bootstrap 意思是引导，一个 Netty 应用通常由一个 Bootstrap 开始，主要作用是配置整个 Netty 程序，串联各个组件，Netty 中 Bootstrap 类是客户端程序的启动引导类，ServerBootstrap 是服务端启动引导类
@@ -395,7 +457,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 ### **Pipeline** **和** **ChannelPipeline**
 
-1. ChannelPipeline 是一个 Handler 的集合，它负责处理和拦截 inbound 或者 outbound 的事件和操作，相当于一个贯穿 Netty 的链。(**也可以这样理解：****ChannelPipeline** **是 保****存** **ChannelHandler** **的** **List****，用于处理或拦截** **Channel** **的入站事件和出站操****作)
+1. ChannelPipeline 是一个 Handler 的集合，它负责处理和拦截 inbound 或者 outbound 的事件和操作，相当于一个贯穿 Netty 的链。(也可以这样理解：**ChannelPipeline** 是保存 **ChannelHandler** **的** List，用于处理或拦截Channel的入站事件和出站操作）
 
 2. ChannelPipeline 实现了一种高级形式的拦截过滤器模式，使用户可以完全控制事件的处理方式，以及 Channel 中各个的 ChannelHandler 如何相互交互
 
@@ -410,6 +472,18 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
    - ChannelPipeline addFirst(ChannelHandler... handlers)，把一个业务处理类（handler）添加到链中的第一个位置
    - ChannelPipeline addLast(ChannelHandler... handlers)，把一个业务处理类（handler）添加到链中的最后一个位置
+
+### Netty事件
+
+upstream事件包括：
+
+![img](img/Netty/16233253-e11cfb6457414c4c9fa52be289c26daf.jpg)
+
+downstream事件包括
+
+![img](img/Netty/16233315-8bd5eddb717e433eaeaf185eaae6b0b6.jpg)
+
+
 
 ### ChannelHandlerContext
 
@@ -462,6 +536,8 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 3. 举例说明 Unpooled 获取 Netty的数据容器ByteBuf 的基本使用 
 
 ![](.\img\1583193684(1).jpg)
+
+
 
 
 
@@ -807,3 +883,12 @@ LengthFieldBasedFrameDecoder
 3. 创建一个消费者，该类需要透明的调用自己不存在的方法，内部需要使用 Netty 请求提供者返回数据
 
    ![image-20200306142823059](img/image-20200306142823059.png)
+
+
+
+
+
+
+
+
+
