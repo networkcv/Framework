@@ -206,9 +206,9 @@ public final class SubscribeProto {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
         name_ = s;
         return s;
       }
@@ -222,9 +222,9 @@ public final class SubscribeProto {
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                          (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
@@ -244,9 +244,9 @@ public final class SubscribeProto {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+          com.google.protobuf.ByteString bs =
+                  (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
         productName_ = s;
         return s;
       }
@@ -260,9 +260,9 @@ public final class SubscribeProto {
         getProductNameBytes() {
       java.lang.Object ref = productName_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                          (java.lang.String) ref);
         productName_ = b;
         return b;
       } else {
@@ -692,7 +692,7 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder setId(int value) {
-        
+
         id_ = value;
         onChanged();
         return this;
@@ -702,7 +702,7 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearId() {
-        
+
         id_ = 0;
         onChanged();
         return this;
@@ -733,9 +733,9 @@ public final class SubscribeProto {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+            com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                            (java.lang.String) ref);
           name_ = b;
           return b;
         } else {
@@ -752,7 +752,7 @@ public final class SubscribeProto {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         name_ = value;
         onChanged();
         return this;
@@ -762,7 +762,7 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
+
         name_ = getDefaultInstance().getName();
         onChanged();
         return this;
@@ -778,7 +778,7 @@ public final class SubscribeProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         name_ = value;
         onChanged();
         return this;
@@ -809,9 +809,9 @@ public final class SubscribeProto {
           getProductNameBytes() {
         java.lang.Object ref = productName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+            com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                            (java.lang.String) ref);
           productName_ = b;
           return b;
         } else {
@@ -828,7 +828,7 @@ public final class SubscribeProto {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         productName_ = value;
         onChanged();
         return this;
@@ -838,7 +838,7 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearProductName() {
-        
+
         productName_ = getDefaultInstance().getProductName();
         onChanged();
         return this;
@@ -854,7 +854,7 @@ public final class SubscribeProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         productName_ = value;
         onChanged();
         return this;
@@ -1175,9 +1175,9 @@ public final class SubscribeProto {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+          com.google.protobuf.ByteString bs =
+                  (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
         resCode_ = s;
         return s;
       }
@@ -1191,9 +1191,9 @@ public final class SubscribeProto {
         getResCodeBytes() {
       java.lang.Object ref = resCode_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                          (java.lang.String) ref);
         resCode_ = b;
         return b;
       } else {
@@ -1213,9 +1213,9 @@ public final class SubscribeProto {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+          com.google.protobuf.ByteString bs =
+                  (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
         desc_ = s;
         return s;
       }
@@ -1229,9 +1229,9 @@ public final class SubscribeProto {
         getDescBytes() {
       java.lang.Object ref = desc_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                          (java.lang.String) ref);
         desc_ = b;
         return b;
       } else {
@@ -1590,8 +1590,8 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder setId(int value) {
-        
-        id_ = value;
+
+          id_ = value;
         onChanged();
         return this;
       }
@@ -1600,8 +1600,8 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearId() {
-        
-        id_ = 0;
+
+          id_ = 0;
         onChanged();
         return this;
       }
@@ -1631,9 +1631,9 @@ public final class SubscribeProto {
           getResCodeBytes() {
         java.lang.Object ref = resCode_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+            com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                            (java.lang.String) ref);
           resCode_ = b;
           return b;
         } else {
@@ -1650,8 +1650,8 @@ public final class SubscribeProto {
         if (value == null) {
     throw new NullPointerException();
   }
-  
-        resCode_ = value;
+
+          resCode_ = value;
         onChanged();
         return this;
       }
@@ -1660,8 +1660,8 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearResCode() {
-        
-        resCode_ = getDefaultInstance().getResCode();
+
+          resCode_ = getDefaultInstance().getResCode();
         onChanged();
         return this;
       }
@@ -1676,8 +1676,8 @@ public final class SubscribeProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
-        resCode_ = value;
+
+          resCode_ = value;
         onChanged();
         return this;
       }
@@ -1707,9 +1707,9 @@ public final class SubscribeProto {
           getDescBytes() {
         java.lang.Object ref = desc_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+            com.google.protobuf.ByteString b =
+                    com.google.protobuf.ByteString.copyFromUtf8(
+                            (java.lang.String) ref);
           desc_ = b;
           return b;
         } else {
@@ -1726,8 +1726,8 @@ public final class SubscribeProto {
         if (value == null) {
     throw new NullPointerException();
   }
-  
-        desc_ = value;
+
+          desc_ = value;
         onChanged();
         return this;
       }
@@ -1736,8 +1736,8 @@ public final class SubscribeProto {
        * @return This builder for chaining.
        */
       public Builder clearDesc() {
-        
-        desc_ = getDefaultInstance().getDesc();
+
+          desc_ = getDefaultInstance().getDesc();
         onChanged();
         return this;
       }
@@ -1752,8 +1752,8 @@ public final class SubscribeProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
-        desc_ = value;
+
+          desc_ = value;
         onChanged();
         return this;
       }
@@ -1812,12 +1812,12 @@ public final class SubscribeProto {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_lwj__11_netty_protobuf_SubscribeReq_descriptor;
-  private static final 
+    private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lwj__11_netty_protobuf_SubscribeReq_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_lwj__11_netty_protobuf_SubscribeRes_descriptor;
-  private static final 
+    private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_lwj__11_netty_protobuf_SubscribeRes_fieldAccessorTable;
 
