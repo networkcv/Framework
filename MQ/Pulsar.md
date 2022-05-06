@@ -104,6 +104,16 @@ Pulsar Functions 的设计灵感来自于 Heron 这样的流处理引擎，Pulsa
 
 # Pulsar 与 Kafka 对比
 
+## Kafka 主要痛点
+
+1. Kafka 很难进行扩展，因为 Kafka 把消息持久化在 broker 中，迁移主题分区时，需要把分区的数据完全复制到其他 broker 中，这个操作非常耗时。
+2. 当需要通过更改分区大小以获得更多的存储空间时，会与消息索引产生冲突，打乱消息顺序。因此，如果用户需要保证消息的顺序，Kafk 就变得非常棘手了。
+3. Kafka 集群的分区再均衡会影响相关生产者和消费者的性能。
+4. 发生故障时，Kafka 主题无法保证消总的完整性
+5. 需使用 Kafka 需要和 offset 打交道，这点让人很头痛，因为 broker 并不维护 consumer 到消费状态
+6. 如果使用率很高，则必须尽快删除旧消息，否则就会出现磁盘空间不够用的问题。
+7. 跨地域复制问题
+
 ## 模型概念
 
 - Kafka: producer - topic -  consumer group - consumer（可以将多个消费者放在一个消费组里）
@@ -151,15 +161,7 @@ Pulsar Functions 的设计灵感来自于 Heron 这样的流处理引擎，Pulsa
 
   ![image-20220327004812504](img/Pulsar/image-20220327004812504.png)
 
-## Kafka 主要痛点
-
-1. Kafka 很难进行扩展，因为 Kafka 把消息持久化在 broker 中，迁移主题分区时，需要把分区的数据完全复制到其他 broker 中，这个操作非常耗时。
-2. 当需要通过更改分区大小以获得更多的存储空间时，会与消息索引产生冲突，打乱消息顺序。因此，如果用户需要保证消息的顺序，Kafk 就变得非常棘手了。
-3. Kafka 集群的分区再均衡会影响相关生产者和消费者的性能。
-4. 发生故障时，Kafka 主题无法保证消总的完整性
-5. 需使用 Kafka 需要和 offset 打交道，这点让人很头痛，因为 broker 并不维护 consumer 到消费状态
-6.  如果使用率很高，则必须尽快删除旧消息，否则就会出现磁盘空间不够用的问题。
-7. 跨地域复制问题
+7. 
 
 # Pulsar 集群架构
 
@@ -185,7 +187,7 @@ zookeeper集群用来处理多个 Pulsar集群（broker集群）之间的协调�
 
 Pulsar 的 broker 是一个无状态组件，主要负责运行另外的两个组件：
 
-- 一个 HTTP 服务器，它暴露了 REST 系统管理接口以及在生产者和消费者之间进行 Topic 查找的 API。图中的 Service di scovery。
+- 一个 HTTP 服务器，它暴露了 REST 系统管理接口以及在生产者和消费者之间进行 Topic 查找的 API。图中的 Service discovery。
 - 一个调度分发器，它是异步的 TCP 服务器，通过自定义二进制协议应用于所有相关的数据传输。图中的 Dispatcher。
 
 出于性能考虑，消息通常从 Managed Ledger 缓存中分派出去，除非积压超过缓存大小。如果积压的消息对于缓存来说太大了，则 Broker 将开始从 BookKeeper 那里读取 Entries (Entry 同样是 BookKeeper 中的概念，相当于一条记录）。
@@ -203,7 +205,7 @@ ledger 信息（这个是 BookKeeper 本身所依赖的）等等。
 
 ## bookKeeper 持久化存储
 
-Apache Pulsar 为应用程序提供有保证的信息传递，如果消息成功到达 oroker，就认为其预期到达了目的地。
+Apache Pulsar 为应用程序提供有保证的信息传递，如果消息成功到达 broker，就认为其预期到达了目的地。
 
 为了提供这种保证，未确认送达的消息需要持久化存储直到它们被确认送达。这种消息传递模式通常称为持久消息传递。在 Pulsar 内部，所有消息都被保存并同步 N 份，例如，2 个服务器保存四份，每个服务器上面都有镜像的 RAID 存储。
 
@@ -233,13 +235,9 @@ Ledger 是一个只追加的数据结构，并且只有一个写入器，这个�
 
 ## 单机Pulsar启动
 
-```
+```bash
 ./pulsar standalone
 ```
-
-##  [Pulsar集群搭建视频-09](https://www.bilibili.com/video/BV1CF411v7Dh?p=9&spm_id_from=pageDriver)
-
-
 
 
 

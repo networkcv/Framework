@@ -52,17 +52,33 @@
 
 <img src="img/tmp/image-20210727203552972.png" alt="image-20210727203552972" style="zoom:33%;" />
 
+### exclusive 模型
+
+独占模型 独占当前订阅（消费组）的消息，如果是分区主题，则第一个消费者订阅所有的分区主题，其他消费者不会被分配分区，只会收到错误。
+
 ### failover 模型
 
-故障转移订阅(Failover sub streaming):使用故障转移订阅，多个使用者可以附加到同一订阅。 但是，对于给定的主题分区，将选择一个使用者作为该主题分区的主使用者，其他消费者将被指定为故障转移消费者，当主消费者断开连接时，分区将被重新分配给其中一个故障转移消费者，而新分配的消费者将成为新的主消费者。 发生这种情况时，所有未确认的消息都将传递给新的主消费者，这类似于Apache Kafka中的使用者分区重新平衡。 图2显示了故障转移订阅，消费者B-0和B-1通过订阅B订阅消费消息.B-0是主消费者并接收所有消息，B-1是故障转移消费者，如果消费者B-0出现故障，将接管消费。
+Multiple consumers can attach to the same subscription, yet only the first consumer is active, and others are standby. When the active consumer is disconnected, messages will be dispatched to one of standby consumers, and the standby consumer then becomes active consumer.
+
+一个消费组/订阅组的订阅模型设置为Failover 故障转移，则第一个连接的是consumer是活跃的，后边连接的是备用，当活跃的consumer断开的时候，会将备用的consumer中找一个设置为活跃状态。
+
+如果是分区主题，则每个分区只有一个活跃消费者， 一个分区的消息只分发给一个消费者，多个分区的消息分发给多个消费者。
+
+```java
+consumer = client.newConsumer()
+                        .topic("my-topic")
+                        .subscriptionName("my-subscription")
+                        .subscriptionType(SubscriptionType.Failover)
+                        .subscribe();
+```
 
 <img src="img/tmp/oq0Quo.jpg" alt="oq0Quo" style="zoom: 67%;" />
 
 ### shared 模型
 
-保证并发度，可以开多个消费方来加速消息的消费。
+一个订阅组内可以有多个consumer轮询去消费一个partation分区中的消息。保证并发度但不能保证有序。
 
-共享订阅(队列)：使用共享订阅，可以将所需数量的消费者附加到同一订阅。消息以多个消费者的循环尝试分发形式传递，并且任何给定的消息仅传递给一个消费者。当消费者断开连接时，所有传递给它并且未被确认的消息将被重新安排，以便发送给该订阅上剩余的剩余消费者。图3说明了共享订阅。消费者C-1，C-2和C-3都在同一主题分区上消费消息。每个消费者接收大约1/3的消息。如果您想提高消费率，您可以在不增加分区数量的情况下为更多的消费者提供相同的订阅（尽可能多的消费者）。
+
 
 <img src="img/tmp/cT304g.jpg" alt="cT304g" style="zoom:67%;" />
 
@@ -70,9 +86,15 @@
 
 在保证并发的同时保证有序性，确保key不会被重复消费。
 
-独占和故障转移订阅仅允许每个订阅每个主题分区仅有一个消费者。它们按分区顺序使用消息。它们最适用于需要严格排序的流用例。另一方面，共享订阅允许每个主题分区有多个消费者，同一订阅中的每个消费者仅接收发布到主题分区的一部分消息。共享订阅最适用于不需要排序的并且可以扩展超出分区数量的使用者数量的队列用例。
+```java
+        producer.newMessage().key("key-1").value("message-1-1").send();
+        producer.newMessage().key("key-1").value("message-1-2").send();
+        producer.newMessage().key("key-1").value("message-1-3").send();
+        producer.newMessage().key("key-2").value("message-2-1").send();
+        producer.newMessage().key("key-2").value("message-2-2").send();
+```
 
-Pulsar中的subscription(订阅)实际上与Apache Kafka中的消费者群体相同。创建订阅具有高度可扩展性且非常低廉的。可以根据需要创建任意数量的订阅，对同一主题的不同订阅不必具有相同的订阅类型。这意味着可以在同一主题上有10个消费者的故障转移订阅或有20个消费者的共享订阅。如果共享订阅处理事件的速度很慢，则可以在不更改分区数的情况下向共享订阅添加更多消费者。图4描绘了一个包含3个订阅A，B和C的主题，并说明了消息如何从生产者流向消费者。
+根据在发送时指定的key，可以确保相同的key会被有序的发送到同一个consumer中
 
 <img src="img/tmp/rRtalN.jpg" alt="rRtalN" style="zoom:67%;" />
 
@@ -129,85 +151,4 @@ Ack 的过程，其实就是移动光标的操作。
 ### Reet Cursor
 
 ![image-20210727223037547](img/tmp/image-20210727223037547.png)
-
-## Tenant & Namespace
-
-![image-20210728090225446](img/tmp/image-20210728090225446.png)
-
-![image-20210727223228727](img/tmp/image-20210727223228727.png)
-
-- persistent 是持久化的，会刷到bookkeeper中，这个过程是实时刷盘的，所以磁盘IO性能对消息也会有影响。 
-- non-persistent 是只在内存中。
-
-示例：
-
-![image-20210727223445497](img/tmp/image-20210727223445497.png)
-
-## Zookeeper
-
-![image-20210727224504763](img/tmp/image-20210727224504763.png)
-
-## Write Path
-
-![image-20210727224732502](img/tmp/image-20210727224732502.png)
-
-上图中 Broker 可以根据备份策略来决定要同备份几份，备份的过程是对Bookie进行并发写的过程，还可以根据业务场景中对数据一致性要求，来设置策略是等待全部写成功再返回，还是只要有一个写成功就返回，在延迟和一致性上做怎样的一个权衡。
-
-## Read Path 
-
-![image-20210727225320937](img/tmp/image-20210727225320937.png)
-
-Consumer 会先通过订阅的topic 找到对应的 Broker，由 Broker 来提供服务。
-
-Consumer 读取的数据会优先从 Broker 的缓存里取，取不到的时候才会去调用 Bookie的客户端去磁盘上找。
-
-Consumer 处理完消息后 进行 ack，Broker 收到 ack 会更新一下 Cursor。
-
-## FailureHandling
-
-![image-20210727230003041](img/tmp/image-20210727230003041.png)
-
-- producer 在发送失败时，客户端内部有缓存，会进行重试。
-- broker 出错时，由于broker 不存储数据，只保留了部分缓存来提供服务，所以 broker 宕机时，producer 会去寻找其他可用的 broker进行连接，如果新 broker 没有 consumer 要的数据的时候，broker 会去 bookie里进行加载。
-- bookie 出错时，因为 bookie 是有备份的，可以从其他备份的 bookie 中返回。
-
-## Broker 和 Bookie
-
-![image-20210727231026957](img/tmp/image-20210727231026957.png)
-
-## Bookkeeper 稳定的IO质量
-
-![image-20210727234941712](img/tmp/image-20210727234941712.png)
-
-## Namespce Bundles
-
-![image-20210728090803264](img/tmp/image-20210728090803264.png)
-
-命名空间下会分为多个Bundles，在做load balance 方便topic的迁移，迁移整个Namespce太大，一个一个搬topic又太小，所以暴露出了 Bundles，会根据topic名称的hash值来计算落在哪个bundles。
-
-## Load Manager
-
-Leader broker 会去收集其他 broker 机器的繁忙程度，比如cpu 内存 利用率、网络带宽、延时等等。
-
-选举过程是去zk是抢节点，谁拿到谁就是leader。
-
-![image-20210728090933713](img/tmp/image-20210728090933713.png)
-
-## Load Manager Assign bundles to brokers
-
-如果broker0 宕机，Leader 会对 broker0 所在的区域进行再hash，然后根据当前可用的 broker的机器情况，重新分配 Broker0 上的topic。
-
-![image-20210728091215022](img/tmp/image-20210728091215022.png)
-
-## Topic Lockup
-
-![image-20210728091955749](img/tmp/image-20210728091955749.png)
-
-##  Broker Proxy
-
-![image-20210728092521513](img/tmp/image-20210728092521513.png)
-
-## Topic Lockup with Proxies
-
-![image-20210728092548923](img/tmp/image-20210728092548923.png)
 
