@@ -62,7 +62,7 @@
 
 ​		这些阶段并不是一个执行完再开始下一阶段，而是混合交叉执行的，比如，加载阶段加载了字节码中的魔数，验证阶段就会去验证魔数的正确性。但是他们开始的时间是保持着固定的先后顺序（解析和初始化这两个阶段除外）。
 
-[![类的加载连接以及初始化](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%9E%E6%8E%A5%E4%BB%A5%E5%8F%8A%E5%88%9D%E5%A7%8B%E5%8C%96.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/类的加载连接以及初始化.png)
+![类的加载连接以及初始化](img/JVM：3-类加载器深入解析与阶段分解/类的加载连接以及初始化.png)
 
 ## （三）类的使用和卸载
 
@@ -297,7 +297,9 @@ class MyParent2{
   }
   ```
 
-[![image-20191201165301445](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191201165301445.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201165301445.png)
+
+
+![image-20191201165301445](img/JVM：3-类加载器深入解析与阶段分解/image-20191201165301445.png)
 
 ```java
 public class MyTest5{
@@ -315,7 +317,7 @@ class MyChild5 implements MyParent5{
 }
 ```
 
-[![image-20191201165610045](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191201165610045.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201165610045.png)
+[![image-20191201165610045](img/JVM：3-类加载器深入解析与阶段分解/image-20191201165610045.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201165610045.png)
 
 - 测试6
 
@@ -370,7 +372,7 @@ class Singleton{
   }
   ```
 
-  ![image-20200320110831891](img/image-20200320110831891.png)
+  ![image-20200320110831891](img/JVM：3-类加载器深入解析与阶段分解/image-20200320110831891.png)
 
 上图可以看出加载了Person类，但没有进行初始化。
 
@@ -381,7 +383,7 @@ class Singleton{
     }
 ```
 
-![image-20200320111014140](img/image-20200320111014140.png)
+![image-20200320111014140](img/JVM：3-类加载器深入解析与阶段分解/image-20200320111014140.png)
 
 ```java
     public static Class<?> forName(String className)
@@ -680,7 +682,7 @@ initializing：初始化，指的是类的初始化，而不是对象初始化�
   }
   ```
 
-  [![image-20191201181444828](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191201181444828.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201181444828.png)
+  [![image-20191201181444828](img/JVM：3-类加载器深入解析与阶段分解/image-20191201181444828.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201181444828.png)
 
   测试示例二：验证在初始化一个接口的时候，并不会先初始化它的父接口；
 
@@ -710,7 +712,7 @@ initializing：初始化，指的是类的初始化，而不是对象初始化�
   }
   ```
 
-  [![image-20191201182327034](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191201182327034.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201182327034.png)
+  [![image-20191201182327034](img/JVM：3-类加载器深入解析与阶段分解/image-20191201182327034.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191201182327034.png)
 
 - 调用ClassLoader类的loadClass方法加载一个类，并不是对类的主动使用，不会导致类的初始化。
 
