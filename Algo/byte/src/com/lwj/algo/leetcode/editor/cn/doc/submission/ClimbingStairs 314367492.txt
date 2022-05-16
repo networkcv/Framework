@@ -1,0 +1,17 @@
+    class Solution {
+        public int climbStairs(int n) {
+            int[] dp = new int[n + 1];
+            dp[1] = 1;
+            dp[2] = 2;
+            for (int i = 3; i <= n; i++) {
+                dp[i] = dp[i - 1] + dp[i - 2];
+            }
+            return dp[n];
+        }
+    }
+
+//runtime_error:java.lang.ArrayIndexOutOfBoundsException: Index 2 out of bounds for length 2
+  at line 5, Solution.climbStairs
+  at line 54, __DriverSolution__.__helper__
+  at line 84, __Driver__.main
+//last_testcase:1
