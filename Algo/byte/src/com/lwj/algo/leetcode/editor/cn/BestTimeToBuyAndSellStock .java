@@ -39,12 +39,41 @@ package com.lwj.algo.leetcode.editor.cn;
 class BestTimeToBuyAndSellStock {
     public static void main(String[] args) {
         Solution solution = new BestTimeToBuyAndSellStock().new Solution();
+        System.out.println(solution.maxProfit(new int[]{7, 1, 5, 3, 6, 4}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int maxProfit(int[] prices) {
-            return 0;
+            return quickSum(prices);
+//            return standardDP(prices);
+
+        }
+
+        private int quickSum(int[] prices) {
+            int minPrice = prices[0];
+            int maxProfit = 0;
+            for (int i = 1; i < prices.length; i++) {
+                maxProfit = Math.max(prices[i] - minPrice, maxProfit);
+                minPrice = Math.min(prices[i], minPrice);
+            }
+            return maxProfit;
+        }
+
+        private int standardDP(int[] prices) {
+            if (prices.length < 2) {
+                return 0;
+            }
+            int[] dp = new int[prices.length];
+            dp[0] = prices[0];
+            int minPrice = prices[0];
+            int maxProfit = 0;
+            for (int i = 1; i < prices.length; i++) {
+                maxProfit = Math.max(prices[i] - minPrice, maxProfit);
+                dp[i] = maxProfit;
+                minPrice = Math.min(prices[i], minPrice);
+            }
+            return maxProfit == 0 ? 0 : dp[prices.length - 1];
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

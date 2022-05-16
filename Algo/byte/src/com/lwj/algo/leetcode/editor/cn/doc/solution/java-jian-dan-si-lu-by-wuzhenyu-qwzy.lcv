@@ -1,0 +1,21 @@
+### 解题思路
+
+记录当前位置之前最小值, 与当前位置做差为收益, 收益存最大值就OK
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        int min = prices[0], ans = 0;
+        for (int i = 1; i < prices.length; ++i) {
+            if (min >= prices[i]) min = prices[i];
+            else if (prices[i] - min > ans) ans = prices[i] - min; // 通过else小优化, 否则为负
+        }
+        return ans;
+    }
+}
+```
+
