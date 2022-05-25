@@ -154,6 +154,8 @@ ConcurrentSkipListMap是一种基于SkipList（跳表）实现的，有序存储
 
 ### 2.3.1 BlockingQueue
 
+[阻塞队列和非阻塞队列源码解析](https://juejin.cn/post/7029233235569836062#heading-1)
+
 ConcurrentQueue
         offer()    代替add() 如果队满，则返回false，不会抛出异常    
         offer("aaa",1,TimeUnit.SECONDS) //按时间段阻塞，插入时最多等待1秒

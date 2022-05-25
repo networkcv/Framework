@@ -14,13 +14,17 @@ Q ：为什么不建议使用 Executors 中提供的线程池？
 
 ### 1.1 使用线程池的好处
 
-虽然在Java语言中创建线程看上去就像创建一个对象一样简单,只需要new Thread)就可以了,但实际上创建线程远不是创建一个对象那么简单。创建对象,仅仅是在JVM的堆里分配一块内存而已;而创建一个线·程,却需要调用操作系统内核的API,然后操作系统要为线程分配一系列的资源,这个成本就很高了,所以**线程是一个重量级的对象,应该避免频繁创建和销毁。**
+虽然在Java语言中创建线程看上去就像创建一个对象一样简单,只需要new Thread)就可以了,但实际上创建线程远不是创建一个对象那么简单。创建对象,仅仅是在JVM的堆里分配一块内存而已;而创建一个线程,却需要调用操作系统内核的API,然后操作系统要为线程分配一系列的资源,这个成本就很高了,所以**线程是一个重量级的对象,应该避免频繁创建和销毁。**
 
 那如何避免呢？应对方案估计你已经知道了，那就是线程池。
 
 > 池化技术相比大家已经屡见不鲜了，线程池、数据库连接池、Http 连接池等等都是对这个思想的应用。池化技术的思想主要是为了减少每次获取资源的消耗，提高对资源的利用率。
 
 **线程池**提供了一种限制和管理资源（包括执行一个任务）。 每个**线程池**还维护一些基本统计信息，例如已完成任务的数量。
+
+线程池是一种“池化”的线程使用模式，通过创建一定数量的线程，让这些线程处于就绪状态来提高系统响应速度，在线程使用完成后归还到线程池来达到重复利用的目标，从而降低系统资源的消耗。
+
+
 
 这里借用《Java 并发编程的艺术》提到的来说一下**使用线程池的好处**：
 
@@ -316,16 +320,21 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 **ThreadPoolExecutor 3 个最重要的参数：**
 
 1. **corePoolSize :** 核心线程数，定义了最小可以同时运行的线程数量，也是正常情况下我们期望的线程数量。
-
 2. **maximumPoolSize :** 当工作队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。当工作队列满了后，新提交来的任务，只能通过增加工作线程来处理。
+3. **workQueue:** 临时存放任务的阻塞队列。当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，就会被存放在队列中。线程池任务队列的常用实现类有：
+   - ArrayBlockingQueue ：一个数组实现的有界阻塞队列，此队列按照FIFO的原则对元素进行排序，支持公平访问队列。
+   - LinkedBlockingQueue ：一个由链表结构组成的可选有界阻塞队列，如果不指定大小，则使用Integer.MAX_VALUE作为队列大小，按照FIFO的原则对元素进行排序。
+   - PriorityBlockingQueue ：一个支持优先级排序的无界阻塞队列，默认情况下采用自然顺序排列，也可以指定Comparator。
+   - DelayQueue：一个支持延时获取元素的无界阻塞队列，创建元素时可以指定多久以后才能从队列中获取当前元素，常用于缓存系统设计与定时任务调度等。
+   - SynchronousQueue：一个不存储元素的阻塞队列。存入操作必须等待获取操作，反之亦然。
+   - LinkedTransferQueue：一个由链表结构组成的无界阻塞队列，与LinkedBlockingQueue相比多了transfer和tryTranfer方法，该方法在有消费者等待接收元素时会立即将元素传递给消费者。
+   - LinkedBlockingDeque：一个由链表结构组成的双端阻塞队列，可以从队列的两端插入和删除元素。
 
-3. **workQueue:** 当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，就会被存放在队列中。
+这三者关系可以这样理解：**corePoolSize** 就像正式的员工，**maximumPoolSize** 像是临时招聘的外包人员，**workQueue** 类比为工作进度安排。提交来的任务就好比是需求。
 
-   这三者关系可以这样理解：**corePoolSize** 就像正式的员工，**maximumPoolSize** 像是临时招聘的外包人员，**workQueue** 类比为工作进度安排。提交来的任务就好比是需求。
+当有需求进来时，会让**corePoolSize** 也就是正式员工来完成这些需求，随着需求来增加正式员工的数量，当**corePoolSize**达到最大时，也就是公司坐不下了，但需求还不断的提交过来，给每个正式员工排了满满一年的工作安排，这时候就相当于 **workQueue** 满了，为了处理这些需求，只能招一些外包人员来做，也就是 **maximumPoolSize** 创建线程来完成需求。
 
-   当有需求进来时，会让**corePoolSize** 也就是正式员工来完成这些需求，随着需求来增加正式员工的数量，当**corePoolSize**达到最大时，也就是公司坐不下了，但需求还不断的提交过来，给每个正式员工排了满满一年的工作安排，这时候就相当于 **workQueue** 满了，为了处理这些需求，只能招一些外包人员来做，也就是 **maximumPoolSize** 创建线程来完成需求。
-   
-   ![40-线程池各个参数的关系.png](img/40-线程池各个参数的关系.png)
+![40-线程池各个参数的关系.png](img/40-线程池各个参数的关系.png)
 
 **ThreadPoolExecutor 其他常见参数:**
 
@@ -337,20 +346,39 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 
    等待的时间单位，是周 还是 月。
 
-3. **threadFactory**：executor 创建新线程的时候会用到。
+3. **threadFactory**：executor 创建新线程的时候会用到。通过这个参数你可以自定义如何创建线程，例如你可以给线程指定一个有意义的名字。threadFactory表示线程工厂。用于指定为线程池创建新线程的方式，threadFactory可以设置线程名称、线程组、优先级等参数。如通过Google工具包可以设置线程池里的线程名。
 
-   通过这个参数你可以自定义如何创建线程，例如你可以给线程指定一个有意义的名字。
-
-4. **handler** ：饱和策略，通过这个参数你可以自定义任务的拒绝策略。如果线程池中所有的线程都在忙碌，并且工作队列也满了（前提是工作队列是有界队列），那么此时提交任务，线程池就会拒绝接收。至于拒绝的策略，你可以通过handler这个参数来指定。ThreadPoolExecutor已经提供了以下4种策略。    
+4. **handler** ：拒绝策略，通过这个参数你可以自定义任务的拒绝策略。如果线程池中所有的线程都在忙碌，并且工作队列也满了（前提是工作队列是有界队列），那么此时提交任务，线程池就会拒绝接收。至于拒绝的策略，你可以通过handler这个参数来指定。ThreadPoolExecutor已经提供了以下4种策略。    
 
    - **ThreadPoolExecutor.AbortPolicy**：默认的拒绝策略，抛出 `RejectedExecutionException`来拒绝新任务的处理。
    - **ThreadPoolExecutor.CallerRunsPolicy**：调用执行自己的线程运行任务，也就是直接在调用`execute`方法的线程中运行(`run`)被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。另外，这个策略喜欢增加队列容量。如果您的应用程序可以承受此延迟并且你不能任务丢弃任何一个任务请求的话，你可以选择这个策略。
    - **ThreadPoolExecutor.DiscardPolicy：** 不处理新任务，直接丢弃掉。
    - **ThreadPoolExecutor.DiscardOldestPolicy：** 此策略将丢弃最早的未处理的任务请求，其实就是把最早进入工作队列的任务丢弃，然后把新任务加入到工作队列。
 
+   rejectedExecutionHandler表示拒绝策略。当达到最大线程数且队列任务已满时需要执行的拒绝策略，常见的拒绝策略如下：
+
+   
+
+   1. ThreadPoolExecutor.AbortPolicy：默认策略，当任务队列满时抛出RejectedExecutionException异常。
+   2. ThreadPoolExecutor.DiscardPolicy：丢弃掉不能执行的新任务，不抛任何异常。
+   3. ThreadPoolExecutor.CallerRunsPolicy：当任务队列满时使用调用者的线程直接执行该任务。
+   4. ThreadPoolExecutor.DiscardOldestPolicy：当任务队列满时丢弃阻塞队列头部的任务（即最老的任务），然后添加当前任务。
+
 举个例子：
 
 > Spring 通过 `ThreadPoolTaskExecutor` 或者我们直接通过 `ThreadPoolExecutor` 的构造函数创建线程池的时候，当我们不指定 `RejectedExecutionHandler` 饱和策略的话来配置线程池的时候默认使用的是 `ThreadPoolExecutor.AbortPolicy`。在默认情况下，`ThreadPoolExecutor` 将抛出 `RejectedExecutionException` 来拒绝新来的任务 ，这代表你将丢失对这个任务的处理。 对于可伸缩的应用程序，建议使用 `ThreadPoolExecutor.CallerRunsPolicy`。当最大池被填满时，此策略为我们提供可伸缩队列。（这个直接查看 `ThreadPoolExecutor` 的构造函数源码就可以看出，比较简单的原因，这里就不贴代码了。）
+
+### 3.1 线程池的几种状态
+
+ThreadPoolExecutor线程池有如下几种状态：
+
+1. RUNNING：运行状态，接受新任务，持续处理任务队列里的任务；
+2. SHUTDOWN：不再接受新任务，但要处理任务队列里的任务；
+3. STOP：不再接受新任务，不再处理任务队列里的任务，中断正在进行中的任务；
+4. TIDYING：表示线程池正在停止运作，中止所有任务，销毁所有工作线程，当线程池执行terminated()方法时进入TIDYING状态；
+5. TERMINATED：表示线程池已停止运作，所有工作线程已被销毁，所有任务已被清空或执行完毕，terminated()方法执行完成；
+
+![企业微信截图_dfa820f7-13aa-47a6-a01c-f59d6534e8cf](img/Java并发编程：13-线程池/企业微信截图_dfa820f7-13aa-47a6-a01c-f59d6534e8cf.png)
 
 ### 3.2 ThreadPoolExecutor 使用示例
 
@@ -422,6 +450,21 @@ Finished all threads
 
 ### 3.3 ThreadPoolExecutor 原理分析
 
+执行逻辑如下图所示：
+
+![图片](img/Java并发编程：13-线程池/640.png)
+
+线程池提交一个任务时任务调度的主要步骤如下：
+
+
+
+1. 当线程池里存活的核心线程数小于corePoolSize核心线程数参数的值时，线程池会创建一个核心线程去处理提交的任务；
+2. 如果线程池核心线程数已满，即线程数已经等于corePoolSize，新提交的任务会被尝试放进任务队列workQueue中等待执行；
+3. 当线程池里面存活的线程数已经等于corePoolSize了，且任务队列workQueue已满，再判断当前线程数是否已达到maximumPoolSize，即最大线程数是否已满，如果没到达，创建一个非核心线程执行提交的任务；
+4. 如果当前的线程数已达到了maximumPoolSize，还有新的任务提交过来时，执行拒绝策略进行处理。
+
+**源码分析**
+
 ```java
    // 存放线程池的运行状态 (runState) 和线程池内有效线程的数量 (workerCount)
    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
@@ -465,9 +508,7 @@ Finished all threads
     }
 ```
 
-执行逻辑如下图所示：
 
-![41-图解线程池实现原理.png](img/41-图解线程池实现原理.png)
 
 ### 3.4 终止线程池
 
@@ -481,7 +522,7 @@ Finished all threads
 
 - **isTerminated** 当调用 `shutdown()` 方法后，并且所有提交的任务完成后返回为 true
 
-### 3.5 核心线程数量设置
+### 3.5 核心线程数量设置建议
 
 **如果我们设置的线程池数量太小的话，如果同一时间有大量任务/请求需要处理，可能会导致大量的请求/任务在任务队列中排队等待执行，甚至会出现任务队列满了之后任务/请求无法处理的情况，或者大量任务堆积在任务队列导致 OOM。这样很明显是有问题的！ CPU 根本没有得到充分利用。**
 

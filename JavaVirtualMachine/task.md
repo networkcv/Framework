@@ -141,7 +141,7 @@ public static void main(String[] args) {
  * @author zhanghua
  * 
  */
-public class PermOOM {
+	public class PermOOM {
 
 	public static void main(String[] args) {
 		List<String> list = new ArrayList<String>();
@@ -149,9 +149,9 @@ public class PermOOM {
 			list.add(UUID.randomUUID().toString().intern());
 		}
 	}
-}
-系统溢出后打印的异常栈：
-Exception in thread "main" java.lang.OutOfMemoryError: PermGen space
+	}
+	系统溢出后打印的异常栈：
+	Exception in thread "main" java.lang.OutOfMemoryError: PermGen space
 	at java.lang.String.intern(Native Method)
 	at test.classloader.PermOOM.main(PermOOM.java:20)
 
@@ -172,8 +172,8 @@ Exception in thread "main" java.lang.OutOfMemoryError: PermGen space
  * 启动参数是默认参数
  * @author zhanghua
  *
- */
-public class OverflowTest {
+	 */
+	public class OverflowTest {
 	private volatile int i=0;
 	private volatile int b=0;
 	private volatile int c=0;
@@ -359,15 +359,15 @@ public class CutJre {
  * @author zhanghua
  * 
  */
-public class GenerateSTW {
+	public class GenerateSTW {
 	/**
 	 * 通过集合引用对象，保证对象不被gc回收
 	 */
-	private List<byte[]> content=new ArrayList<byte[]>();
-	public static void main(String[] args) {
+	 private List<byte[]> content=new ArrayList<byte[]>();
+	 public static void main(String[] args) {
 		GenerateSTW stw=new GenerateSTW();
 		stw.start();
-	}
+	 }
 
 	private void start() {
 		while(true){
@@ -571,7 +571,7 @@ package com.zh.jvm007;
  * @author zhanghua
  * 
  */
-public class TestReDeadLock {
+	public class TestReDeadLock {
 	public static void main(String[] args) throws Exception {
 		A a = new A();
 		B b = new B();
