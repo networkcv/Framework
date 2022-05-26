@@ -638,16 +638,61 @@ newScheduledThreadPool(int corePoolSize)：创建一个支持定时及周期性�
 - initialDelay 任务多久后启动
 - period 循环执行该任务的周期时间
 
-### 4.7 小结
 
-Executors 返回线程池对象的弊端如下：
 
-- **FixedThreadPool 和 SingleThreadExecutor** ： 允许请求的队列长度为 Integer.MAX_VALUE,可能堆积大量的请求，从而导致 OOM。
-- **CachedThreadPool 和 ScheduledThreadPool** ： 允许创建的线程数量为 Integer.MAX_VALUE ，可能会创建大量线程，从而导致 OOM。
+1. newCachedThreadPool()：创建一个可缓存的线程池，调用 execute 将重用以前构造的线程（如果线程可用）。如果没有可用的线程，则创建一个新线程并添加到线程池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。CachedThreadPool适用于并发执行大量短期耗时短的任务，或者负载较轻的服务器；
 
-不建议使用  Executors 的 最重要的原因是：Executors提供的很多方法默认使用的都是无界的
-LinkedBlockingQueue，高负载情境下，无界队列很容易导致OOM，而OOM会导致所有请求都无法处理，
-这是致命问题。所以 强烈建议使用有界队列。
+2. newFiexedThreadPool(int nThreads)：创建固定数目线程的线程池，线程数小于nThreads时，提交新的任务会创建新的线程，当线程数等于nThreads时，提交新的任务后任务会被加入到阻塞队列，正在执行的线程执行完毕后从队列中取任务执行，FiexedThreadPool适用于负载略重但任务不是特别多的场景，为了合理利用资源，需要限制线程数量；
+
+3. newSingleThreadExecutor() 创建一个单线程化的 Executor，SingleThreadExecutor适用于串行执行任务的场景，每个任务按顺序执行，不需要并发执行；
+
+4. newScheduledThreadPool(int corePoolSize) 创建一个支持定时及周期性的任务执行的线程池，多数情况下可用来替代 Timer 类。ScheduledThreadPool中，返回了一个ScheduledThreadPoolExecutor实例，而ScheduledThreadPoolExecutor实际上继承了ThreadPoolExecutor。从代码中可以看出，ScheduledThreadPool基于ThreadPoolExecutor，corePoolSize大小为传入的corePoolSize，maximumPoolSize大小为Integer.MAX_VALUE，超时时间为0，workQueue为DelayedWorkQueue。实际上ScheduledThreadPool是一个调度池，其实现了schedule、scheduleAtFixedRate、scheduleWithFixedDelay三个方法，可以实现延迟执行、周期执行等操作；
+
+5. newSingleThreadScheduledExecutor() 创建一个corePoolSize为1的ScheduledThreadPoolExecutor；
+
+6. newWorkStealingPool(int parallelism)返回一个ForkJoinPool实例，ForkJoinPool 主要用于实现“分而治之”的算法，适合于计算密集型的任务。
+
+   
+
+## 最佳实践
+
+### 避免用Executors 的创建线程池
+
+1. FiexedThreadPool和SingleThreadPool任务队列长度为Integer.MAX_VALUE，可能会堆积大量的请求，从而导致OOM；
+2. CachedThreadPool和ScheduledThreadPool允许创建的线程数量为Integer.MAX_VALUE，可能会创建大量的线程，从而导致OOM；
+
+使用线程时，可以直接调用 ThreadPoolExecutor 的构造函数来创建线程池，并根据业务实际场景来设置corePoolSize、blockingQueue、RejectedExecuteHandler等参数。
+
+### 避免使用局部线程池
+
+使用局部线程池时，若任务执行完后没有执行shutdown()方法或有其他不当引用，极易造成系统资源耗尽。
+
+### 合理设置线程池参数
+
+在工程实践中，通常使用下述公式来计算核心线程数：
+$$
+nThreads=(w+c)/c*n*u=(w/c+1)*n*u
+$$
+其中，w为等待时间，c为计算时间，n为CPU核心数（通常可通过 Runtime.getRuntime().availableProcessors()方法获取），u为CPU目标利用率（取值区间为[0, 1]）；在最大化CPU利用率的情况下，当处理的任务为计算密集型任务时，即等待时间w为0，此时核心线程数等于CPU核心数。
+
+上述计算公式是理想情况下的建议核心线程数，而不同系统/应用在运行不同的任务时可能会有一定的差异，因此最佳线程数参数还需要根据任务的实际运行情况和压测表现进行微调。
+
+### 增加异常处理
+
+- 在任务代码处增加try...catch异常处理
+- 如果使用的Future方式，则可通过Future对象的get方法接收抛出的异常
+
+[Java 线程池的异常处理机制](https://www.jianshu.com/p/281958d20b04)
+
+submit是提交一个任务，execute是执行一个任务。
+
+submit会返回一个Future对象来保存执行结果，如果执行任务抛出异常，那么异常需要手动调用get方法才会被重新抛出来。
+
+execute则会在执行期间就抛出异常，因此针对线程配置的UncaughtExceptionHandler会生效，而submit则不会生效。
+
+线程在执行过程中抛出异常会导致线程异常退出，当有新任务提交到线程池后，线程池会创建新线程来执行。这样其实很影响线程池的性能，所以建议在任务中做好try..catch，使用 UncaughtExceptionHandler 是不合适的。
+
+
 
 使用有界队列，当任务过多时，线程池会触发执行拒绝策略，线程池默认的拒绝策略会throw
 RejectedExecutionException 这是个运行时异常，对于运行时异常编译器并不强制catch它，所以开发人员
@@ -658,3 +703,6 @@ RejectedExecutionException 这是个运行时异常，对于运行时异常编�
 如果任务在执行的过程中出现运行时异常，会导致执行任务的线程终止；不过，最致命的是任务虽然异常
 了，但是你却获取不到任何通知，这会让你误以为任务都执行得很正常。虽然线程池提供了很多用于异常处
 理的方法，但是最稳妥和简单的方案还是捕获所有异常并按需处理。
+
+
+
