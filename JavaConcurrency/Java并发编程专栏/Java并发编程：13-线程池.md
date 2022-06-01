@@ -641,18 +641,75 @@ newScheduledThreadPool(int corePoolSize)：创建一个支持定时及周期性�
 
 
 1. newCachedThreadPool()：创建一个可缓存的线程池，调用 execute 将重用以前构造的线程（如果线程可用）。如果没有可用的线程，则创建一个新线程并添加到线程池中。终止并从缓存中移除那些已有 60 秒钟未被使用的线程。CachedThreadPool适用于并发执行大量短期耗时短的任务，或者负载较轻的服务器；
-
 2. newFiexedThreadPool(int nThreads)：创建固定数目线程的线程池，线程数小于nThreads时，提交新的任务会创建新的线程，当线程数等于nThreads时，提交新的任务后任务会被加入到阻塞队列，正在执行的线程执行完毕后从队列中取任务执行，FiexedThreadPool适用于负载略重但任务不是特别多的场景，为了合理利用资源，需要限制线程数量；
-
 3. newSingleThreadExecutor() 创建一个单线程化的 Executor，SingleThreadExecutor适用于串行执行任务的场景，每个任务按顺序执行，不需要并发执行；
-
 4. newScheduledThreadPool(int corePoolSize) 创建一个支持定时及周期性的任务执行的线程池，多数情况下可用来替代 Timer 类。ScheduledThreadPool中，返回了一个ScheduledThreadPoolExecutor实例，而ScheduledThreadPoolExecutor实际上继承了ThreadPoolExecutor。从代码中可以看出，ScheduledThreadPool基于ThreadPoolExecutor，corePoolSize大小为传入的corePoolSize，maximumPoolSize大小为Integer.MAX_VALUE，超时时间为0，workQueue为DelayedWorkQueue。实际上ScheduledThreadPool是一个调度池，其实现了schedule、scheduleAtFixedRate、scheduleWithFixedDelay三个方法，可以实现延迟执行、周期执行等操作；
-
 5. newSingleThreadScheduledExecutor() 创建一个corePoolSize为1的ScheduledThreadPoolExecutor；
-
 6. newWorkStealingPool(int parallelism)返回一个ForkJoinPool实例，ForkJoinPool 主要用于实现“分而治之”的算法，适合于计算密集型的任务。
 
-   
+## 5.线程池源码解析
+
+https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html
+
+```java
+    // 使用原子操作类AtomicInteger的ctl变量，前3位记录线程池的状态，后29位记录线程数
+    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+    // Integer的范围为[-2^31,2^31 -1], Integer.SIZE-3 =32-3= 29，用来辅助左移位运算
+    private static final int COUNT_BITS = Integer.SIZE - 3;
+    // 高三位用来存储线程池运行状态，其余位数表示线程池的容量
+    private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
+
+    // 线程池状态以常量值被存储在高三位中
+    private static final int RUNNING    = -1 << COUNT_BITS; // 线程池接受新任务并会处理阻塞队列中的任务
+    private static final int SHUTDOWN   =  0 << COUNT_BITS; // 线程池不接受新任务，但会处理阻塞队列中的任务
+    private static final int STOP       =  1 << COUNT_BITS; // 线程池不接受新的任务且不会处理阻塞队列中的任务，并且会中断正在执行的任务
+    private static final int TIDYING    =  2 << COUNT_BITS; // 所有任务都执行完成，且工作线程数为0，将调用terminated方法
+    private static final int TERMINATED =  3 << COUNT_BITS; // 最终状态，为执行terminated()方法后的状态
+
+    // ctl变量的封箱拆箱相关的方法
+    private static int runStateOf(int c)     { return c & ~CAPACITY; } // 获取线程池运行状态
+    private static int workerCountOf(int c)  { return c & CAPACITY; } // 获取线程池运行线程数
+    private static int ctlOf(int rs, int wc) { return rs | wc; } // 获取ctl对象
+
+```
+
+```java
+public void execute(Runnable command) {
+    if (command == null) // 任务为空，抛出NPE
+        throw new NullPointerException();
+        
+    int c = ctl.get(); // 获取当前工作线程数和线程池运行状态（共32位，前3位为运行状态，后29位为运行线程数）
+    if (workerCountOf(c) < corePoolSize) { // 如果当前工作线程数小于核心线程数
+        if (addWorker(command, true)) // 在addWorker中创建工作线程并执行任务
+            return;
+        c = ctl.get();
+    }
+    
+    // 核心线程数已满（工作线程数>核心线程数）才会走下面的逻辑
+    if (isRunning(c) && workQueue.offer(command)) { // 如果当前线程池状态为RUNNING，并且任务成功添加到阻塞队列
+        int recheck = ctl.get(); // 双重检查，因为从上次检查到进入此方法，线程池可能已成为SHUTDOWN状态
+        if (! isRunning(recheck) && remove(command)) // 如果当前线程池状态不是RUNNING则从队列删除任务
+            reject(command); // 执行拒绝策略
+        else if (workerCountOf(recheck) == 0) // 当线程池中的workerCount为0时，此时workQueue中还有待执行的任务，则新增一个addWorker，消费workqueue中的任务
+            addWorker(null, false);
+    }
+    // 阻塞队列已满才会走下面的逻辑
+    else if (!addWorker(command, false)) // 尝试增加工作线程执行command
+        // 如果当前线程池为SHUTDOWN状态或者线程池已饱和
+        reject(command); // 执行拒绝策略
+}
+
+```
+
+[ctl解析](https://www.cnblogs.com/moonfair/p/13477974.html)
+
+它的主要作用是记录线程池的生命周期状态和当前工作的线程数。
+
+1. 如果运行的线程少于corePoolSize，尝试用给定的命令启动一个新线程作为它的第一个任务。对addWorker的调用自动地检查runState和workerCount，因此通过返回false，可以防止在不应该添加线程时出现错误警报。
+2. 如果一个任务可以成功排队，那么我们仍然需要再次检查是否应该添加一个线程(因为在上次检查之后已有的线程已经死亡)，或者在进入这个方法之后池已经关闭。因此，我们重新检查状态，如果有必要，如果队列停止，则回滚队列，如果没有线程，则启动一个新线程。
+3. 如果不能对任务进行队列，则尝试添加一个新线程。如果失败，我们知道我们已经关闭或饱和，因此拒绝任务。
+
+
 
 ## 最佳实践
 
@@ -706,3 +763,24 @@ RejectedExecutionException 这是个运行时异常，对于运行时异常编�
 
 
 
+- ### 优雅关闭线程池
+
+```java
+public void destroy() {
+        try {
+            poolExecutor.shutdown();
+            if (!poolExecutor.awaitTermination(AWAIT_TIMEOUT, TimeUnit.SECONDS)) {
+                poolExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            // 如果当前线程被中断，重新取消所有任务
+            pool.shutdownNow();
+            // 保持中断状态
+            Thread.currentThread().interrupt();
+        }
+    }
+```
+
+为了实现优雅停机的目标，我们应当先调用shutdown方法，调用这个方法也就意味着，这个线程池不会再接收任何新的任务，但是已经提交的任务还会继续执行。之后我们还应当调用awaitTermination方法，这个方法可以设定线程池在关闭之前的最大超时时间，如果在超时时间结束之前线程池能够正常关闭则会返回true，否则，超时会返回false。通常我们需要根据业务场景预估一个合理的超时时间，然后调用该方法。
+
+如果awaitTermination方法返回false，但又希望尽可能在线程池关闭之后再做其他资源回收工作，可以考虑再调用一下shutdownNow方法，此时队列中所有尚未被处理的任务都会被丢弃，同时会设置线程池中每个线程的中断标志位。shutdownNow并不保证一定可以让正在运行的线程停止工作，除非提交给线程的任务能够正确响应中断。
