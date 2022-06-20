@@ -323,17 +323,88 @@ DDD 提倡富领域模型，尽量将业务逻辑归属到实体对象上，实�
 
 **代码详解**：https://time.geekbang.org/column/article/185174
 
-<img src="https://pic.networkcv.top/2021/07/20/image-20210720090916852.png" alt="image-20210720090916852"  />
+![img](img/DDD/image-20210720090916852.png)
 
 ## 服务的调用
 
-![企业微信截图_503889aa-52f5-415c-975b-3e3f235e8090](https://pic.networkcv.top/2021/07/18/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_503889aa-52f5-415c-975b-3e3f235e8090.png)
+![企业微信截图_503889aa-52f5-415c-975b-3e3f235e8090](img/DDD/企业微信截图_503889aa-52f5-415c-975b-3e3f235e8090.png)
 
 ## 数据对象的转换过程
 
-![企业微信截图_901f9092-df9e-458c-aa5a-9d22e79d6160](https://pic.networkcv.top/2021/07/18/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_901f9092-df9e-458c-aa5a-9d22e79d6160.png)
+![企业微信截图_901f9092-df9e-458c-aa5a-9d22e79d6160](img/DDD/企业微信截图_901f9092-df9e-458c-aa5a-9d22e79d6160.png)
 
 ## [关于校验规则（Validation Rule）和业务规则（Bussiness Rule）的思考](https://www.cnblogs.com/horily/archive/2006/01/01/309337.html)
 
 ​    企业应用中常常涉及到校验规则和业务规则。泛而言之，所有的规则都可以称之为业务规则，但是有必要在其中区分出校验规则这个概念。从业务规则的作用范围来看，一些业务规则是关于单个领域对象自身属性的，往往是简单的、断言式的，目的是保证领域对象的正确性；而另外一些业务规则是关于多个领域对象协作的，往往包含比较复杂的判断逻辑，目的是保证业务逻辑的正确性。为便于描述，我把第一类称为校验规则，第二类称成为业务规则。
+
+
+
+
+
+# 其他
+
+Interface层：
+
+- 职责：主要负责承接网络协议的转化、Session管理等。
+- 接口数量：避免所谓的统一API，不必人为限制接口类的数量，每个/每类业务对应一套接口即可，接口参数应该符合业务需求，避免大而全的入参。
+- 接口出参：统一返回Result。
+- 异常处理：应该捕捉所有异常，避免异常信息的泄漏。可以通过AOP统一处理，避免代码里有大量重复代码。
+  Application层：
+- 入参：具像化Command、Query、Event对象作为ApplicationService的入参，唯一可以的例外是单ID查询的场景。
+- CQE的语意化：CQE对象有语意，不同用例之间语意不同，即使参数一样也要避免复用。
+- 入参校验：基础校验通过Bean Validation api解决。Spring Validation自带Validation的AOP，也可以自己写AOP。
+- 出参：统一返回DTO，而不是Entity或DO。
+- DTO转化：用DTO Assembler负责Entity/VO到DTO的转化。
+- 异常处理：不统一捕捉异常，可以随意抛异常。
+  部分Infra层：
+- 用ACL防腐层将外部依赖转化为内部代码，隔离外部的影响
+
+
+
+1.接口的清晰度
+
+如findByPhoneAndName，两个参数都是字符串，传参容易混淆，且编译器不会报错，只有运行时才会发现问题。
+
+2.数据的验证和错误处理
+
+一般常规性的检查需要出现在方法的最前端，确保能够fail-fast。有时是直接返回异常的参数，有时还需要返回异常的具体原因。
+
+还有就是这样其实会把 数据校验异常和业务逻辑异常混淆。
+
+3.业务代码的清晰度
+
+每段方法是做了什么事情。
+
+4.可测试性
+
+将数据校验和通用的业务抽到对象中，这样作为入参时接口清晰；而且由于一些通用逻辑的收口，我我们在做单测的时候也会很方便。
+
+
+
+把数据验证的工作量前置到了调用方，而调用方本来就是应该提供合法数据的，所以更加合适。
+
+让我们重新来定义一下Domain Primitive：**Domain Primitive是一个在特定领域里，拥有精准定义的、可自我验证的、拥有行为的Value Object**。
+
+- DP是一个传统意义上的Value Object，拥有Immutable的特性
+- DP是一个完整的概念整体，拥有精准定义
+- DP使用业务域中的原生语言
+- DP可以是业务域的最小组成部分、也可以构建复杂组合
+
+### 什么情况下应该用Domain Primitive
+
+常见的DP的使用场景包括：
+
+- 有格式限制的`String`：比如`Name`，`PhoneNumber`，`OrderNumber`，`ZipCode`，`Address`等
+
+- 有限制的`Integer`：比如`OrderId`（>0），`Percentage`（0-100%），`Quantity`（>=0）等
+
+- 可枚举的`int`：比如`Status`（一般不用Enum因为反序列化问题）
+
+- `Double`或`BigDecimal`：一般用到的`Double`或`BigDecimal`都是有业务含义的，比如`Temperature`、`Money`、`Amount`、`ExchangeRate`、`Rating`等
+
+- 复杂的数据结构：比如`Map<String, List<Integer>>`等，尽量能把`Map`的所有操作包装掉，仅暴露必要行为
+
+  
+
+
 
