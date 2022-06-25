@@ -1077,6 +1077,47 @@ drop procedure batchInsert;
 4. 备库 B 拿到 binlog 后，写到本地文件，称为中转日志（relay log）。
 5. sql_thread 读取中转日志，解析出日志里的命令，并执行。
 
+# 表结构设计
+
+## int(1) 和 int(10) 区别
+
+int后面的数字，不影响int本身支持的大小。
+
+一般int后面的数字，配合zerofill一起使用才有效。先看个例子：
+
+```mysql
+CREATE TABLE `user` ( 
+  `id` int(4) unsigned zerofill NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+```
+
+注意int(4)后面加了个zerofill，我们先来插入4条数据。
+
+```mysql
+mysql> INSERT INTO `user` (`id`)
+VALUES (1),(10),(100),(1000);
+
+Query OK, 4 rows affected (0.00 sec)Records: 4  Duplicates: 0  Warnings: 0
+```
+
+分别插入1、10、100、1000 4条数据，然后我们来查询下：
+
+```mysql
+mysql> select * from user;
++------+
+| id   |
++------+
+| 0001 |
+| 0010 |
+| 0100 |
+| 1000 |
++------+
+4 rows in set (0.00 sec)
+```
+
+通过数据可以发现 int(4) + zerofill实现了不足4位补0的现象，单单int(4)是没有用的。而且对于0001这种，底层存储的还是1，只是在展示的会补0。使用场景的话一般是在编号如 001，002这种。
+
 ## 主备延迟
 
 遇到过下面几种造成主从延迟的情况:
@@ -1100,7 +1141,11 @@ drop procedure batchInsert;
 3.对myisam存储引擎的表做dml操作，从库会有延迟。
 4.利用pt工具对主库的大表做字段新增、修改和添加索引等操作，从库会有延迟。
 
-## 为什么要分库分表（设计高并发系统的时候，数据库层面该如何设计）？
+# 
+
+## 为什么要分库分表
+
+设计高并发系统的时候，数据库层面该如何设计
 
 |     场景     |          分库分表前          |                  分库分表后                  |
 | :----------: | :--------------------------: | :------------------------------------------: |
