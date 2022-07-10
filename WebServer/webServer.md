@@ -1,4 +1,4 @@
-#### 对Web服务的理解
+####  对Web服务的理解
 
 web服务提供，客户端和服务器交换数据。例如使用 Java 的 Socket 套接字进行编程，去处理客户端来的 tcp 请求，经过编解码处理读取请求体，获取请求行，然后找到请求行对应的处理器进行处理，处理完毕把对应的结果返回给当前的 Socket 链接，响应完毕，关闭 Socket。
 
@@ -19,7 +19,148 @@ Web服务器主要是为提供[静态内容](#静态内容与动态内容)而设
 
 我们平常通过springBoot启动的web应用，其实内置了tomcat应用服务器，对外可以提供http协议的服务，也可以提供grpc服务或者dubbo服务。
 
+## 应用服务容器结构
 
+<img src="img/webServer/1607781-20200423231951106-1254411029.png" alt="img" style="zoom: 50%;" />
+
+Java web 应用如果部署到 Tomcat 中，一台机器可以包含多个 Service 服务（也就是启动多个tomcat），Tomcat 默认的 Service 服务是 Catalina，而一个 Service 服务可以包含多个连接器，因为 Tomcat 支持多种网络协议，包括 HTTP/1.1、HTTP/2、AJP 等等。
+
+一个 Service 服务还包括一个容器，容器外部会有一层 Engine 引擎所包裹，负责与处理连接器的请求与响应，连接器与容器之间通过 ServletRequest 和 ServletResponse 对象进行交流。
+
+Service 组件是一个逻辑组件，用于绑定 connector 和 container，有了 service 表示可以向外提供服务，就像是一般的 daemon 类服务的 service。可以认为一个 service 就启动一个JVM，更严格地说，一个 engine 组件才对应一个 JVM （定义负载均衡时，jvmRoute 就定义在 Engine 组件上用来标识这个 JVM ），只不过 connector 也工作在 JVM 中。
+
+// Tomcat 设计了两个核⼼组件连接器（Connector）和容器（Container）来完成 Tomcat 的两⼤核⼼ 功能。 连接器，负责对外交流： 处理Socket连接，负责⽹络字节流与Request和Response对象的转化； 容器，负责内部处理：加载和管理Servlet，以及具体处理Request请求；
+
+Tomcat容器的设计提现在一个核心文件中：server.xml。这个文件充分展示了Tomcat的高度抽象设计：
+
+```xml
+<Server port="8005" shutdown="SHUTDOWN">
+    <Service name="Catalina">
+        <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443"/>
+      	<Connector port="8009" protocol="AJP/1.3" redirectPort="8443"/>
+				<Engine name="Catalina" defaultHost="localhost">
+          	<Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true"/>
+        </Engine>
+    </Service>
+</Server>
+```
+
+### Servlet 容器 Catalina 的结构
+
+Tomcat（我们往往有⼀个认识，Tomcat就是⼀个Catalina的实例，因为Catalina是Tomcat的核⼼）
+
+<img src="img/webServer/image-20220710102831501.png" alt="image-20220710102831501" style="zoom: 67%;" />
+
+其实，可以认为整个Tomcat就是⼀个Catalina实例，Tomcat 启动的时候会初始化这个实例，Catalina 实例通过加载server.xml完成其他实例的创建，创建并管理⼀个Server，Server创建并管理多个服务， 每个服务⼜可以有多个Connector和⼀个Container。
+
+⼀个Catalina实例（容器）包含⼀个 Server实例（容器），而一个Server又可以有多个Service实例（不过一般只配置一个使用），每⼀个Service实例下可以有多个Connector实例（处理不同的应用层协议）和⼀个Container容器实例。
+
+Catalina 负责解析Tomcat的配置⽂件（server.xml） , 以此来创建服务器Server组件并进⾏管理 Server 服务器表示整个Catalina Servlet容器以及其它组件，负责组装并启动Servlet引擎,Tomcat连接器。Server通过实现Lifecycle接⼝，提供了⼀种优雅的启动和关闭整个系统的⽅式
+
+Service 服务是Server内部的组件，⼀个Server包含多个Service。它将若⼲个Connector组件绑定到⼀个 Container
+
+Container 容器，负责处理⽤户的servlet请求，并返回对象给web⽤户的模块 
+
+**4.3 Container 组件的具体结构**
+
+Container组件下有⼏种具体的组件，分别是Engine、Host、Context和Wrapper。这4种组件（容器） 是⽗⼦关系。Tomcat通过⼀种分层的架构，使得Servlet容器具有很好的灵活性。
+
+Engine 表示整个Catalina的Servlet引擎，⽤来管理多个虚拟站点，⼀个Service最多只能有⼀个Engine， 但是⼀个引擎可包含多个Host
+
+Host 代表⼀个虚拟主机，或者说⼀个网站站点，可以给Tomcat配置多个虚拟主机地址，⽽⼀个虚拟主机下 可包含多个Context，与这里的虚拟主机相对的是物理主机，通常一台物理主机上会部署多个虚拟主机，来保证充分利用物理主机的硬件资源。
+
+```xml
+<Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
+<Host name="www.abc.com"  appBase="webapps" unpackWARs="true" autoDeploy="true">
+```
+
+Context 表示⼀个Web应⽤程序， ⼀个Web应⽤可包含多个Wrapper
+
+Wrapper 表示⼀个Servlet，Wrapper 作为容器中的最底层，不能包含⼦容器
+
+上述组件的配置其实就体现在conf/server.xml中。
+
+### Connector 组件是监听组件，它有四个作用
+
+1. 开启监听套接字，监听外界请求，并和客户端建立 TCP 连接；
+2. 使用 protocolHandler 解析请求中的协议和端口等信息，如 http 协议、AJP 协议；
+3. 根据解析到的信息，使用 processer 将分析后的请求转发给绑定的 Engine；
+4. 接收响应数据并返回给客户端。
+
+### Container 容器组件
+
+Container 表示一类组件，在配置文件(server.xml)中没有体现出来。它包含4个容器类组件：Engine容器、Host容器、Context容器 和 wrapper容器。
+
+**Engine** 容器用于从 Connector 组件处接收已建立的 TCP 连接，还用于接收客户端发送的 HTTP 请求并分析请求，然后按照分析的结果将相关参数传递给匹配出的虚拟主机。Engine 还用于指定默认的虚拟主机。
+
+**Host** 容器定义虚拟主机，对应了服务器中一个网络名实体（如”www.baidu.com”，或IP地址”23.0.32.1”）。为了使用户可以通过域名连接 Tomcat 服务器，这个域名应该在域名服务器已经注册过。
+
+比如上例中的配置：
+
+```xml
+<Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+```
+
+name=localhost 表示当前对应的请求是本机，这是因为已经配置了Nginx代理的原因，如果没有配置代理，那么这里就必须是真实的IP 或者域名。注意后面的 appBase，appBase表示当前 web资源所在的目录。
+
+**Context** 容器主要是根据 path 和 docBase 获取一些信息，将结果交给其内的 wrapper 组件进行处理（它提供wrapper运行的环境，所以它叫上下文context）。一般来说，都采用默认的标准 wrapper 类，因此在 Context 容器中几乎不会出现 wrapper 组件。
+
+**wrapper** 容器对应 Servlet 的处理过程。它开启 Servlet 的生命周期，根据 Context 给出的信息以及解析 web.xml 中的映射关系，负责装载相关的类，初始化 servlet 对象 `init()`、执行 servlet 代码 `service()` 以及服务结束时 servlet 对象的销毁 `destory()`。
+
+根据上面描述的 tomcat 组件体系结构，处理请求的大致过程其实很容易推导出来：
+
+```rust
+CopyClient(request)-->Connector-->Engine-->Host-->Context-->Wrapper(response data)-->Connector(response header)-->Client
+```
+
+#### Catalina容器作用
+
+1. 建立连接；
+2. 调用Servlet处理请求；
+3. 响应请求给客户端；
+4. 释放连接；
+
+#### 容器处理流程
+
+当⽤户请求某个URL资源时 
+
+1. Connector 会把请求信息使⽤ServletRequest对象封装起来 
+2. 进⼀步去调⽤Servlet容器中某个具体的Servlet 
+3. 在 步骤2 中，Servlet容器拿到请求后，根据URL和Servlet的映射关系，找到相应的Servlet 
+4. 如果Servlet还没有被加载，就⽤反射机制创建这个Servlet，并调⽤Servlet的init⽅法来完成初始化 
+5. 接着调⽤这个具体Servlet的service⽅法来处理请求，请求处理结果使⽤ServletResponse对象封装 
+6. 把ServletResponse对象返回给HTTP服务器，HTTP服务器会把响应发送给客户端
+
+<img src="img/webServer/image-20220710083145987.png" alt="image-20220710083145987" style="zoom:50%;" />
+
+### 
+
+## Tomcat 连接器组件 Coyote
+
+Coyote 是Tomcat 中连接器的组件名称 , 是对外的接⼝。客户端通过Coyote与服务器建⽴连接、发送请 求并接受响应 。 
+
+（1）Coyote 封装了底层的⽹络通信（Socket 请求及响应处理） 
+
+（2）Coyote 使Catalina 容器（容器组件）与具体的请求协议及IO操作⽅式完全解耦 
+
+（3）Coyote 将Socket 输⼊转换封装为 Request 对象，进⼀步封装后交由Catalina 容器进⾏处理，处 理请求完成后, Catalina 通过Coyote 提供的Response 对象将结果写⼊输出流 
+
+（4）Coyote 负责的是具体协议（应⽤层）和IO（传输层）相关内容
+
+<img src="img/webServer/image-20220710093544759.png" alt="image-20220710093544759" style="zoom:50%;" />
+
+### Coyote 的内部组件及流程
+
+<img src="img/webServer/image-20220710093702835.png" alt="image-20220710093702835" style="zoom: 67%;" />
+
+![image-20220710093742329](img/webServer/image-20220710093742329.png)
+
+| 组件            | 作⽤描述                                                     |
+| --------------- | ------------------------------------------------------------ |
+| EndPoint        | EndPoint 是 Coyote 通信端点，即通信监听的接⼝，是具体Socket接收和发 送处理器，是对传输层的抽象，因此EndPoint⽤来实现TCP/IP协议的 |
+| Processor       | Processor 是Coyote 协议处理接⼝ ，如果说EndPoint是⽤来实现TCP/IP协 议的，那么Processor⽤来实现HTTP协议，Processor接收来⾃EndPoint的 Socket，读取字节流解析成Tomcat Request和Response对象，并通过 Adapter将其提交到容器处理，Processor是对应⽤层协议的抽象 |
+| ProtocolHandler | Coyote 协议接⼝， 通过Endpoint 和 Processor ， 实现针对具体协议的处 理能⼒。Tomcat 按照协议和I/O 提供了6个实现类 ： AjpNioProtocol ， AjpAprProtocol， AjpNio2Protocol ， Http11NioProtocol ， Http11Nio2Protocol ，Http11AprProtocol |
+| Adapter         | 由于协议不同，客户端发过来的请求信息也不尽相同，Tomcat定义了⾃⼰的 Request类来封装这些请求信息。ProtocolHandler接⼝负责解析请求并⽣成 Tomcat Request类。但是这个Request对象不是标准的ServletRequest，不 能⽤Tomcat Request作为参数来调⽤容器。Tomcat设计者的解决⽅案是引 ⼊CoyoteAdapter，这是适配器模式的经典运⽤，连接器调⽤ CoyoteAdapter的Sevice⽅法，传⼊的是Tomcat Request对象， CoyoteAdapter负责将Tomcat Request转成ServletRequest，再调⽤容器 |
 
 ### Tomcat请求处理过程-连接器
 
@@ -163,13 +304,13 @@ acceptCount为accept队列的长度，当accept队列中连接的个数达到acc
 
 因此，通过acceptCount和maxConnections两个参数作用后，Tomcat默认的无界任务队列通常不会造成OOM。
 
-### Tomcat请求处理过程-Servlet容器
+## Tomcat请求处理过程-Servlet容器
 
 https://www.cnblogs.com/rickiyang/p/12764615.html
 
 ![image-20220526104209889](img/webServer/image-20220526104209889.png)
 
-Adapter 将 Tomcat Request/Response对象转换为标准的 ServletRequest/ServletResponse对象。后边交由 tomcat 的Servlet容器来完成具体的请求处理。
+前面讲到，Adapter 会将 Tomcat Request/Response对象转换为标准的 ServletRequest/ServletResponse对象。后边交由 tomcat 的Servlet容器来完成具体的请求处理。
 
 不同的请求url会有不同的处理逻辑，也就对应不同的Servlet，那么自然需要一个组件将不同的请求分发给对应的Servelet来处理，而这个组件就是 DispatcherServlet。
 
@@ -192,71 +333,15 @@ public interface Servlet {
 
 ```
 
-#### 应用服务容器结构
 
-![img](img/webServer/1607781-20200423231951106-1254411029.png)
 
-Java web 应用如果部署到 Tomcat 中，一台机器可以包含多个 Service 服务（也就是启动多个tomcat），Tomcat 默认的 Service 服务是 Catalina，而一个 Service 服务可以包含多个连接器，因为 Tomcat 支持多种网络协议，包括 HTTP/1.1、HTTP/2、AJP 等等。
+  
 
-一个 Service 服务还包括一个容器，容器外部会有一层 Engine 引擎所包裹，负责与处理连接器的请求与响应，连接器与容器之间通过 ServletRequest 和 ServletResponse 对象进行交流。
 
-Service 组件是一个逻辑组件，用于绑定 connector 和 container，有了 service 表示可以向外提供服务，就像是一般的 daemon 类服务的 service。可以认为一个 service 就启动一个JVM，更严格地说，一个 engine 组件才对应一个 JVM （定义负载均衡时，jvmRoute 就定义在 Engine 组件上用来标识这个 JVM ），只不过 connector 也工作在 JVM 中。
 
-Tomcat容器的设计提现在一个核心文件中：server.xml。这个文件充分展示了Tomcat的高度抽象设计：
 
-```xml
-<Server port="8005" shutdown="SHUTDOWN">
-    <Service name="Catalina">
-        <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443"/>
-      	<Connector port="8009" protocol="AJP/1.3" redirectPort="8443"/>
-				<Engine name="Catalina" defaultHost="localhost">
-          	<Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true"/>
-        </Engine>
-    </Service>
-</Server>
-```
 
-#### Container 容器组件
-
-Container 表示一类组件，在配置文件(server.xml)中没有体现出来。它包含4个容器类组件：Engine容器、Host容器、Context容器 和 wrapper容器。
-
-**Engine** 容器用于从 Connector 组件处接收已建立的 TCP 连接，还用于接收客户端发送的 HTTP 请求并分析请求，然后按照分析的结果将相关参数传递给匹配出的虚拟主机。Engine 还用于指定默认的虚拟主机。
-
-**Host** 容器定义虚拟主机，对应了服务器中一个网络名实体（如”www.baidu.com”，或IP地址”23.0.32.1”）。为了使用户可以通过域名连接 Tomcat 服务器，这个域名应该在域名服务器已经注册过。
-
-比如上例中的配置：
-
-```xml
-<Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
-```
-
-name=localhost 表示当前对应的请求是本机，这是因为已经配置了Nginx代理的原因，如果没有配置代理，那么这里就必须是真实的IP 或者域名。注意后面的 appBase，appBase表示当前 web资源所在的目录。
-
-**Context** 容器主要是根据 path 和 docBase 获取一些信息，将结果交给其内的 wrapper 组件进行处理（它提供wrapper运行的环境，所以它叫上下文context）。一般来说，都采用默认的标准 wrapper 类，因此在 Context 容器中几乎不会出现 wrapper 组件。
-
-**wrapper** 容器对应 Servlet 的处理过程。它开启 Servlet 的生命周期，根据 Context 给出的信息以及解析 web.xml 中的映射关系，负责装载相关的类，初始化 servlet 对象 `init()`、执行 servlet 代码 `service()` 以及服务结束时 servlet 对象的销毁 `destory()`。
-
-根据上面描述的 tomcat 组件体系结构，处理请求的大致过程其实很容易推导出来：
-
-```rust
-CopyClient(request)-->Connector-->Engine-->Host-->Context-->Wrapper(response data)-->Connector(response header)-->Client
-```
-
-#### Connector 组件是监听组件，它有四个作用
-
-1. 开启监听套接字，监听外界请求，并和客户端建立 TCP 连接；
-2. 使用 protocolHandler 解析请求中的协议和端口等信息，如 http 协议、AJP 协议；
-3. 根据解析到的信息，使用 processer 将分析后的请求转发给绑定的 Engine；
-4. 接收响应数据并返回给客户端。
-
-#### Catalina容器作用
-
-1. 建立连接；
-2. 调用Servlet处理请求；
-3. 响应请求给客户端；
-4. 释放连接；
-
-### 其他
+# 其他
 
 #### 静态内容与动态内容
 
@@ -302,7 +387,7 @@ GET /index.html
 
 https://www.cnblogs.com/linuxtop/p/12552930.html
 
-![img](img/webServer/1916675-20200323162107799-254491555.png)
+<img src="img/webServer/1916675-20200323162107799-254491555.png" alt="img" style="zoom: 67%;" />
 
 #### APR线程模型
 
