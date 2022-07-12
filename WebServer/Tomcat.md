@@ -21,7 +21,7 @@ Web服务器主要是为提供[静态内容](#静态内容与动态内容)而设
 
 ## 应用服务容器结构
 
-<img src="img/webServer/1607781-20200423231951106-1254411029.png" alt="img" style="zoom: 50%;" />
+<img src="img/Tomcat/1607781-20200423231951106-1254411029.png" alt="img" style="zoom: 50%;" />
 
 Java web 应用如果部署到 Tomcat 中，一台机器可以包含多个 Service 服务（也就是启动多个tomcat），Tomcat 默认的 Service 服务是 Catalina，而一个 Service 服务可以包含多个连接器，因为 Tomcat 支持多种网络协议，包括 HTTP/1.1、HTTP/2、AJP 等等。
 
@@ -49,7 +49,7 @@ Tomcat容器的设计提现在一个核心文件中：server.xml。这个文件�
 
 Tomcat（我们往往有⼀个认识，Tomcat就是⼀个Catalina的实例，因为Catalina是Tomcat的核⼼）
 
-<img src="img/webServer/image-20220710102831501.png" alt="image-20220710102831501" style="zoom: 67%;" />
+<img src="img/Tomcat/image-20220710102831501.png" alt="image-20220710102831501" style="zoom: 67%;" />
 
 其实，可以认为整个Tomcat就是⼀个Catalina实例，Tomcat 启动的时候会初始化这个实例，Catalina 实例通过加载server.xml完成其他实例的创建，创建并管理⼀个Server，Server创建并管理多个服务， 每个服务⼜可以有多个Connector和⼀个Container。
 
@@ -131,7 +131,7 @@ CopyClient(request)-->Connector-->Engine-->Host-->Context-->Wrapper(response dat
 5. 接着调⽤这个具体Servlet的service⽅法来处理请求，请求处理结果使⽤ServletResponse对象封装 
 6. 把ServletResponse对象返回给HTTP服务器，HTTP服务器会把响应发送给客户端
 
-<img src="img/webServer/image-20220710083145987.png" alt="image-20220710083145987" style="zoom:50%;" />
+<img src="img/Tomcat/image-20220710083145987.png" alt="image-20220710083145987" style="zoom:50%;" />
 
 ### 
 
@@ -147,13 +147,13 @@ Coyote 是Tomcat 中连接器的组件名称 , 是对外的接⼝。客户端通
 
 （4）Coyote 负责的是具体协议（应⽤层）和IO（传输层）相关内容
 
-<img src="img/webServer/image-20220710093544759.png" alt="image-20220710093544759" style="zoom:50%;" />
+<img src="img/Tomcat/image-20220710093544759.png" alt="image-20220710093544759" style="zoom:50%;" />
 
 ### Coyote 的内部组件及流程
 
-<img src="img/webServer/image-20220710093702835.png" alt="image-20220710093702835" style="zoom: 67%;" />
+<img src="img/Tomcat/image-20220710093702835.png" alt="image-20220710093702835" style="zoom: 67%;" />
 
-![image-20220710093742329](img/webServer/image-20220710093742329.png)
+![image-20220710093742329](img/Tomcat/image-20220710093742329.png)
 
 | 组件            | 作⽤描述                                                     |
 | --------------- | ------------------------------------------------------------ |
@@ -166,7 +166,7 @@ Coyote 是Tomcat 中连接器的组件名称 , 是对外的接⼝。客户端通
 
 参考 [https://mp.weixin.qq.com/s/BdVqvm2wLNv05vMTieevMg](https://mp.weixin.qq.com/s/BdVqvm2wLNv05vMTieevMg)
 
-![image-20220526104209889](img/webServer/image-20220526104209889.png)
+![image-20220526104209889](img/Tomcat/image-20220526104209889.png)
 
 
 
@@ -178,7 +178,7 @@ ProtocolHandler将I/O模型和应用层协议进行组合，让EndPoint只负责
 
 ProtocolHandler接口继承关系如下图示：
 
-![image-20220526104423821](img/webServer/image-20220526104423821.png)
+![image-20220526104423821](img/Tomcat/image-20220526104423821.png)
 
 AbstractProtocol的抽象实现类，按照应用层协议分为http协议和ajp协议，然后各自协议下又根据IO模型分NIO、NIO2（AIO）、[APR模型](#APR线程模型) 来进行不同的实现。
 
@@ -308,7 +308,7 @@ acceptCount为accept队列的长度，当accept队列中连接的个数达到acc
 
 https://www.cnblogs.com/rickiyang/p/12764615.html
 
-![image-20220526104209889](img/webServer/image-20220526104209889.png)
+![image-20220526104209889](img/Tomcat/image-20220526104209889-7633760.png)
 
 前面讲到，Adapter 会将 Tomcat Request/Response对象转换为标准的 ServletRequest/ServletResponse对象。后边交由 tomcat 的Servlet容器来完成具体的请求处理。
 
@@ -387,8 +387,9 @@ GET /index.html
 
 https://www.cnblogs.com/linuxtop/p/12552930.html
 
-<img src="img/webServer/1916675-20200323162107799-254491555.png" alt="img" style="zoom: 67%;" />
+<img src="img/Tomcat/1916675-20200323162107799-254491555.png" alt="img" style="zoom: 67%;" />
 
 #### APR线程模型
 
-APR 全称是 Apache Portable Runtime/Apache可移植运行库，是Apache HTTP服务器的支持库。可以简单地理解为，Tomcat将以JNI的形式调用Apache HTTP服务器的核心动态链接库来处理文件读取或网络传输操作。使用需要编译安装APR 库
+APR 全称是 Apache Portable Runtime/Apache可移植运行库，是Apache HTTP服务器的支持库。可以简单地理解为，Tomcat将以JNI的形式调用Apache HTTP服务器的核心动态链接库来处理文件读取或网络传输操作。使用需要编译安装APR 库。APR 原理是使⽤使⽤JNI技术调⽤操作系统底层的IO接⼝
+
