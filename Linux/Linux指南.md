@@ -1,3 +1,7 @@
+### mkdir 
+
+mkdir -p /a/b 可以创建多级文件夹
+
 目录操作:
 	cd		切换目录
 	clear		清楚屏幕
