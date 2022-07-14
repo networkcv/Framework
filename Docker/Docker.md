@@ -2,7 +2,7 @@
 
 [https://hub.docker.com/](https://hub.docker.com/)
 
-# docker与传统虚拟化区别
+## docker与传统虚拟化区别
 
 | 特性     | 容器               | 虚拟机     |
 | -------- | ------------------ | ---------- |
@@ -18,7 +18,7 @@
 
 虚拟机是操作系统级别的资源隔离，而容器 本质上是进程级的资源隔离。
 
-# docker基本组成
+## docker基本组成
 
 docker主机(Host)：安装了Docker程序的机器（Docker直接安装在操作系统之上）
 
@@ -30,7 +30,7 @@ docker容器(Container)：镜像启动后的实例称为一个容器；容器是
 
 > 镜像就像Java中的类，而容器就好比由类产生的对象，一个镜像可以创建多个容器   da t
 
-# docker命令分类
+## docker命令分类
 
 - Docker环境信息 — docker [info|version] 
 - 容器生命周期管理 — docker [create|exec|run|start|stop|restart|kill|rm|pause|unpause]
@@ -929,89 +929,640 @@ docker start nginx3
 docker network inspect nginx-network
 ```
 
+# 数据卷 volume
 
+当我们在使用docker容器的时候，会产生一系列的数据文件，这些数据文件在我们删除docker容器时是 会消失的，但是其中产生的部分内容我们是希望能够把它给保存起来另作用途的，Docker将应用与运行 环境打包成容器发布，我们希望在运行过程钟产生的部分数据是可以持久化的的，而且容器之间我们希 望能够实现数据共享。
 
-# 迁移与备份
+通俗地来说，docker容器数据卷可以看成使我们生活中常用的u盘，它存在于一个或多个的容器中，由 docker挂载到容器，但不属于联合文件系统，Docker不会在容器删除时删除其挂载的数据卷。
 
-- 容器保存为镜像  
-docker commit 容器名称 镜像名称
-- 镜像导出
-docker save -o 输出的文件名 镜像名称
-- 镜像导入
-docker load -i 要加载的文件名
+特点：
 
-## dockerfile
-Dockerfile是由一系列命令和参数构成的脚本，这些命令应用于基础镜像并最终创建一个新的镜像   
-基础镜像：最基础的是OS镜像，如果在OS上安装了JDK，后面继续安装其他软件，那么带有JDK的OS就成为新的基础镜像
-!!注意文件名必须是Dockerfile
-- 开发人员，提供一个完全一致的开发环境
-- 测试和运维人员，直接使用开发人员提供的镜像或通过Dockerfile文件重构一个新的镜像，进行测试和部署
+1. 数据卷可以在容器之间共享或重用数据
 
-## 常用命令
-- FROM image_name:tag  
-定义了使用哪个基础镜像启动构建流程
+2. 数据卷中的更改可以立即生效
 
-- MAINTAINER user_name  
-声明镜像的创建者
+3. 数据卷中的更改不会包含在镜像的更新中
 
-- ENV key value  
-设置环境变量(可以写多条)
+4. 数据卷默认会一直存在，即使容器被删除
 
-- RUN command  
-是Dockerfile的核心部分(可以写多条) 
+5. 数据卷的生命周期一直持续到没有容器使用它为止
 
-- ADD source_dir/file dest_dir/file  
-将宿主机的文件复制到容器内，如果是压缩文件，会自动解压 
+容器中的管理数据主要有两种方式：
 
-- COPY source_dir/file dest_dir/file   
-和ADD相似，但是不会自动解压 
+数据卷：Data Volumes 容器内数据直接映射到本地主机环境 
 
-- WORKDIR path_dir  
-设置工作目录 
+数据卷容器：Data Volume Containers 使用特定容器维护数据卷
 
-## 构建jdk镜像
-上传JDK到宿主机 /usr/docker/jdk8/jdk-8u144-linux-x64.tar.gz  
-在jdk8目录下创建Dockerfile文件   
+## cp 数据拷贝
+
+在没有数据卷的时候，如果我们想备份容器里的数据，需要手动去将容器里的数据拷贝出来，cp 命令就是用来完成宿主机和容器之间的数据拷贝。
 
 ```
-FROM  centos:7
-MAINTAINER lwj
-WORKDIR /usr
-RUN mkdir /usr/local/java
-ADD jdk-8u144-linux-x64.tar.gz /usr/local/java/
+宿主机文件复制到容器内
 
-ENA JAVA_HOME /usr/local/java/jdk1.8.0_144
-ENA JRE_HOME $JAVA_HOME/jre
-ENA CLASSPATH $JAVA_HOME/bin/dt.jar:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib:$CLASSPATH
-ENA PATH $JAVA_HOME/bin:$PATH
+docker cp [OPTIONS] SRC_PATH CONTAINER:DEST_PATH
+
+容器内文件复制到宿主机
+
+docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH
 ```
-进行构建，最后一个 . 指的是在当前目录找Dockerfile  
-docker build -t='jdk1.8' .  
 
-## 搭建docker私有仓库
-- 拉取私有仓库的镜像  
-docker pull registry
-- 启动私有仓库容器  
-docker run =id --name=myregistry -p 5000:5000 registry
-- 通过浏览器访问  
-192.168.3.193:5000/v2/_catalog
-- 修改daemon.json  
-vi /etc/docker/daemon.json  
-添加  "insecure-registries":["192.168.3.196:5000"]  
-多个私服的写法  
-{
-    "insecure-registries": [
-        "192.168.3.193:5000", 
-        "192.168.3.194:5000"
-    ]
-}
-配置daemon.json后需要重启docker容器
+**常用参数**
 
-## push私有仓库
-docker tag 镜像名称 上传后的镜像名称  
-docker tag jdk1.8 192.168.3.193:5000/jdk1.8  
-docker push 192.168.3.193:5000/jdk1.8  
+- -L :保持源目标中的链接
 
-## pull私有仓库
-首先需要在daemon.json中配置私服地址  
-docker pull 镜像
+```
+宿主机文件 copy to 容器内
+docker cp /data/index.html nginx:/usr/share/nginx/html/index.html
+
+容器内文件 copy to 宿主机
+docker cp nginx:/etc/nginx/nginx.conf /data
+```
+
+## 数据卷
+
+虽然cp命令可以实现数据的拷贝，但是过于麻烦了，数据卷就可以实现容器删除，但是数据卷的内容还可以继续保留。
+
+### 数据卷类型
+
+有三种数据卷类型：
+
+1. 宿主机数据卷：直接在宿主机的文件系统中但是容器可以访问（bind mount）
+
+2. 命名的数据卷：磁盘上Docker管理的数据卷，但是这个卷有个名字。
+
+3. 匿名数据卷：磁盘上Docker管理的数据卷，因为没有名字想要找到不容易，Docker来管理这些文 件。
+
+数据卷其实都在（如果没有网络文件系统等情况下）宿主机文件系统里面的，只是第一种是在宿主机内 的特定目录下，而后两种则在docker管理的目录下，这个目录一般是 /var/lib/docker/volumes/
+
+推荐使用 **宿主机数据卷** 方式持久化数据。
+
+### 宿主机数据卷
+
+bind mounts：容器内的数据被存放到宿主机文件系统的任意位置，甚至存放到一些重要的系统目录或文件中。除了docker之外的进程也可以任意对他们进行修改。
+
+当宿主机的目录或文件被挂载到容器中。容器将按照挂载目录或文件的绝对路径 来使用或修改宿主机的数据。宿主机中的目录或文件不需要预先存在，在需要的使用会自动创建。
+
+使用bind mounts在性能上是非常好的，但这依赖于宿主机有一个目录妥善结构化的文件系统。
+
+使用bind mounts的容器可以在通过容器内部的进程对主机文件系统进行修改，包括创建，修改和删除 重要的系统文件和目录，这个功能虽然很强大，但显然也会造成安全方面的影响，包括影响到宿主机上 Docker以外的进程
+
+**数据覆盖问题**
+
+如果挂载一个空的数据卷到容器中的一个非空目录中，那么这个目录下的文件会被复制到数据卷中 。
+
+如果挂载一个非空的数据卷到容器中的一个目录中，那么容器中的目录会显示数据卷中的数据。容器中原来的内容会被隐藏。
+
+```
+docker run -v  /宿主机绝对路径目录:/容器内目录 镜像名
+```
+
+```
+docker pull mysql:5.7.31
+
+docker run -itd --name mysql --restart always --privileged=true -p 3306:3306 -e MYSQL_ROOT_PASSWORD=admin -v /data/mysql:/var/lib/mysql mysql:5.7.31 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
+
+上面的 `-v /data/mysql:/var/lib/mysql` 就是将宿主机的 `/data/mysql`目录挂载到容器的 `/var/lib/mysql`中。
+
+这里还需注意的是宿主机的目录可能需要权限，所以推荐还是先创建好目录后再进行数据挂载。
+
+**容器目录权限** 
+
+```
+通过 -v 容器内路径： ro rw 改变读写权限
+
+ro:readonly 只读 rw:readwrite 可读可写
+
+docker run -it -v /宿主机绝对路径目录:/容器内目录:ro 镜像名 
+
+docker run -it -v /宿主机绝对路径目录:/容器内目录:rw 镜像名
+
+例如： 
+docker run -d -P --name nginx05 -v lagouedu1:/etc/nginx:ro nginx 
+docker run -d -P --name nginx05 -v lagouedu2:/etc/nginx:rw nginx
+
+ro 只要看到ro就说明这个路径只能通过宿主机来操作，容器内部是无法操作！
+```
+
+### 命名数据卷
+
+```
+docker run -itd --name nginx -p 80:80 -v volume-name:/etc/nginx nginx:alpine
+
+查看docker数据卷
+docker volume ls
+
+查看volume-name宿主机目录，所有的文件docker默认保存在_data目录中
+docker volume inspect volume-name
+```
+
+### 匿名数据卷
+
+匿名数据卷和命令数据卷区别在于没有定义名称，由docker自动生成
+
+```
+docker run -itd --name nginx -p 80:80 -v /etc/nginx nginx:alpine
+```
+
+
+
+## 数据卷容器
+
+--volumes-from，是docker run 命令的参数。
+
+如果用户需要在多个容器之间共享一些持续更新的数据，最简单的方式是使用数据卷容器。数据卷容器 也是一个容器，但是它的目的是专门用来提供数据卷供其他容器挂载。
+
+注意：这种方式需考虑容器是否需要独占数据卷等因素，不然可能会失败。
+
+发现创建好的数据卷容器是处于停止运行的状态，因为使用--volumes-from 参数所挂载数据卷的容器并不需要保持在运行状态。
+
+基础镜像准备
+
+centos作为数据卷容器
+
+```
+docker pull centos:7.8.2003  
+
+docker pull nginx:1.19.3-alpine 
+
+docker pull mysql:5.7.31
+```
+
+<img src="img/Docker/image-20220714163416246.png" alt="image-20220714163416246" style="zoom:70%;" /> 
+
+```
+docker run -d --name data-volume -v /data/nginx:/usr/share/nginx/html -v /data/mysql:/var/lib/mysql centos:7.8.2003
+
+docker run -itd --name nginx01 -p 80:80 --volumes-from data-volume nginx:1.19.3alpine 
+
+echo "lagouedu nginx" > /data/nginx/index.html 
+
+docker run -itd --name nginx02 -p 81:80 --volumes-from data-volume nginx:1.19.3alpine
+
+docker run -itd --name mysql01 --restart always --privileged=true -p 3306:3306 -e MYSQL_ROOT_PASSWORD=admin --volumes-from data-volume mysql:5.7.31 -character-set-server=utf8 --collation-server=utf8_general_ci
+
+docker run -itd --name mysql02 --restart always --privileged=true -p 3307:3306 -e MYSQL_ROOT_PASSWORD=admin --volumes-from data-volume mysql:5.7.31 -character-set-server=utf8 --collation-server=utf8_general_ci
+```
+
+两个nginx容器可以共享数据卷容器当挂载，但是两个mysql容器由于文件的锁相关的问题启动失败，需要进行相关配置。
+
+# docker-Compose 
+
+## 简单介绍
+
+[官网地址](https://docs.docker.com/compose/compose-file/)
+
+之前每次启动容器的时候都是手敲命令，这种方式过于繁琐而且容易出现失误。当我们需要组建多容器部署时更麻烦，不光要考虑容器本身，容器间的启动可能也存在依赖的问题，这就需要一个编排工具来将这些容器，按照设置的参数和顺序来启动， 这就引出了**docker-Compose ** 。
+
+部署和管理繁多的服务是困难的。而这正是 Docker Compose 要解决的问题。Docker Compose 并不 是通过脚本和各种冗长的 docker 命令来将应用组件组织起来，而是通过一个声明式的配置文件描述整 个应用，从而使用一条命令完成部署。应用部署成功后，还可以通过一系列简单的命令实现对其完整声 明周期的管理。甚至，配置文件还可以置于版本控制系统中进行存储和管理。
+
+mac上在安装docker时自动安装了docker-compose，linux上需要手动安装。
+
+附安装方式：
+
+```
+下载
+https://github.com/docker/compose
+
+授权
+mv /data/docker-compose-Linux-x86_64 /usr/local/bin/docker-compose 
+cp /data/docker-compose-Linux-x86_64 /usr/local/bin/docker-compose
+
+开发环境可以授予最高权限
+chmod 777 /usr/local/bin/docker-compose
+
+检查安装情况以及版本
+docker-compose -v docker-compose --version docker-compose version
+```
+
+卸载docker-compose
+
+```
+docker-compose卸载只需要删除二进制文件就可以了。
+
+rm -rf /usr/local/bin/docker-compose reboot
+```
+
+## **docker-compose.yml 配置文件**
+
+[docker-compose文件详解](./docker-compose文件详解.yml)
+
+Docker Compose 使用 YAML 文件来定义多服务的应用。YAML 是 JSON 的一个子集，因此也可以使用 JSON。
+
+Docker Compose 默认使用文件名 docker-compose.yml。当然，也可以使用 -f 参数指定具体文件。 Docker Compose 的 YAML 文件包含 4 个一级 key：version、services、networks、volumes
+
+version 是必须指定的，而且总是位于文件的第一行。它定义了 Compose 文件格式（主要是 API）的版本。注意，version 并非定义 Docker Compose 或 Docker 引擎的版本号。 services 用于定义不同的应用服务。上边的例子定义了两个服务：一个名为 lagou-mysql数据库服 务以及一个名为lagou-eureka的微服。Docker Compose 会将每个服务部署在各自的容器中。 networks 用于指引 Docker 创建新的网络。默认情况下，Docker Compose 会创建 bridge 网络。 这是一种单主机网络，只能够实现同一主机上容器的连接。当然，也可以使用 driver 属性来指定不 同的网络类型。 volumes 用于指引 Docker 来创建新的卷。
+
+```yaml
+# docker-compose.yml
+version: '3'
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "8008"
+    volumes:
+      -  ~/data/nginx/:/etc/nginx
+  tomcat1:
+    image: tomcat:alpine
+    container_name: tomcat1
+    restart: always
+    ports:
+      - "8081:8080"
+    volumes:
+      - ~/data/tomcat1:/usr/local/tomcat/webapps
+    depends_on:
+    - nginx
+  tomcat2:
+    image: tomcat:alpine
+    container_name: tomcat2
+    restart: always
+    ports:
+      - "8082:8080"
+    volumes:
+      - ~/data/tomcat2:/usr/local/tomcat/webapps
+    depends_on:
+      - nginx
+
+```
+
+## 常用命令汇总
+
+和 docker 容器的命令类似，不多做介绍。
+
+```
+启动服务
+
+docker-compose up -d
+
+停止服务
+
+docker-compose down
+
+列出所有运行容器
+
+docker-compose ps 查看服务日志
+
+docker-compose logs
+
+构建或者重新构建服务
+
+docker-compose build
+
+启动服务
+
+docker-compose start
+
+停止已运行的服务
+
+docker-compose stop
+
+重启服务
+
+docker-compose restart
+```
+
+# Dockerfile
+
+docker file 可以帮助我们创建自定义的镜像。
+
+Docker 创建镜像主要有三种：
+
+1. 基于已有的镜像创建；
+
+2. 基于 Dockerfile 来创建；
+
+3. 基于本地模板来导入；
+
+## 基于已有的镜像创建
+
+docker commit :从容器创建一个新的镜像
+
+```
+docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+```
+
+常用参数
+
+- -a :提交的镜像作者；
+- -c :使用Dockerfile指令来创建镜像；
+- -m :提交时的说明文字；
+- -p :在commit时，将容器暂停。
+
+示例：
+
+结合docker cp命令自定义nginx的index页面
+
+```
+docker run -itd --name nginx -p 80:80 nginx:v1
+
+cd /data echo "hello world" > /data/index.html
+
+docker cp /data/index.html nginx:/usr/share/nginx/html/index.html
+
+curl localhost
+
+docker container commit -m "update index.html file" -a "userName" nginx nginx:v2
+
+docker images
+
+docker rm -f nginx
+
+docker run -itd --name nginx -p 80:80 nginx:v2
+```
+
+## 基于 Dockerfile 来创建
+
+**Dockerfile的基本结构**
+
+Dockerfile是一个包含用于组合映像的命令的文本文档。可以使用在命令行中调用任何命令。 
+
+Docker通 过读取Dockerfile中的指令自动生成映像。
+
+docker build命令用于从Dockerfile构建映像。`-f` 可以在docker build命令中使用标志指向文件系统中任意位置的Dockerfile。
+
+Dockerfile由一行行命令语句组成，并且支持以#开头的注释行
+
+
+
+**Dockerfile分为四部分**
+
+基础镜像信息、维护者信息、 镜像操作指令和容器启动时执行指令
+
+
+
+**Dockerfile文件说明**
+
+Docker以从上到下的顺序运行Dockerfile的指令。为了指定基本映像，第一条指令必须是FROM。
+
+可以在Docker文件中使用 RUN ， CMD ， FROM ， EXPOSE ， ENV 等指令。
+
+
+
+**Dockerfile常见命令**
+
+| 命令       | 说明                                                         |
+| ---------- | ------------------------------------------------------------ |
+| FROM       | 指定基础镜像，必须为第一个命令                               |
+| MAINTAINER | 维护者(作者)信息                                             |
+| ENV        | 设置环境变量                                                 |
+| RUN        | 构建镜像时执行的命令                                         |
+| CMD        | 构建容器后调用，也就是在容器启动时才进行调用。               |
+| ENTRYPOINT | 指定运行容器启动过程执行命令，覆盖CMD参数 ENTRYPOINT与CMD非常类似，不同的是通过docker run执行的命令不会覆盖 ENTRYPOINT，而docker run命令中指定的任何参数，都会被当做参数再次传递 给ENTRYPOINT。Dockerfile中只允许有一个ENTRYPOINT命令，多指定时会覆 盖前面的设置，而只执行最后的ENTRYPOINT指令。 |
+| ADD        | 将本地文件添加到容器中，tar类型文件会自动解压(网络压缩资源不会被解压)， 可以访问网络资源，类似wget |
+| COPY       | 功能类似ADD，但是是不会自动解压文件，也不能访问网络资源      |
+| WORKDIR    | 工作目录，类似于cd命令                                       |
+| ARG        | 用于指定传递给构建运行时的变量                               |
+| VOLUMN     | 用于指定持久化目录                                           |
+| EXPOSE     | 指定于外界交互的端口                                         |
+| USER       | 指定运行容器时的用户名或 UID，后续的 RUN 也会使用指定用户。使用USER指 定用户时，可以使用用户名、UID或GID，或是两者的组合。当服务不需要管理 员权限时，可以通过该命令指定运行用户。并且可以在之前创建所需要的用户 |
+
+**示例：**
+
+修改mysql官网镜像时区的Dockerfile
+
+```dockerfile
+FROM mysql:5.7.31 
+
+MAINTAINER mysql from date UTC by Asia/Shanghai "xxx@xxx.com" 
+
+ENV TZ Asia/Shanghai
+```
+
+**build命令**
+
+docker build 命令用于使用 Dockerfile 创建镜像。
+
+```
+docker build [OPTIONS] PATH | URL | -
+```
+
+**常用参数**
+
+build命令参数比较多。这里只介绍几个常用的参数，更多内容请参考 docker官网手册。
+
+- --build-arg=[] :设置镜像创建时的变量；
+- -f :指定要使用的Dockerfile路径；
+- --rm :设置镜像成功后删除中间容器；
+- -t , --tag : 镜像的名字及标签，通常 name:tag 或者 name 格式；可以在一次构建中为一个镜像设置 多个标签。
+
+**制作镜像**
+
+```
+docker build --rm -t mysql:5.7 . 
+注意最后的 .  代表的是从当前路径寻找 Dockerfile 文件
+```
+
+
+
+# docker微服务项目实战
+
+## 目标一：mysql容器化
+
+**将项目依赖的mysql容器化，容器启动时根据项目提供的sql文件自动创建库表和插入数据，本地启动项目并查询db**
+
+这里使用的是mysql的官方镜像。
+
+```
+docker pull mysql:8 
+docker tag mysql:8.0 mysql:8
+```
+
+**创建并启动mysql容器：**
+
+```
+docker run -itd -p 3306:3306 --name mysql \
+-v /Users/networkcavalry/Documents/GitHub/Framework/Docker:/docker-entrypoint-initdb.d \
+-v ~/data/mysql:/var/lib/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+--restart always \
+--privileged=true  mysql:8 \
+--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
+
+mysql 容器在创建时会从`/docker-entrypoint-initdb.d` 下读取初始化数据的sql或者zip压缩包，详见https://hub.docker.com/_/mysql?tab=description
+
+这里是通过挂载数据卷的方式将sql文件保存到容器内，当然也可以通过用mysql客户端去连接mysql容器，并手动导入。
+
+**init.sql:**
+
+```sql
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=''*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`docker_demo` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_bin */;
+
+USE `docker_demo`;
+
+/*Table structure for table `tbuser` */
+
+DROP TABLE IF EXISTS `tbuser`;
+
+CREATE TABLE `tbuser` (
+  `userid` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `password` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `userroles` varchar(2) COLLATE utf8_bin DEFAULT NULL,
+  `nickname` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`userid`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+/*Data for the table `tbuser` */
+
+insert  into `tbuser`(`userid`,`username`,`password`,`userroles`,`nickname`) values 
+(3,'admin','1234','04','管理员'),
+(4,'lagou','1234','03','学生');
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+```
+
+**本地启动：**
+
+![image-20220715051808995](img/Docker/image-20220715051808995.png)
+
+
+
+## 目标二：Dockerfile自定义mysql镜像
+
+- 优化镜像时区问题 
+- 在容器启动时，直接导入lagou.sql数据库
+
+**定义Dockerfile:**
+
+dockerfile文件和 init.sql 文件是在同一目录下
+
+```dockerfile
+FROM mysql:8 
+MAINTAINER mysql8 for docker demo  
+ENV TZ Asia/Shanghai
+COPY init.sql /docker-entrypoint-initdb.d
+```
+
+**通过Dockerfiled创建mysql镜像**
+
+```
+docker build --rm -t mysql:mine .
+
+docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+mysql        mine      bf42ab23fb8f   18 minutes ago   516MB
+mysql        8         3218b38490ce   6 months ago     516MB
+
+查看镜像卷，可以看到复制init.sql的操作
+docker history mysql:mine
+IMAGE          CREATED          CREATED BY                                      SIZE      COMMENT
+bf42ab23fb8f   22 minutes ago   COPY init.sql /docker-entrypoint-initdb.d # …   1.36kB    buildkit.dockerfile.v0
+<missing>      22 minutes ago   ENV TZ=Asia/Shanghai                            0B        buildkit.dockerfile.v0
+<missing>      22 minutes ago   MAINTAINER mysql8 for docker demo               0B        buildkit.dockerfile.v0
+<missing>      6 months ago     /bin/sh -c #(nop)  CMD ["mysqld"]               0B        
+<missing>      6 months ago     /bin/sh -c #(nop)  EXPOSE 3306 33060            0B        
+<missing>      6 months ago     /bin/sh -c #(nop)  ENTRYPOINT ["docker-entry…   0B        
+<missing>      6 months ago     /bin/sh -c ln -s usr/local/bin/docker-entryp…   34B       
+... 
+```
+
+**直接创建启动容器，其中包含库表和数据**
+
+```
+docker run -itd -p 3306:3306 --name mysql \
+-v ~/data/mysql:/var/lib/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+--restart always \
+--privileged=true  mysql:mine \
+--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
+
+## 目标三：项目脱离开发环境部署
+
+**配置pom.xml**
+
+```xml
+<build>
+        <finalName>${project.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--跳过单元测试-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+```
+
+**maven 打包**
+
+```
+mvn clean package
+```
+
+**通过jar包启动项目，并查db**
+
+```
+java -jar dockerdemo.jar
+```
+
+![image-20220715023519231](img/Docker/image-20220715023519231.png)
+
+
+
+## 目标四：Dockerfile打包项目
+
+在上个目标中，项目可以打成jar包，在jre环境下启动，此次目标是将项目通过Dockerfile打包到容器中。
+
+**安装Java运行时环境**
+
+```
+docker pull openjdk:8-alpine3.9
+docker tag openjdk:8-alpine3.9 jdk8
+```
+
+**SpringBootDockerfile**
+
+```dockerfile
+FROM jdk:8
+MAINTAINER Docker springboot 
+# 修改源 
+RUN echo "http://mirrors.aliyun.com/alpine/latest-stable/main/" > /etc/apk/repositories && \ echo "http://mirrors.aliyun.com/alpine/latest-stable/community/" >> /etc/apk/repositories
+
+# 安装需要的软件，解决时区问题 
+RUN apk --update add curl bash tzdata && \ rm -rf /var/cache/apk/*
+
+#修改镜像为东八区时间 
+ENV TZ Asia/Shanghai 
+ARG JAR_FILE 
+COPY ${JAR_FILE} app.jar 
+EXPOSE 8082 
+ENTRYPOINT ["java","-jar","/app.jar"]
+```
+
+ **build**
+
+```
+ docker build --rm -t dockerdemo:v1 \
+ -f  /Users/networkcavalry/Documents/GitHub/Framework/Docker/SpringBootDockerfile  \
+ --build-arg  JAR_FILE=dockerdemo.jar .
+```
+
+**启动 测试**
+
+docker run -itd -p 8080:8080 --name dockerDemo dockerdemo:v1 

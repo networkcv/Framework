@@ -1,0 +1,20 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.31.119:3306/docker_demo?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&useTimezone=true&serverTimezone=GMT%2B8
+
+mybatis-plus:
+  type-aliases-package: com.lwj.dockerdemo.entity
+  mapper-locations: mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+
+
+
+
