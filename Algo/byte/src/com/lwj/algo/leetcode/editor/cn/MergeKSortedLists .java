@@ -47,10 +47,13 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 class MergeKSortedLists {
     public static void main(String[] args) {
         Solution solution = new MergeKSortedLists().new Solution();
-        ListNode[] listNodes = {ListNodeUtils.get(135), ListNodeUtils.get(126), ListNodeUtils.get(45)};
+        ListNode[] listNodes = {ListNodeUtils.build(135), ListNodeUtils.build(126), ListNodeUtils.build(45)};
         System.out.println(solution.mergeKLists(listNodes));
     }
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -66,7 +69,32 @@ class MergeKSortedLists {
      * }
      */
     class Solution {
+        //使用优先级队列
         public ListNode mergeKLists(ListNode[] lists) {
+            if (lists.length == 0) {
+                return null;
+            }
+            PriorityQueue<ListNode> queue = new PriorityQueue<>(lists.length, Comparator.comparingInt(a -> a.val));
+            for (ListNode list : lists) {
+                if (list != null) {
+                    queue.add(list);
+                }
+            }
+            ListNode dummy = new ListNode(-1);
+            ListNode p = dummy;
+            while (!queue.isEmpty()) {
+                ListNode tmpMinNode = queue.poll();
+                if (tmpMinNode.next != null) {
+                    queue.add(tmpMinNode.next);
+                }
+                p.next = tmpMinNode;
+                p = p.next;
+            }
+            return dummy.next;
+        }
+
+        //每次合并两个链表，分多次合并
+        public ListNode mergeKLists2(ListNode[] lists) {
             if (lists.length == 0) {
                 return null;
             }
@@ -78,7 +106,6 @@ class MergeKSortedLists {
             for (int i = 2; i < lists.length; i++) {
                 res = mergeList(res, lists[i]);
             }
-            //2.
             return res;
         }
 

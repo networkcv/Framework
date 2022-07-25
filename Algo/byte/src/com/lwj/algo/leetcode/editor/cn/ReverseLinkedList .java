@@ -47,7 +47,7 @@ package com.lwj.algo.leetcode.editor.cn;
 class ReverseLinkedList {
     public static void main(String[] args) {
         Solution solution = new ReverseLinkedList().new Solution();
-        ListNode res = solution.reverseList(ListNodeUtils.get(123));
+        ListNode res = solution.reverseList(ListNodeUtils.build(123));
         System.out.println(res);
     }
     //leetcode submit region begin(Prohibit modification and deletion)

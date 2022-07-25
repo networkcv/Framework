@@ -46,9 +46,9 @@ package com.lwj.algo.leetcode.editor.cn;
 class RemoveNthNodeFromEndOfList {
     public static void main(String[] args) {
         Solution solution = new RemoveNthNodeFromEndOfList().new Solution();
-        ListNode listNode = ListNodeUtils.get(123);
-        solution.removeNthFromEnd(listNode,3);
-        solution.removeNthFromEnd(listNode,1);
+        System.out.println(solution.removeNthFromEnd(ListNodeUtils.build(123), 1));
+        System.out.println(solution.removeNthFromEnd(ListNodeUtils.build(1), 1));
+
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 
@@ -63,21 +63,21 @@ class RemoveNthNodeFromEndOfList {
      * }
      */
     class Solution {
-        public ListNode removeNthFromEnd(ListNode head, int n) {
-            //构建一个虚拟头节点，从这个节点遍历，就可以将删除头节点这一情况规避掉
-            ListNode res = new ListNode();
-            ListNode first = res;
-            ListNode slow = res;
-            res.next = head;
-            while (n-- > 0) {
-                first = first.next;
+
+        public ListNode removeNthFromEnd(ListNode head, int i) {
+            ListNode dummy = new ListNode(-1);
+            dummy.next = head;
+            ListNode fast = dummy, slow = dummy;
+            i++;
+            while (i-- > 0) {
+                fast = fast.next;
             }
-            while (first.next != null) {
-                first = first.next;
+            while (fast != null) {
+                fast = fast.next;
                 slow = slow.next;
             }
             slow.next = slow.next.next;
-            return res.next;
+            return dummy.next;
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

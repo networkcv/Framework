@@ -3,7 +3,6 @@ package server;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
-import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
@@ -21,7 +20,9 @@ import java.util.concurrent.*;
  */
 public class Bootstrap {
 
-    /**定义socket监听的端口号*/
+    /**
+     * 定义socket监听的端口号
+     */
     private int port = 8080;
 
     public int getPort() {
@@ -31,6 +32,8 @@ public class Bootstrap {
     public void setPort(int port) {
         this.port = port;
     }
+
+    public static ThreadPoolExecutor threadPoolExecutor;
 
 
     /**
@@ -52,7 +55,7 @@ public class Bootstrap {
         RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
 
 
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+        threadPoolExecutor = new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
@@ -84,30 +87,21 @@ public class Bootstrap {
         test3(serverSocket);
 
         /*
-            多线程改造（不使用线程池）
+         * 多线程改造（不使用线程池）
          */
-        /*while(true) {
-            Socket socket = serverSocket.accept();
-            RequestProcessor requestProcessor = new RequestProcessor(socket,servletMap);
-            requestProcessor.start();
-        }*/
+        test4(serverSocket);
 
 
+    }
 
+    private void test4(ServerSocket serverSocket) throws IOException {
         System.out.println("=========>>>>>>使用线程池进行多线程改造");
-        /*
-            多线程改造（使用线程池）
-         */
-        while(true) {
-
+        while (true) {
             Socket socket = serverSocket.accept();
-            RequestProcessor requestProcessor = new RequestProcessor(socket,servletMap);
+            RequestProcessor requestProcessor = new RequestProcessor(socket, servletMap);
             //requestProcessor.start();
             threadPoolExecutor.execute(requestProcessor);
         }
-
-
-
     }
 
     private void test3(ServerSocket serverSocket) throws Exception {

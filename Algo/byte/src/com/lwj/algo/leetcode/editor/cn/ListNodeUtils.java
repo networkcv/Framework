@@ -12,7 +12,7 @@ public class ListNodeUtils {
     /**
      * 根据数字获取链表
      */
-    public static ListNode get(Integer integer) {
+    public static ListNode build(Integer integer) {
         String s = integer.toString();
         StringBuffer stringBuffer = new StringBuffer(s);
         String[] split = stringBuffer.toString().split("");
@@ -25,7 +25,7 @@ public class ListNodeUtils {
         return res.next;
     }
 
-    public static ListNode getByArray(Integer... nodes) {
+    public static ListNode buildByArray(Integer... nodes) {
         ListNode res = new ListNode();
         ListNode cur = res;
         for (Integer node : nodes) {

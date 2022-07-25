@@ -39,8 +39,8 @@ package com.lwj.algo.leetcode.editor.cn;
 class SwapNodesInPairs {
     public static void main(String[] args) {
         Solution solution = new SwapNodesInPairs().new Solution();
-        solution.swapPairs(ListNodeUtils.get(2143));
-        solution.swapPairs(ListNodeUtils.get(213));
+        solution.swapPairs(ListNodeUtils.build(2143));
+        solution.swapPairs(ListNodeUtils.build(213));
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 

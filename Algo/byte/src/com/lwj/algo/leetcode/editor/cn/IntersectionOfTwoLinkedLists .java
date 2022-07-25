@@ -91,8 +91,8 @@ import java.util.HashSet;
 class IntersectionOfTwoLinkedLists {
     public static void main(String[] args) {
         Solution solution = new IntersectionOfTwoLinkedLists().new Solution();
-        ListNode listNode = ListNodeUtils.get(45);
-        ListNode node1 = ListNodeUtils.get(123);
+        ListNode listNode = ListNodeUtils.build(45);
+        ListNode node1 = ListNodeUtils.build(123);
         ListNode node2 = new ListNode(9);
         ListNode tmp = node1;
         while (tmp.next != null) {

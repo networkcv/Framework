@@ -70,7 +70,7 @@ class AddTwoNumbers {
 
     public static void main(String[] args) {
         Solution solution = new AddTwoNumbers().new Solution();
-        System.out.println(solution.addTwoNumbers(ListNodeUtils.get(99999999), ListNodeUtils.get(9999)));//89990001
+        System.out.println(solution.addTwoNumbers(ListNodeUtils.build(99999999), ListNodeUtils.build(9999)));//89990001
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 

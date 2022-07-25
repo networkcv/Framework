@@ -40,7 +40,8 @@ package com.lwj.algo.leetcode.editor.cn;
 class MergeTwoSortedLists {
     public static void main(String[] args) {
         Solution solution = new MergeTwoSortedLists().new Solution();
-        System.out.println(solution.mergeTwoLists(ListNodeUtils.get(135), ListNodeUtils.get(126)));
+        System.out.println(solution.mergeTwoLists(ListNodeUtils.build(135), ListNodeUtils.build(126)));
+
     }
 //leetcode submit region begin(Prohibit modification and deletion)
 
@@ -55,21 +56,23 @@ class MergeTwoSortedLists {
      * }
      */
     class Solution {
+
         public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
-            ListNode res = new ListNode();
-            ListNode cur = res;
-            while (list1 != null && list2 != null) {
-                if (list1.val < list2.val) {
-                    cur.next = list1;
-                    list1 = list1.next;
+            ListNode dummy = new ListNode(-1);
+            ListNode p = dummy;
+            ListNode p1 = list1, p2 = list2;
+            while (p1 != null && p2 != null) {
+                if (p1.val < p2.val) {
+                    p.next = p1;
+                    p1 = p1.next;
                 } else {
-                    cur.next = list2;
-                    list2 = list2.next;
+                    p.next = p2;
+                    p2 = p2.next;
                 }
-                cur = cur.next;
+                p = p.next;
             }
-            cur.next = list1 == null ? list2 : list1;
-            return res.next;
+            p.next = p1 == null ? p2 : p1;
+            return dummy.next;
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

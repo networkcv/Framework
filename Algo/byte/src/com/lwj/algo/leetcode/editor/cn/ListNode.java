@@ -25,8 +25,10 @@ public class ListNode {
 
     @Override
     public String toString() {
-        return "ListNode{" +
+        String cur = "ListNode{" +
                 "val=" + val +
                 '}';
+        String nextStr = next != null ? next.toString() : "";
+        return cur + " " + nextStr;
     }
 }
