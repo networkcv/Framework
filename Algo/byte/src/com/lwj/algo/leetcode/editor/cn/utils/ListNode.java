@@ -1,4 +1,4 @@
-package com.lwj.algo.leetcode.editor.cn;
+package com.lwj.algo.leetcode.editor.cn.utils;
 
 /**
  * Date: 2022/4/1
@@ -8,17 +8,17 @@ package com.lwj.algo.leetcode.editor.cn;
  * @author liuWangjie
  */
 public class ListNode {
-    int val;
-    ListNode next;
+    public int val;
+    public ListNode next;
 
-    ListNode() {
+    public ListNode() {
     }
 
-    ListNode(int val) {
+    public ListNode(int val) {
         this.val = val;
     }
 
-    ListNode(int val, ListNode next) {
+    public ListNode(int val, ListNode next) {
         this.val = val;
         this.next = next;
     }

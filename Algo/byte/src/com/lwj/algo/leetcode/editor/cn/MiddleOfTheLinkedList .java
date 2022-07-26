@@ -35,6 +35,9 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
+
 class MiddleOfTheLinkedList {
     public static void main(String[] args) {
         Solution solution = new MiddleOfTheLinkedList().new Solution();

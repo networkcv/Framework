@@ -1,4 +1,5 @@
-package com.lwj.algo.leetcode.editor.cn;
+package com.lwj.algo.leetcode.editor.cn.utils;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class ListNodeUtils {
         }
         return res.next;
     }
+
 
     public static ListNode buildByArray(Integer... nodes) {
         ListNode res = new ListNode();
@@ -59,5 +61,45 @@ public class ListNodeUtils {
         }
         return numsMap.get(nums[0]);
     }
+
+    /**
+     * 构建相交链表，相同的数字只会存在一个节点
+     */
+    public static Pair<ListNode, ListNode> buildIntersection(Integer integer, Integer integer2) {
+        Map<String, ListNode> numsMap = new HashMap<>();
+        String[] nums = integer.toString().split("");
+        String preNum = null;
+        for (String curNum : nums) {
+            ListNode cur;
+            if ((cur = numsMap.get(curNum)) == null) {
+                cur = new ListNode(Integer.parseInt(curNum));
+                numsMap.put(curNum, cur);
+            }
+            if (preNum != null) {
+                ListNode preNode = numsMap.get(preNum);
+                preNode.next = cur;
+            }
+            preNum = curNum;
+        }
+
+        String[] nums2 = integer2.toString().split("");
+        preNum = null;
+        for (String curNum : nums2) {
+            ListNode cur;
+            if ((cur = numsMap.get(curNum)) == null) {
+                cur = new ListNode(Integer.parseInt(curNum));
+                numsMap.put(curNum, cur);
+            }
+            if (preNum != null) {
+                ListNode preNode = numsMap.get(preNum);
+                preNode.next = cur;
+            }
+            preNum = curNum;
+        }
+        return new Pair<>(numsMap.get(nums[0]), numsMap.get(nums2[0]));
+
+
+    }
+
 
 }

@@ -57,6 +57,8 @@
   
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+
 class ReverseNodesInKGroup{
   public static void main(String[] args) {
        Solution solution = new ReverseNodesInKGroup().new Solution();

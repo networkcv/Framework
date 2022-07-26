@@ -43,6 +43,9 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
+
 class RemoveNthNodeFromEndOfList {
     public static void main(String[] args) {
         Solution solution = new RemoveNthNodeFromEndOfList().new Solution();

@@ -1,4 +1,4 @@
-package com.lwj.algo.leetcode.editor.cn;
+package com.lwj.algo.leetcode.editor.cn.utils;
 
 /**
  * Date: 2022/5/6

@@ -71,9 +71,24 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
+import com.lwj.algo.leetcode.editor.cn.utils.Pair;
+
 class IntersectionOfTwoLinkedListsLcci {
     public static void main(String[] args) {
         Solution solution = new IntersectionOfTwoLinkedListsLcci().new Solution();
+        System.out.println(solution.getIntersectionNode(null, null));
+        Pair<ListNode, ListNode> pair0 = ListNodeUtils.buildIntersection(3, 23);
+        System.out.println(solution.getIntersectionNode(pair0.getLeft(), pair0.getRight()).val);
+        Pair<ListNode, ListNode> pair2 = ListNodeUtils.buildIntersection(135, 246);
+        System.out.println(solution.getIntersectionNode(pair2.getLeft(), pair2.getRight()));
+        Pair<ListNode, ListNode> pair3 = ListNodeUtils.buildIntersection(91345, 2345);
+        System.out.println(solution.getIntersectionNode(pair3.getLeft(), pair3.getRight()).val);
+        Pair<ListNode, ListNode> pair4 = ListNodeUtils.buildIntersection(1, 1);
+        System.out.println(solution.getIntersectionNode(pair4.getLeft(), pair4.getRight()).val);
+        Pair<ListNode, ListNode> pair5 = ListNodeUtils.buildIntersection(21845, 501845);
+        System.out.println(solution.getIntersectionNode(pair5.getLeft(), pair5.getRight()).val);
     }
     //leetcode submit region begin(Prohibit modification and deletion)
 
@@ -89,18 +104,97 @@ class IntersectionOfTwoLinkedListsLcci {
      * }
      */
     public class Solution {
+        //无环链表相交 将两个链表首位相连，就变成了判断是否有环 有环则相交，无环则不相交
         public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+            if (headA == null || headB == null) {
+                return null;
+            }
+            ListNode last = headA;
+            while (last.next != null) {
+                last = last.next;
+            }
+            ListNode p1 = last;
+            ListNode p2 = headB;
+            p1.next = p2;
+
+            //判断是否有环
+            ListNode res = hasCycle(headA);
+            last.next = null;
+            return res;
+        }
+
+        private ListNode hasCycle(ListNode head) {
+            ListNode fast = head;
+            ListNode slow = head;
+            while (fast != null && fast.next != null) {
+                fast = fast.next.next;
+                slow = slow.next;
+                if (fast == slow) {
+                    break;
+                }
+            }
+            if (fast == null || fast.next == null) {
+                return null;
+            }
+            slow = head;
+            while (fast != slow) {
+                slow = slow.next;
+                fast = fast.next;
+            }
+            return slow;
+        }
+
+        //无环链表相交 两个链表互相拼接的方式来对齐链表
+        public ListNode getIntersectionNode3(ListNode headA, ListNode headB) {
+            ListNode p1 = headA;
+            ListNode p2 = headB;
+            while (p1 != p2) {
+                if (p1 == null) {
+                    p1 = headB;
+                } else {
+                    p1 = p1.next;
+                }
+                if (p2 == null) {
+                    p2 = headA;
+                } else {
+                    p2 = p2.next;
+                }
+            }
+            return p1;
+        }
+
+        //无环链表相交 笨办法，先让两个链表对齐
+        public ListNode getIntersectionNode2(ListNode headA, ListNode headB) {
             ListNode p1 = headA;
             ListNode p2 = headB;
             while (p1 != null && p2 != null) {
+                if (p1 == p2) {
+                    return p1;
+                }
                 p1 = p1.next;
                 p2 = p2.next;
             }
             if (p1 == null && p2 == null) {
-
+                return null;
             }
+            if (p1 == null) {
+                return find(headB, headA, p2);
+            }
+            return find(headA, headB, p1);
+        }
 
-
+        private ListNode find(ListNode longList, ListNode shortList, ListNode nonNullListNode) {
+            while (nonNullListNode != null) {
+                longList = longList.next;
+                nonNullListNode = nonNullListNode.next;
+            }
+            while (shortList != null && longList != null) {
+                if (shortList == longList) {
+                    return shortList;
+                }
+                shortList = shortList.next;
+                longList = longList.next;
+            }
             return null;
         }
     }
