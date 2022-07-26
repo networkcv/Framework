@@ -1,4 +1,4 @@
-package com.lwj.algo.leetcode.editor.cn.utils;
+package com.lwj.algo.leetcode.editor.cn;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

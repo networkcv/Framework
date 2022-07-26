@@ -1,6 +1,8 @@
 package com.lwj.algo.leetcode.editor.cn.utils;
 
 
+import com.lwj.algo.leetcode.editor.cn.ListNode;
+
 import java.util.HashMap;
 import java.util.Map;
 

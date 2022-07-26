@@ -1,6 +1,6 @@
 package com.lwj.algo.leetcode.editor.cn.own.graph;
 
-import com.lwj.algo.leetcode.editor.cn.utils.Graph;
+import com.lwj.algo.leetcode.editor.cn.Graph;
 import org.junit.Test;
 
 import java.util.Arrays;
