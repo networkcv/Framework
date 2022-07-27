@@ -54,29 +54,92 @@
 // 
 // Related Topics 递归 链表 👍 1574 👎 0
 
-  
+
 package com.lwj.algo.leetcode.editor.cn;
 
-class ReverseNodesInKGroup{
-  public static void main(String[] args) {
-       Solution solution = new ReverseNodesInKGroup().new Solution();
-  }
-  //leetcode submit region begin(Prohibit modification and deletion)
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
- * }
- */
-class Solution {
-    public ListNode reverseKGroup(ListNode head, int k) {
-        return null;
+import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
+
+class ReverseNodesInKGroup {
+    public static void main(String[] args) {
+        Solution solution = new ReverseNodesInKGroup().new Solution();
+        System.out.println(solution.reverseKGroup(ListNodeUtils.build(2143), 2));
+        System.out.println(solution.reverseKGroup(ListNodeUtils.build(21435), 2));
     }
-}
+    //leetcode submit region begin(Prohibit modification and deletion)
+
+    /**
+     * Definition for singly-linked list.
+     * public class ListNode {
+     * int val;
+     * ListNode next;
+     * ListNode() {}
+     * ListNode(int val) { this.val = val; }
+     * ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+     * }
+     */
+    class Solution {
+
+        public ListNode reverseKGroup(ListNode head, int k) {
+            if (head == null) {
+                return null;
+            }
+            ListNode a, b;
+            a = b = head;
+            for (int i = 0; i < k; i++) {
+                // 不足 k 个，不需要反转，base case
+                if (b == null)
+                    return head;
+                b = b.next;
+            }
+            ListNode newHead = reverse(a, b);
+            a.next = reverseKGroup(b, k);
+            return newHead;
+        }
+
+        /**
+         * 反转区间 [a, b) 的元素，注意是左闭右开
+         */
+        ListNode reverse(ListNode a, ListNode b) {
+            ListNode pre, cur, nxt;
+            pre = null;
+            cur = a;
+            nxt = a;
+            // while 终止的条件改一下就行了
+            while (cur != b) {
+                nxt = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = nxt;
+            }
+            // 返回反转后的头结点
+            return pre;
+        }
+
+        //个人思路
+        public ListNode reverseKGroup2(ListNode head, int k) {
+            int i = k, j = k;
+            ListNode cur = head;
+            //找第一组k的节点后边的链表
+            while (j-- > 0) {
+                // 递归的base case
+                if (cur == null)
+                    return head;
+                cur = cur.next;
+            }
+            //分解问题的核心
+            ListNode pre = reverseKGroup2(cur, k);
+            //下边这部分是反转链表的第一组的k个节点
+            cur = head;
+            ListNode next;
+            while (i-- > 0) {
+                next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            return pre;
+        }
+    }
 //leetcode submit region end(Prohibit modification and deletion)
 
 }
