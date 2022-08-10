@@ -1626,7 +1626,7 @@ GC时间不超过10ms
 
 `-XX:+PrintHeapAtGC`  打印GC前后的堆详细信息
 
-`-XX:+TraceClassLoading`  监控类的加载
+`-XX:+TraceClassLoading`  监控类的加载 
 
 ![](.\img\1577610632(1).jpg)
 
