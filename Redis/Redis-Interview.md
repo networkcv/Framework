@@ -14,7 +14,7 @@
 
 ![img](img/Redis-Interview/30e0e0eb0b475e6082dd14e63c13ed44.jpg)
 
-# 二、Redis线程模型 TODEAL
+# 二、Redis线程模型 
 
 <img src="img/Redis-Interview/image-20220310000517593.png" alt="image-20220310000517593" style="zoom:50%;" />
 

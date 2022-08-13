@@ -18,7 +18,7 @@ public class Test6 {
     public void interfaceFun(){
         InterfaceImpl anInterface = new InterfaceImpl();
         anInterface.fun();
-    }
+}
 
 }
 
@@ -32,7 +32,7 @@ class InterfaceImpl implements  Fun1{
     @Override
     public void fun() {
 
-    }
+}
 }
 
 class FU {
