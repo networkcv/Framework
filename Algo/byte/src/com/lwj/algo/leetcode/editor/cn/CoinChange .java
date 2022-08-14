@@ -47,6 +47,11 @@ class CoinChange {
 /*
         明确 base case -> 明确「状态」-> 明确「选择」 -> 定义 dp 数组/函数的含义。
 
+        判断是否存在最优子结构，存在的话先通过状态转移方式写暴力递归，再检查是否存在重叠子问题，存在的话尝试通过备忘录（dp table）来记录重叠子问题的结果，
+        可以先通过自顶向下的方式分解问题，再看能不能通过自底向上的方式推导出dp table，最后再看有没有可能优化掉dp table，降低空间复杂度。
+
+
+
         1、确定 base case，这个很简单，显然目标金额 amount 为 0 时算法返回 0，因为不需要任何硬币就已经凑出目标金额了。
         2、确定「状态」，也就是原问题和子问题中会变化的变量。由于硬币数量无限，硬币的面额也是题目给定的，
         只有目标金额会不断地向 base case 靠近，所以唯一的「状态」就是目标金额 amount。
@@ -149,5 +154,6 @@ class CoinChange {
 //            return dp[amount] == Integer.MAX_VALUE-1 ? -1 : dp[amount];
         }
     }
+    //leetcode submit region end(Prohibit modification and deletion)
 
 }
