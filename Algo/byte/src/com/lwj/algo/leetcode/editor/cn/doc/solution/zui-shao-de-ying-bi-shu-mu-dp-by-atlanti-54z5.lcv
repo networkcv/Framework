@@ -1,0 +1,41 @@
+### 解题思路
+
+* 完全背包问题
+* f[i] 表示凑齐 i 所需的最少硬币数
+* 先遍历物品
+* f[i] 的依赖值 f[i-coin] 还未计算，跳过
+* coin 相当于 weight，硬币数量相当于 value（因为数量不定）
+
+### 复杂度
+
+* 时间：$O(N\times Amount)$
+* 空间：$O(N)$
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+
+        // 0-1 背包问题
+        int[] f = new int[amount + 1];  // f[i] 表示凑齐 i 所需的最少硬币数量
+
+        Arrays.fill(f, Integer.MAX_VALUE);  //初始化
+        f[0] = 0;
+
+        for(int coin : coins){  //遍历 weight
+            for(int i=coin; i<=amount; i++){    //遍历 value
+                if(f[i - coin] == Integer.MAX_VALUE){   //还未计算不使用该硬币的情况
+                    continue;
+                }
+                f[i] = Math.min(f[i], f[i - coin] + 1);     //是否使用该硬币，value = 1
+            }
+        }
+
+        return f[amount] == Integer.MAX_VALUE ? -1 : f[amount];
+    }
+}
+```
+

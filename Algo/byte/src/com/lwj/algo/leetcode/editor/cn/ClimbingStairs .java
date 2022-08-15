@@ -36,30 +36,62 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.Arrays;
+
 class ClimbingStairs {
     public static void main(String[] args) {
         Solution solution = new ClimbingStairs().new Solution();
-        for (int i = 0; i < 10; i++) {
-            try {
-                System.out.println(solution.climbStairs(i));
-            } catch (Exception e) {
-                System.out.println("error:" + i);
-            }
-        }
+        System.out.println(solution.climbStairs(45));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-        public int climbStairs(int n) {
-            if (n == 0) {
-                return 0;
-            } else if (n == 1) {
+        //暴力递归
+        public int climbStairs1(int n) {
+            if (n == 1) {
                 return 1;
             }
+            if (n == 2) {
+                return 2;
+            }
+            return climbStairs1(n - 1) + climbStairs1(n - 2);
+        }
+
+
+        //dp 自顶向下
+        int[] dp;
+        int flag = -1;
+
+        public int climbStairs2(int n) {
+            dp = new int[n + 1];
+            Arrays.fill(dp, flag);
+            return helper(n);
+        }
+
+        private int helper(int n) {
+            if (n == 1) {
+                return 1;
+            }
+            if (n == 2) {
+                return 2;
+            }
+            if (dp[n] != flag) {
+                return dp[n];
+            }
+            dp[n] = helper(n - 1) + helper(n - 2);
+            return dp[n];
+        }
+
+        //dp 自底向上
+        public int climbStairs(int n) {
+            if (n < 3) {
+                return n;
+            }
             int[] dp = new int[n + 1];
+            Arrays.fill(dp, 0);
             dp[1] = 1;
             dp[2] = 2;
-            for (int i = 3; i <= n; i++) {
+            for (int i = 3; i < dp.length; i++) {
                 dp[i] = dp[i - 1] + dp[i - 2];
             }
             return dp[n];
