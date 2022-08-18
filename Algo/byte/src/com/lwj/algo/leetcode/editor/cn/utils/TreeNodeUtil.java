@@ -16,6 +16,7 @@ public class TreeNodeUtil {
     public static TreeNode constructTree(Integer... array) {
         return constructTreeByArray(array);
     }
+
     private static TreeNode constructTreeByArray(Integer[] array) {
         if (array == null || array.length == 0 || array[0] == null) {
             return null;
