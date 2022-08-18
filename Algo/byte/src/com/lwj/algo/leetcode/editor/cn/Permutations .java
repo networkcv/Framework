@@ -50,9 +50,9 @@ class Permutations {
     class Solution {
 
         List<List<Integer>> res = new LinkedList<>();
+        LinkedList<Integer> track = new LinkedList<>();
 
         public List<List<Integer>> permute(int[] nums) {
-            LinkedList<Integer> track = new LinkedList<>();
             boolean[] used = new boolean[nums.length];
             backtrack(nums, track, used);
             return res;
