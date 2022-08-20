@@ -39,19 +39,17 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
-import java.util.Arrays;
-
 class FindFirstAndLastPositionOfElementInSortedArray {
     public static void main(String[] args) {
         Solution solution = new FindFirstAndLastPositionOfElementInSortedArray().new Solution();
 
-//        System.out.println(solution.searchRightest(new int[]{2, 2}, 3));
-//        System.out.println(solution.searchRightest(new int[]{2, 2}, 1));
-//        System.out.println(solution.searchRightest(new int[]{1, 1, 2, 2, 2, 3, 4}, 2));
+        System.out.println(solution.searchRightest(new int[]{2, 2}, 1));
+        System.out.println(solution.searchRightest(new int[]{2, 2}, 3));
+        System.out.println(solution.searchRightest(new int[]{1, 1, 2, 2, 2, 3, 4}, 2));
 
-        System.out.println(Arrays.toString(solution.searchRange(new int[]{1}, 1))); //[0,0]
-        System.out.println(Arrays.toString(solution.searchRange(new int[]{2, 2}, 3))); //[-1,-1]
-        System.out.println(Arrays.toString(solution.searchRange(new int[]{1, 1, 2, 2, 2, 3, 4}, 2))); //[2,4]
+//        System.out.println(Arrays.toString(solution.searchRange(new int[]{1}, 1))); //[0,0]
+//        System.out.println(Arrays.toString(solution.searchRange(new int[]{2, 2}, 3))); //[-1,-1]
+//        System.out.println(Arrays.toString(solution.searchRange(new int[]{1, 1, 2, 2, 2, 3, 4}, 2))); //[2,4]
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
