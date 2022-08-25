@@ -50,11 +50,14 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 class TwoSum {
     public static void main(String[] args) {
         Solution solution = new TwoSum().new Solution();
+        System.out.println(Arrays.toString(solution.doublePoint(new int[]{2, 7, 11, 15}, 9)));
+        System.out.println(Arrays.toString(solution.doublePoint(new int[]{3, 2, 4}, 6)));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -64,6 +67,23 @@ class TwoSum {
 //            return iteration(nums, target);
             //2.hash
             return hash(nums, target);
+            //3.双指针 需要有序数组
+//            return doublePoint(nums, target);
+        }
+
+        private int[] doublePoint(int[] nums, int target) {
+            int l = 0, r = nums.length - 1;
+            while (l < r) {
+                int cur = nums[l] + nums[r];
+                if (cur == target) {
+                    return new int[]{l, r};
+                } else if (cur > target) {
+                    r--;
+                } else {
+                    l++;
+                }
+            }
+            return new int[]{-1, -1};
         }
 
         private int[] hash(int[] nums, int target) {
