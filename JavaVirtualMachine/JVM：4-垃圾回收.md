@@ -1,8 +1,6 @@
-# 
 
-JVM 垃圾回收
 
-[TOC]
+
 
 ## 一、垃圾收集区域
 
@@ -355,28 +353,6 @@ public class FinalizeEscapeGC {
   - **黑色**：根对象，或者该对象与它的子对象（一个对象里面包含或者容纳的成员变量，因为一个对象或者类里可以引用其他的对象）都被扫描过(对象被标记了，且它的所有 field 也被标记完了)
   - **灰色**：对象本身被扫描，但还没扫描完该对象中的子对象( 它的 field 还没有被标记或标记完)
   - **白色**：未被扫描对象，扫描完成所有对象之后，最终为白色的为不可达对象，即垃圾对象(对象没有被标记到)
-
-#### 示例：
-
-遍历了所有可达的对象后，所有可达的对象都变成了黑色。不可达的对象即为白色，需要被清理,如图：
-
-[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sanmark.gif" alt="三色标记算法" style="zoom: 50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sanmark.gif)
-
-
-
-- 但是如果在标记过程中，应用程序也在运行，那么对象的指针就有可能改变。这样的话，我们就会遇到一个问题:对象丢失问题
-
-<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/image-20191218210809306.png" alt="image-20191218210809306" style="zoom:50%;" />
-
-这时候应用程序执行了以下操作: A.c=C B.c=null 这样，对象的状态图变成如下情形:
-
-[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans2.png" alt="img" style="zoom:50%;" />](https://github.com/weolwo/jvm-learn/blob/master/src/resources/images/sans2.png)
-
-这时候垃圾收集器再标记扫描的时候就会变成下图这样
-
-[<img src="D:\Repository\Notes-master/JavaVirtualMachine/JVMNotes/JVM 垃圾回收.resource/sans1.png" alt="img" style="zoom:50%;" />
-
-- **很显然，此时C是白色，被认为是垃圾需要清理掉，显然这是不合理的**
 
 ### SATB
 

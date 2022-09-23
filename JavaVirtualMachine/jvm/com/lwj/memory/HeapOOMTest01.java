@@ -14,6 +14,7 @@ public class HeapOOMTest01 {
         List<OOMObject> oomObjectList = new ArrayList<OOMObject>();
         while (true) {
             oomObjectList.add(new OOMObject());
+
         }
     }
 }
