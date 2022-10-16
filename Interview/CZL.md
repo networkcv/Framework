@@ -480,7 +480,6 @@ Pulsar特性：
 > 多个Consumer能够同时连接订阅，但只有一个消费者能够消费。发生网络分区时，未被确认的消息会被发送至下一个Consumer
 * **Key共享**
 > 多个Consumer能够同时连接订阅，消息中对于同一个Key的消息总会被同一个Consumer消费
-> ![f45f85791c34a7f1e2244c8f67a45d5a.png](evernotecid://DF9753E5-AF7B-4019-BD9E-6F56A94D7C9A/appyinxiangcom/40219267/ENResource/p1)
 
 #### 分区Topic
 Pulsar 可以显示创建分区Topic  一个Topic在内部被分为几个分区（Partition）。每个分区可能被不同的Broker处理。以增加吞吐量。
