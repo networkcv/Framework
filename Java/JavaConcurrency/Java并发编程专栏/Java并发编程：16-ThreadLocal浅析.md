@@ -84,7 +84,7 @@ thread2 : old threadLocalVar
 
 ThreadLocal 的目标很简单，**就是针对同一个变量，让不同的线程拥有不同的变量。**最先容易想到的是借助Map，它的key是线程，它的Value就是每个线程拥有的变量，这个 Map 定义在ThreadLocal 类就可以了，实现出来大概是这样的。
 
-![自己实现ThreadLocal](/Users/networkcavalry/Documents/GitHub/Framework/JavaConcurrency/Java并发编程专栏/img/自己实现ThreadLocal.png)
+![自己实现ThreadLocal](./img/自己实现ThreadLocal.png)
 
 简单的实现如下：
 
@@ -123,7 +123,7 @@ class MyThreadLocal<T> {
 
 JDK8 中 ThreadLocal 实现时，也用到了一个Map，叫做 ThreadLocalMap。不过持有这个Map的类不是ThreadLocal，而是 Thread。这个是和我们的实现中的一个差一点。Thread 类中 有一个成员变量 threadLocals，其类型就是ThreadLocalMap，这个Map是定义在 ThreadLocal类中的一个静态内部类。ThreadLocalMap 的 Key 就是 ThreadLocal。
 
-![](/Users/networkcavalry/Documents/GitHub/Framework/JavaConcurrency/Java并发编程专栏/img/JDK实现ThreadLocal.png)
+![](./img/JDK实现ThreadLocal.png)
 
 精简之后的JDK代码：
 
@@ -166,7 +166,7 @@ Java 的实现方式和我们的方式，最大的区别是 **Map的归属问题
 
 结合网上的一张 ThreadLocal 内存图看一下。
 
-![](/Users/networkcavalry/Documents/GitHub/Framework/JavaConcurrency/Java并发编程专栏/img/ThreadLocal内存图.png)
+![](./img/ThreadLocal内存图.png)
 
 
 
