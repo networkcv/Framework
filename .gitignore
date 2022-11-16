@@ -20,6 +20,7 @@
 *.tar.gz
 *.rar
 *.iml
+*.DS_Store
 
 out
 target
