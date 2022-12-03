@@ -356,6 +356,12 @@ pick d07b359 git add 'd'
 
 > git rebase -\-abort
 
+## 忽略已提交的文件
+
+```
+git rm --cached  <file path> 
+```
+
 ## 查看内容变更
 
 - 工作区比暂存区多出了哪些变化

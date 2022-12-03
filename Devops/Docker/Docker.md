@@ -190,7 +190,7 @@ docker run -it --rm -p 8080:8080 tomcat:9.0.20-jre8-alpine
 
 - -h , --hostname="laosiji": 指定容器的hostname
 
-- -e , --env=[]: 设置环境变量，容器中可以使用该环境变量
+- -e , --env=[]: 设置环境变量，容器中可以使用该环境变量，每个变量写一次 -e
 
 - --net="bridge": 指定容器的网络连接类型，支持 bridge/host/none/container: 四种类型
 
@@ -374,31 +374,41 @@ docker create -it --name tomcat9 -p 8080:8080 9.0.20-jre8-alpine
 
 
 
-## 启动、重启、终止容器
+## start 启动容器
 
 docker start :启动一个或多个已经被停止的容器
-
- docker stop :停止一个运行中的容器 
-
-docker restart :重启容器 语法
 
 ```
 docker start [OPTIONS] CONTAINER [CONTAINER...] 
 
+docker start tomcat9
+```
+
+
+
+## stop 停止容器
+
+ docker stop :停止一个运行中的容器 
+
+```
 docker stop [OPTIONS] CONTAINER [CONTAINER...] 
 
-docker restart [OPTIONS] CONTAINER [CONTAINER...]
-```
-
-执行命令
-
-```
-docker start tomcat9
-
 docker stop tomcat9 
+```
+
+
+
+## restart 重启容器
+
+docker restart :重启容器 
+
+```
+docker restart [OPTIONS] CONTAINER [CONTAINER...]
 
 docker restart tomcat9
 ```
+
+
 
 ## update 更新容器
 
@@ -420,6 +430,12 @@ docker run -it --name tomcat9 -p 8081:8080 tomcat:9.0.20-jre8-alpine
 
 ```
 docker update --restart always tomcat9 
+```
+
+## rename 重命名容器
+
+```
+docker rename 原容器名  新容器名
 ```
 
 ## kill 杀掉容器
