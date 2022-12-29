@@ -8,3 +8,5 @@
 
 [阿里技术专家详解DDD系列 第五讲：聊聊如何避免写流水账代码](https://zhuanlan.zhihu.com/p/366395817)
 
+[领域驱动设计系列（2）浅析VO、DTO、DO、PO的概念、区别和用处](https://developer.aliyun.com/article/269676)
+

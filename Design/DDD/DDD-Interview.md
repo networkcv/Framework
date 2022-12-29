@@ -147,7 +147,7 @@ DDD强调领域模型而不是数据模型，所以在设计的时候不建议�
 
 ## DDD分层
 
-<img src="https://pic.networkcv.top/2021/07/14/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_0adda945-0506-4d81-99be-832da05f8883.png" alt="企业微信截图_0adda945-0506-4d81-99be-832da05f8883" style="zoom: 67%;" />
+<img src="img/DDD-Interview/image-20221206200913517.png" alt="image-20221206200913517"  />
 
 我们看一下上面这张图，在最早的传统四层架构中，基础层是被其它层依赖的，它位于最核的位置，那按照分层架构的思想，它应该就是核心，但实际上领域层才是软件的核心，所这种依赖是有问题的。
 
@@ -315,7 +315,7 @@ DDD 提倡富领域模型，尽量将业务逻辑归属到实体对象上，实�
 
 ## 领域模型与数据模型映射
 
-![企业微信截图_4667e7d4-c3d4-417c-a1e6-f2e8cd2de6bd](https://pic.networkcv.top/2021/07/18/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_4667e7d4-c3d4-417c-a1e6-f2e8cd2de6bd.png)
+<img src="img/DDD-Interview/image-20221206201213933.png" alt="image-20221206201213933" style="zoom: 67%;" />
 
 ## 请假系统示例
 
@@ -324,6 +324,10 @@ DDD 提倡富领域模型，尽量将业务逻辑归属到实体对象上，实�
 **代码详解**：https://time.geekbang.org/column/article/185174
 
 ![img](img/DDD/image-20210720090916852.png)
+
+
+
+![image-20221206201314892](img/DDD-Interview/image-20221206201314892.png)
 
 ## 服务的调用
 
