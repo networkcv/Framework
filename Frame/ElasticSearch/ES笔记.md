@@ -723,7 +723,7 @@ public void bulkDelete() throws Exception{
 类型：sms-logs-type
 ```
 
-![image-20200728173057412](ES笔记.assets/image-20200728173057412.png)
+![image-20200728173057412](./img/ES笔记/image-20200728173057412.png)
 
 ```java
 public class Demo4 {
@@ -1480,7 +1480,53 @@ public  void findByRegexp() throws IOException {
 }
 ```
 
-##### 6.4 深分页 scroll
+##### 6.4 深分页 scroll and Search after
+
+**search after**
+
+```
+{
+    "query":{
+        "bool":{
+            "must":[
+                {
+                    "terms":{
+                        "status":[
+                            0,
+                            -1,
+                            1,
+                            -2,
+                            2,
+                            3,
+                            -4,
+                            4,
+                            5
+                        ]
+                    }
+                },
+                {
+                    "match":{
+                        "supplierCode":170712376741888
+                    }
+                }
+            ]
+        }
+    },
+    "size":10,
+    "search_after":[
+        0
+    ],
+    "sort":[
+        {
+            "id":{
+                "order":"asc"
+            }
+        }
+    ]
+}
+```
+
+
 
 ```
 ES 对from +size时又限制的，from +size 之和 不能大于1W,超过后 效率会十分低下
@@ -1651,6 +1697,9 @@ POST /sms-logs-index/sms-logs-type/_delete_by_query
 must:所有条件组合在一起，表示 and 的意思
 must_not: 将must_not中的条件，全部都不匹配，表示not的意思
 should:所有条件用should 组合在一起，表示or 的意思
+
+如果一个bool中must和should同时存在的时候，should会参与算分，但是
+在elasticsearch中如果要对几个字段进行查询，然后其中有一个字段可以有多个取值的时候，正常想到的要用should，其实就是或的关系。但是正确的做法，应该是把should并列的条件整合到一个bool查询，然后嵌套到must之中去。而不是和must并列。
 
 ```
 
