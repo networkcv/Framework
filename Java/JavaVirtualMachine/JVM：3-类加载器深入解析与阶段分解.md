@@ -2003,11 +2003,11 @@ public class MyTest26{
     服务提供者放在 META-INF/services/服务的完全限定名字
 ```
 
-[![image-20191206210104209](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191206210104209.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191206210104209.png)
+[![image-20230220145855404](img/JVM：3-类加载器深入解析与阶段分解/image-20230220145855404.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191206210104209.png)
 
 该文件内容为：
 
-[![image-20191206210126359](https://github.com/GJXAIOU/Notes/raw/master/JavaVirtualMachine/JVMNotes/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B6%E6%AE%B5%E5%88%86%E8%A7%A3.resource/image-20191206210126359.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191206210126359.png)
+[![image-20230220145907665](img/JVM：3-类加载器深入解析与阶段分解/image-20230220145907665.png)](https://github.com/GJXAIOU/Notes/blob/master/JavaVirtualMachine/JVMNotes/类加载器深入解析与阶段分解.resource/image-20191206210126359.png)
 
 - 测试27
 

@@ -1111,6 +1111,16 @@ Class clazz3 = Class.forName("_14_类型信息._02_反射.Person");
 public native boolean isInstance(Object obj);
 //判断cls的对象是否可以被分配给当前调用者类型
 public native boolean isAssignableFrom(Class<?> cls);
+//只返回public的构造器
+public Constructor<T> getConstructor(Class<?>... parameterTypes);
+//返回public和private的构造器
+public Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes);
+```
+
+```java
+class1.isAssignableFrom(class2);
+//1.class2是不是class1的子类或者子接口
+//2.Object是所有类的父类
 ```
 
 动态加载类、动态获取类的信息（属性、方法、构造器）

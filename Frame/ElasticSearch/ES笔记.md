@@ -36,7 +36,7 @@ restful风格的web 接口：只要发送一个http请求，并且根据请求�
 
 # 2 安装
 
-##### 2.1 elasticsearch 安装
+2.1 elasticsearch 安装
 
 http://hub.daocloud.io/    docker 镜像工厂地址
 
@@ -391,460 +391,7 @@ POST /book/novel/1/_update
 DELETE /book/novel/3mEnk3MBaSKoGN4T2olw 
 ```
 
-# 4.java 操作ElasticSearch
-
-##### 4.1 java 连接ES
-
-```xml
-创建maven工程
-导入依赖
-<!--        1.elasticsearch-->
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>6.8.10</version>
-        </dependency>
-<!--        2.elasticsearch 高级API-->
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>6.8.10</version>
-        </dependency>
-<!--        3.junit-->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-<!--        4.lombok-->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.22</version>
-        </dependency>
-```
-
-创建client链接
-
-```java
-package com.utils;
-
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-
-public class EsClient {
-
-    public static RestHighLevelClient getClient(){
-        //  创建 HttpHost
-        HttpHost httpHost = new HttpHost("127.0.0.1",9200);
-
-        // 创建 RestClientBuilder
-        RestClientBuilder builder = RestClient.builder(httpHost);
-
-        // 创建 RestHighLevelClient
-        RestHighLevelClient client = new RestHighLevelClient(builder);
-
-        return client;
-    }
-}
-```
-
-##### 4.2创建索引
-
-```java
-package com.test;
-
-import com.utils.EsClient;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.junit.Test;
-
-public class Demo2 {
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-
-    @Test
-    public void createIndx() throws Exception{
-        // 1.准备关于索引的setting
-        Settings.Builder settings = Settings.builder()
-                .put("number_of_shards", 2)
-                .put("number_of_replicas", 1);
-
-        // 2.准备关于索引的mapping
-        XContentBuilder mappings = JsonXContent.contentBuilder()
-                .startObject()
-                    .startObject("properties")
-                        .startObject("name")
-                            .field("type", "text")
-                        .endObject()
-                        .startObject("age")
-                            .field("type", "integer")
-                        .endObject()
-                        .startObject("birthday")
-                            .field("type", "date")
-                            .field("format", "yyyy-MM-dd")
-                        .endObject()
-                    .endObject()
-                .endObject();
-        // 3.将settings和mappings 封装到到一个Request对象中
-        CreateIndexRequest request = new CreateIndexRequest(index)
-                .settings(settings)
-                .mapping(type,mappings);
-        // 4.使用client 去连接ES
-        CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
-
-        System.out.println("response:"+response.toString());
-    }
-}
-```
-
-##### 4.3 检查索引是否存在，删除索引
-
-###### 4.3.1 检查索引存在
-
-```java
-package com.test;
-
-import com.utils.EsClient;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.junit.Test;
-
-import java.io.IOException;
-
-public class Demo2 {
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-
-
-    @Test
-    public void existTest() throws IOException {
-
-        //  1.准备request 对象
-        GetIndexRequest request = new GetIndexRequest(index);
-
-        // 2.通过client 去 操作
-        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
-        // 3输出结果
-        System.out.println(exists);
-    }
-}
-
-```
-
-###### 4.3.2 删除索引
-
-```java
-package com.test;
-
-import com.utils.EsClient;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.junit.Test;
-
-import java.io.IOException;
-
-public class Demo2 {
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-
-    @Test
-    public void testDelete() throws IOException {
-        // 1.获取request
-
-        DeleteIndexRequest request = new DeleteIndexRequest(index);
-
-        //  2.使用client 操作request
-        AcknowledgedResponse delete = client.indices().delete(request, RequestOptions.DEFAULT);
-        //  3.输出结果
-        System.out.println(delete.isAcknowledged());
-    }
-}
-
-```
-
-##### 4.4 Java操作文档
-
-###### 4.4.1 添加文档操作
-
-```java
-public class Demo3 {
-    ObjectMapper mapper = new ObjectMapper();
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-
-    @Test
-    public void createDocTest() throws IOException {
-        //  1.准备一个json数据
-        Person person  = new Person(1,"张三",33,new Date());
-        String json = mapper.writeValueAsString(person);
-        //  2.创建一个request对象(手动指定的方式创建)
-        IndexRequest request = new IndexRequest(index,type,person.getId().toString());
-        request.source(json, XContentType.JSON);
-        // 3.使用client 操作request对象生成doc
-        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
-        // 4.输出返回结果
-        System.out.println(response.getResult().toString());
-
-    }
-}
-
-```
-
-###### 4.4.2 修改文档
-
-```
-public class Demo3 {
-    ObjectMapper mapper = new ObjectMapper();
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-    
-    @Test
-    public void updateDocTest() throws Exception{
-        // 1.创建要跟新的Map
-        Map<String,Object>  doc = new HashMap<>();
-        doc.put("name","张三三");
-
-        // 2.创建request, 将doc 封装进去
-        UpdateRequest request = new UpdateRequest(index,type,"1");
-        request.doc(doc);
-
-        // 3. client 去操作 request
-        UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
-        // 4.输出 更新结果
-        System.out.println(response.getResult());
-    }
-}
-```
-
-###### 4.4.3  删除文档
-
-```java
-
-
-public class Demo3 {
-    ObjectMapper mapper = new ObjectMapper();
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "person";
-    String type="man";
-    @Test
-    
-    public void deleteDocTest() throws  Exception{
-        //  1.封装删除对象
-        DeleteRequest request = new DeleteRequest(index,type,"1");
-
-        //  2 client 操作 request对象
-        DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
-        //  3.输出结果
-        System.out.println(response.getResult().toString());
-    }
-}
-
-```
-
-##### 4.5 java批量操作文档
-
-批量操作 新增
-
-```java
-  @Test
-    public void bulkCreateDoc() throws  Exception{
-        // 1.准备多个json 对象
-        Person p1 = new Person(1,"张三",23,new Date());
-        Person p2 = new Person(2,"里斯",24,new Date());
-        Person p3 = new Person(3,"王武",24,new Date());
-
-        String json1  = mapper.writeValueAsString(p1);
-        String json2  = mapper.writeValueAsString(p2);
-        String json3  = mapper.writeValueAsString(p3);
-
-        // 2.创建request
-
-        BulkRequest bulkRequest = new BulkRequest();
-        bulkRequest.add(new IndexRequest(index,type,p1.getId().toString()).source(json1,XContentType.JSON))
-                .add(new IndexRequest(index,type,p2.getId().toString()).source(json2,XContentType.JSON))
-                .add(new IndexRequest(index,type,p3.getId().toString()).source(json3,XContentType.JSON));
-
-        // 3.client 执行
-        BulkResponse responses = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-
-        // 4.输出结果
-        System.out.println(responses.getItems().toString());
-    }
-```
-
-批量删除
-
-```java
-public void bulkDelete() throws Exception{
-    // 1.创建Request 对象
-    BulkRequest bulkRequest = new BulkRequest();
-    bulkRequest.add(new DeleteRequest(index,type,"1"));
-    bulkRequest.add(new DeleteRequest(index,type,"2"));
-    bulkRequest.add(new DeleteRequest(index,type,"3"));
-    // 2.执行
-    BulkResponse re = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-    // 3.输出结果
-    System.out.println(re.toString());
-
-}
-```
-
-# 5.ES 练习
-
-```
-索引：sms-logs-index
-类型：sms-logs-type
-```
-
-![image-20200728173057412](./img/ES笔记/image-20200728173057412.png)
-
-```java
-public class Demo4 {
-    ObjectMapper mapper = new ObjectMapper();
-    RestHighLevelClient client =  EsClient.getClient();
-    String index = "sms-logs-index";
-    String type="sms-logs-type";
-
-    @Test
-    public void createIndex() throws  Exception{
-        // 1.准备关于索引的setting
-        Settings.Builder settings = Settings.builder()
-                .put("number_of_shards", 3)
-                .put("number_of_replicas", 1);
-
-        // 2.准备关于索引的mapping
-        XContentBuilder mappings = JsonXContent.contentBuilder()
-                .startObject()
-                    .startObject("properties")
-                        .startObject("corpName")
-                            .field("type", "keyword")
-                        .endObject()
-                        .startObject("createDate")
-                            .field("type", "date")
-                            .field("format", "yyyy-MM-dd")
-                        .endObject()
-                        .startObject("fee")
-                            .field("type", "long")
-                        .endObject()
-                        .startObject("ipAddr")
-                            .field("type", "ip")
-                        .endObject()
-                        .startObject("longCode")
-                            .field("type", "keyword")
-                        .endObject()
-                        .startObject("mobile")
-                            .field("type", "keyword")
-                        .endObject()
-                        .startObject("operatorId")
-                            .field("type", "integer")
-                        .endObject()
-                        .startObject("province")
-                            .field("type", "keyword")
-                        .endObject()
-                        .startObject("replyTotal")
-                            .field("type", "integer")
-                        .endObject()
-                        .startObject("sendDate")
-                            .field("type", "date")
-                            .field("format", "yyyy-MM-dd")
-                        .endObject()
-                        .startObject("smsContent")
-                            .field("type", "text")
-                            .field("analyzer", "ik_max_word")
-                        .endObject()
-                        .startObject("state")
-                            .field("type", "integer")
-                        .endObject()
-                    .endObject()
-                .endObject();
-        // 3.将settings和mappings 封装到到一个Request对象中
-        CreateIndexRequest request = new CreateIndexRequest(index)
-                .settings(settings)
-                .mapping(type,mappings);
-        // 4.使用client 去连接ES
-        CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
-
-        System.out.println("response:"+response.toString());
-
-    }
-
-    @Test
-    public void  bulkCreateDoc() throws  Exception{
-        // 1.准备多个json 对象
-        String longcode = "1008687";
-        String mobile ="138340658";
-        List<String> companies = new ArrayList<>();
-        companies.add("腾讯课堂");
-        companies.add("阿里旺旺");
-        companies.add("海尔电器");
-        companies.add("海尔智家公司");
-        companies.add("格力汽车");
-        companies.add("苏宁易购");
-        List<String> provinces = new ArrayList<>();
-        provinces.add("北京");
-        provinces.add("重庆");
-        provinces.add("上海");
-        provinces.add("晋城");
-
-        BulkRequest bulkRequest = new BulkRequest();
-        for (int i = 1; i <16 ; i++) {
-            Thread.sleep(1000);
-            SmsLogs s1 = new SmsLogs();
-            s1.setId(i);
-            s1.setCreateDate(new Date());
-            s1.setSendDate(new Date());
-            s1.setLongCode(longcode+i);
-            s1.setMobile(mobile+2*i);
-            s1.setCorpName(companies.get(i%5));
-            s1.setSmsContent(SmsLogs.doc.substring((i-1)*100,i*100));
-            s1.setState(i%2);
-            s1.setOperatorId(i%3);
-            s1.setProvince(provinces.get(i%4));
-            s1.setIpAddr("127.0.0."+i);
-            s1.setReplyTotal(i*3);
-            s1.setFee(i*6+"");
-            String json1  = mapper.writeValueAsString(s1);
-            bulkRequest.add(new IndexRequest(index,type,s1.getId().toString()).source(json1, XContentType.JSON));
-            System.out.println("数据"+i+s1.toString());
-        }
-
-        // 3.client 执行
-        BulkResponse responses = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-
-        // 4.输出结果
-        System.out.println(responses.getItems().toString());
-    }
-}
-```
-
-# 6.ElasticSearch的各种查询
+# 4.ElasticSearch的各种查询
 
 ##### 6.1 term 和terms 查询
 
@@ -1786,6 +1333,35 @@ public void  boolSearch() throws IOException {
     }
 ```
 
+###### 6.6.1 minimum_should_match
+
+ [参考链接](https://blog.csdn.net/liyantianmin/article/details/57629492)（注：在bool query中minimum_should_match只能紧跟在should的后面，放其他地方会出异常）
+
+因为对于被analyzer分解出来的每一个term都会构造成一个should的bool query的查询,每个term变成一个term query子句。
+
+最小匹配度，指的就是最少匹配几个子句。
+
+它却有很多种配置方式，可以配成数字，也可以配置一个一个百分比 "75%"，至少optional clauses至少满足75%，这里是向下取整的。
+比如有5个clause,5*75%=3.75,向下取整为3，也就是至少需要match 3个clause。
+
+```
+{
+  "bool": {
+    "should": [
+      { "term": { "body": "how"}},
+      { "term": { "body": "not"}},
+      { "term": { "body": "to"}},
+      { "term": { "body": "be"}}
+    ],
+#    "minimum_should_match": 3
+		 "minimum_should_match": 75%
+  }
+}
+
+```
+
+
+
 ##### 6.6.2  boosting 查询
 
 ```
@@ -2340,3 +1916,456 @@ POST /map/map/_search
 }
 ```
 
+# 5.java 操作ElasticSearch
+
+##### 4.1 java 连接ES
+
+```xml
+创建maven工程
+导入依赖
+<!--        1.elasticsearch-->
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>6.8.10</version>
+        </dependency>
+<!--        2.elasticsearch 高级API-->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>6.8.10</version>
+        </dependency>
+<!--        3.junit-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+<!--        4.lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.22</version>
+        </dependency>
+```
+
+创建client链接
+
+```java
+package com.utils;
+
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
+
+public class EsClient {
+
+    public static RestHighLevelClient getClient(){
+        //  创建 HttpHost
+        HttpHost httpHost = new HttpHost("127.0.0.1",9200);
+
+        // 创建 RestClientBuilder
+        RestClientBuilder builder = RestClient.builder(httpHost);
+
+        // 创建 RestHighLevelClient
+        RestHighLevelClient client = new RestHighLevelClient(builder);
+
+        return client;
+    }
+}
+```
+
+##### 4.2创建索引
+
+```java
+package com.test;
+
+import com.utils.EsClient;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.junit.Test;
+
+public class Demo2 {
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+
+    @Test
+    public void createIndx() throws Exception{
+        // 1.准备关于索引的setting
+        Settings.Builder settings = Settings.builder()
+                .put("number_of_shards", 2)
+                .put("number_of_replicas", 1);
+
+        // 2.准备关于索引的mapping
+        XContentBuilder mappings = JsonXContent.contentBuilder()
+                .startObject()
+                    .startObject("properties")
+                        .startObject("name")
+                            .field("type", "text")
+                        .endObject()
+                        .startObject("age")
+                            .field("type", "integer")
+                        .endObject()
+                        .startObject("birthday")
+                            .field("type", "date")
+                            .field("format", "yyyy-MM-dd")
+                        .endObject()
+                    .endObject()
+                .endObject();
+        // 3.将settings和mappings 封装到到一个Request对象中
+        CreateIndexRequest request = new CreateIndexRequest(index)
+                .settings(settings)
+                .mapping(type,mappings);
+        // 4.使用client 去连接ES
+        CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
+
+        System.out.println("response:"+response.toString());
+    }
+}
+```
+
+##### 4.3 检查索引是否存在，删除索引
+
+###### 4.3.1 检查索引存在
+
+```java
+package com.test;
+
+import com.utils.EsClient;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.junit.Test;
+
+import java.io.IOException;
+
+public class Demo2 {
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+
+
+    @Test
+    public void existTest() throws IOException {
+
+        //  1.准备request 对象
+        GetIndexRequest request = new GetIndexRequest(index);
+
+        // 2.通过client 去 操作
+        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+        // 3输出结果
+        System.out.println(exists);
+    }
+}
+
+```
+
+###### 4.3.2 删除索引
+
+```java
+package com.test;
+
+import com.utils.EsClient;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.junit.Test;
+
+import java.io.IOException;
+
+public class Demo2 {
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+
+    @Test
+    public void testDelete() throws IOException {
+        // 1.获取request
+
+        DeleteIndexRequest request = new DeleteIndexRequest(index);
+
+        //  2.使用client 操作request
+        AcknowledgedResponse delete = client.indices().delete(request, RequestOptions.DEFAULT);
+        //  3.输出结果
+        System.out.println(delete.isAcknowledged());
+    }
+}
+
+```
+
+##### 4.4 Java操作文档
+
+###### 4.4.1 添加文档操作
+
+```java
+public class Demo3 {
+    ObjectMapper mapper = new ObjectMapper();
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+
+    @Test
+    public void createDocTest() throws IOException {
+        //  1.准备一个json数据
+        Person person  = new Person(1,"张三",33,new Date());
+        String json = mapper.writeValueAsString(person);
+        //  2.创建一个request对象(手动指定的方式创建)
+        IndexRequest request = new IndexRequest(index,type,person.getId().toString());
+        request.source(json, XContentType.JSON);
+        // 3.使用client 操作request对象生成doc
+        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
+        // 4.输出返回结果
+        System.out.println(response.getResult().toString());
+
+    }
+}
+
+```
+
+###### 4.4.2 修改文档
+
+```
+public class Demo3 {
+    ObjectMapper mapper = new ObjectMapper();
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+    
+    @Test
+    public void updateDocTest() throws Exception{
+        // 1.创建要跟新的Map
+        Map<String,Object>  doc = new HashMap<>();
+        doc.put("name","张三三");
+
+        // 2.创建request, 将doc 封装进去
+        UpdateRequest request = new UpdateRequest(index,type,"1");
+        request.doc(doc);
+
+        // 3. client 去操作 request
+        UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
+        // 4.输出 更新结果
+        System.out.println(response.getResult());
+    }
+}
+```
+
+###### 4.4.3  删除文档
+
+```java
+
+public class Demo3 {
+    ObjectMapper mapper = new ObjectMapper();
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "person";
+    String type="man";
+    @Test
+    
+    public void deleteDocTest() throws  Exception{
+        //  1.封装删除对象
+        DeleteRequest request = new DeleteRequest(index,type,"1");
+
+        //  2 client 操作 request对象
+        DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
+        //  3.输出结果
+        System.out.println(response.getResult().toString());
+    }
+}
+
+```
+
+##### 4.5 java批量操作文档
+
+批量操作 新增
+
+```java
+  @Test
+    public void bulkCreateDoc() throws  Exception{
+        // 1.准备多个json 对象
+        Person p1 = new Person(1,"张三",23,new Date());
+        Person p2 = new Person(2,"里斯",24,new Date());
+        Person p3 = new Person(3,"王武",24,new Date());
+
+        String json1  = mapper.writeValueAsString(p1);
+        String json2  = mapper.writeValueAsString(p2);
+        String json3  = mapper.writeValueAsString(p3);
+
+        // 2.创建request
+
+        BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.add(new IndexRequest(index,type,p1.getId().toString()).source(json1,XContentType.JSON))
+                .add(new IndexRequest(index,type,p2.getId().toString()).source(json2,XContentType.JSON))
+                .add(new IndexRequest(index,type,p3.getId().toString()).source(json3,XContentType.JSON));
+
+        // 3.client 执行
+        BulkResponse responses = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+
+        // 4.输出结果
+        System.out.println(responses.getItems().toString());
+    }
+```
+
+批量删除
+
+```java
+public void bulkDelete() throws Exception{
+    // 1.创建Request 对象
+    BulkRequest bulkRequest = new BulkRequest();
+    bulkRequest.add(new DeleteRequest(index,type,"1"));
+    bulkRequest.add(new DeleteRequest(index,type,"2"));
+    bulkRequest.add(new DeleteRequest(index,type,"3"));
+    // 2.执行
+    BulkResponse re = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+    // 3.输出结果
+    System.out.println(re.toString());
+
+}
+```
+
+# 6.ES 练习
+
+```
+索引：sms-logs-index
+类型：sms-logs-type
+```
+
+![image-20200728173057412](./img/ES笔记/image-20200728173057412.png)
+
+```java
+public class Demo4 {
+    ObjectMapper mapper = new ObjectMapper();
+    RestHighLevelClient client =  EsClient.getClient();
+    String index = "sms-logs-index";
+    String type="sms-logs-type";
+
+    @Test
+    public void createIndex() throws  Exception{
+        // 1.准备关于索引的setting
+        Settings.Builder settings = Settings.builder()
+                .put("number_of_shards", 3)
+                .put("number_of_replicas", 1);
+
+        // 2.准备关于索引的mapping
+        XContentBuilder mappings = JsonXContent.contentBuilder()
+                .startObject()
+                    .startObject("properties")
+                        .startObject("corpName")
+                            .field("type", "keyword")
+                        .endObject()
+                        .startObject("createDate")
+                            .field("type", "date")
+                            .field("format", "yyyy-MM-dd")
+                        .endObject()
+                        .startObject("fee")
+                            .field("type", "long")
+                        .endObject()
+                        .startObject("ipAddr")
+                            .field("type", "ip")
+                        .endObject()
+                        .startObject("longCode")
+                            .field("type", "keyword")
+                        .endObject()
+                        .startObject("mobile")
+                            .field("type", "keyword")
+                        .endObject()
+                        .startObject("operatorId")
+                            .field("type", "integer")
+                        .endObject()
+                        .startObject("province")
+                            .field("type", "keyword")
+                        .endObject()
+                        .startObject("replyTotal")
+                            .field("type", "integer")
+                        .endObject()
+                        .startObject("sendDate")
+                            .field("type", "date")
+                            .field("format", "yyyy-MM-dd")
+                        .endObject()
+                        .startObject("smsContent")
+                            .field("type", "text")
+                            .field("analyzer", "ik_max_word")
+                        .endObject()
+                        .startObject("state")
+                            .field("type", "integer")
+                        .endObject()
+                    .endObject()
+                .endObject();
+        // 3.将settings和mappings 封装到到一个Request对象中
+        CreateIndexRequest request = new CreateIndexRequest(index)
+                .settings(settings)
+                .mapping(type,mappings);
+        // 4.使用client 去连接ES
+        CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
+
+        System.out.println("response:"+response.toString());
+
+    }
+
+    @Test
+    public void  bulkCreateDoc() throws  Exception{
+        // 1.准备多个json 对象
+        String longcode = "1008687";
+        String mobile ="138340658";
+        List<String> companies = new ArrayList<>();
+        companies.add("腾讯课堂");
+        companies.add("阿里旺旺");
+        companies.add("海尔电器");
+        companies.add("海尔智家公司");
+        companies.add("格力汽车");
+        companies.add("苏宁易购");
+        List<String> provinces = new ArrayList<>();
+        provinces.add("北京");
+        provinces.add("重庆");
+        provinces.add("上海");
+        provinces.add("晋城");
+
+        BulkRequest bulkRequest = new BulkRequest();
+        for (int i = 1; i <16 ; i++) {
+            Thread.sleep(1000);
+            SmsLogs s1 = new SmsLogs();
+            s1.setId(i);
+            s1.setCreateDate(new Date());
+            s1.setSendDate(new Date());
+            s1.setLongCode(longcode+i);
+            s1.setMobile(mobile+2*i);
+            s1.setCorpName(companies.get(i%5));
+            s1.setSmsContent(SmsLogs.doc.substring((i-1)*100,i*100));
+            s1.setState(i%2);
+            s1.setOperatorId(i%3);
+            s1.setProvince(provinces.get(i%4));
+            s1.setIpAddr("127.0.0."+i);
+            s1.setReplyTotal(i*3);
+            s1.setFee(i*6+"");
+            String json1  = mapper.writeValueAsString(s1);
+            bulkRequest.add(new IndexRequest(index,type,s1.getId().toString()).source(json1, XContentType.JSON));
+            System.out.println("数据"+i+s1.toString());
+        }
+
+        // 3.client 执行
+        BulkResponse responses = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+
+        // 4.输出结果
+        System.out.println(responses.getItems().toString());
+    }
+}
+```
+
+# 

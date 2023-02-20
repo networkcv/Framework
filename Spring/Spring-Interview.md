@@ -4,6 +4,8 @@
 
 # [Spring源码思维导图](https://www.processon.com/view/link/5f5075c763768959e2d109df#outline)
 
+# [spring脑图](./img/spring脑图.jpg)
+
 # 一、Spring IOC
 
 ## 对Spring IOC和DI的理解
@@ -1582,9 +1584,9 @@ https://xie.infoq.cn/article/9456ec818707cd6e44950019c
 
 **适配器模式** : Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配`Controller`。
 
-# 七、其他
+# 七、常见接口和类
 
-## Order接口和 PriorityOrder接口
+## Order 和 PriorityOrder
 
 **spring中提供了2个可以给bean排序的接口**，规则如下：
 
@@ -1626,7 +1628,9 @@ public interface PriorityOrdered extends Ordered {
 
 
 
-## spring提供的排序比较器类OrderComparator
+## OrderComparator
+
+spring提供的排序比较器类
 
 ```java
 public class OrderComparator implements Comparator<Object> {
@@ -1636,7 +1640,7 @@ public class OrderComparator implements Comparator<Object> {
         return doCompare(o1, o2, null);
     }
 
-    private int doCompare(@Nullable Object o1, @Nullable Object o2, @Nullable OrderSourceProvider sourceProvider) {
+    private int doCompare(Object o1, Object o2, OrderSourceProvider sourceProvider) {
         boolean p1 = (o1 instanceof PriorityOrdered);
         boolean p2 = (o2 instanceof PriorityOrdered);
         if (p1 && !p2) {
@@ -1662,7 +1666,191 @@ public class OrderComparator implements Comparator<Object> {
 
 
 
+## SpringApplicationRunListener
 
+Spring应用启动监听器接口，在应用启动过程中，会在各个节点调用实现类对应方法。springBoot的事件发布就是依赖这个接口实现的。
+
+[参考文档](https://www.jianshu.com/p/b86a7c8b3442)
+
+SPI配置 /META-INF/spring.factories  
+
+```properties
+org.springframework.boot.SpringApplicationRunListener=\
+com.lwj.task.starter.MySpringApplicationRunListener
+```
+
+```java
+package com.lwj.task.starter;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplicationRunListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+public class MySpringApplicationRunListener implements SpringApplicationRunListener {
+
+  	//必须要加这个构造方法　
+    public MySpringApplicationRunListener(SpringApplication application, String[] args) {
+        System.out.println("constructor");
+    }
+
+    @Override
+    public void starting() {
+        System.out.println("starting  在run()方法开始执行时，该方法就立即被调用，可用于在初始化最早期时做一些工作");
+    }
+
+    @Override
+    public void environmentPrepared(ConfigurableEnvironment environment) {
+        System.out.println("environmentPrepared 当environment构建完成，ApplicationContext创建之前，该方法被调用");
+    }
+
+    @Override
+    public void contextPrepared(ConfigurableApplicationContext context) {
+        System.out.println("contextPrepared 当ApplicationContext构建完成时，该方法被调用");
+    }
+
+    @Override
+    public void contextLoaded(ConfigurableApplicationContext context) {
+        System.out.println("contextLoaded 在ApplicationContext完成加载，但没有被刷新前，该方法被调用");
+    }
+
+    @Override
+    public void started(ConfigurableApplicationContext context) {
+        System.out.println("started 在ApplicationContext刷新并启动后，CommandLineRunners和ApplicationRunner未被调用前，该方法被调用");
+    }
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+        System.out.println("running 在run()方法执行完成前该方法被调用");
+    }
+
+    @Override
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {
+        System.out.println("failed 当应用运行出错时该方法被调用");
+    }
+}
+
+```
+
+源码解析：
+
+```java
+// org.springframework.context.ConfigurableApplicationContext#run
+public ConfigurableApplicationContext run(String... args) {
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		ConfigurableApplicationContext context = null;
+		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
+		configureHeadlessProperty();
+	  //
+		SpringApplicationRunListeners listeners = getRunListeners(args);
+	  // 调用SpringApplicationRunListener#starting方法
+		listeners.starting();
+		try {
+			ApplicationArguments applicationArguments = new DefaultApplicationArguments(
+					args);
+      // 调用SpringApplicationRunListener#environmentPrepared方法
+			ConfigurableEnvironment environment = prepareEnvironment(listeners,
+					applicationArguments);
+			configureIgnoreBeanInfo(environment);
+			Banner printedBanner = printBanner(environment);
+			context = createApplicationContext();
+			exceptionReporters = getSpringFactoriesInstances(
+					SpringBootExceptionReporter.class,
+					new Class[] { ConfigurableApplicationContext.class }, context);
+      // 调用SpringApplicationRunListener#contextPrepared和contextLoaded方法
+			prepareContext(context, environment, listeners, applicationArguments,
+					printedBanner);
+			refreshContext(context);
+			afterRefresh(context, applicationArguments);
+			stopWatch.stop();
+			if (this.logStartupInfo) {
+				new StartupInfoLogger(this.mainApplicationClass)
+						.logStarted(getApplicationLog(), stopWatch);
+			}
+      // 调用SpringApplicationRunListener#started方法
+			listeners.started(context);
+			callRunners(context, applicationArguments);
+		}
+		catch (Throwable ex) {
+      // 调用SpringApplicationRunListener#failed方法
+			handleRunFailure(context, ex, exceptionReporters, listeners);
+			throw new IllegalStateException(ex);
+		}
+
+		try {
+      // 调用SpringApplicationRunListener#running方法
+			listeners.running(context);
+		}
+		catch (Throwable ex) {
+			handleRunFailure(context, ex, exceptionReporters, null);
+			throw new IllegalStateException(ex);
+		}
+		return context;
+	}
+```
+
+
+
+## Spring事件触发过程
+
+SpringBoot 中事件的发布是由 EventPublishingRunListener 来完成的。
+
+1.在构建该类时，会创建一个SimpleApplicationEventMulticaster（事件多播器），并将容器中的监听器关联到多播器中。
+
+2.EventPublishingRunListener实现了 SpringApplicationRunListener接口，该接口在SpringBoot启动流程中被调用时，使用Multicaster进行事件的广播。
+
+```java
+public class EventPublishingRunListener implements SpringApplicationRunListener, Ordered {
+  
+	private final SimpleApplicationEventMulticaster initialMulticaster;
+
+	 public EventPublishingRunListener(SpringApplication application, String[] args) {
+		this.application = application;
+		this.args = args;
+		this.initialMulticaster = new SimpleApplicationEventMulticaster();
+		for (ApplicationListener<?> listener : application.getListeners()) {
+			this.initialMulticaster.addApplicationListener(listener);
+		}
+	}
+  
+    @Override
+    public void starting() {
+      this.initialMulticaster.multicastEvent(
+          new ApplicationStartingEvent(this.application, this.args));
+    }
+
+    @Override
+    public void environmentPrepared(ConfigurableEnvironment environment) {
+      this.initialMulticaster.multicastEvent(new ApplicationEnvironmentPreparedEvent(
+          this.application, this.args, environment));
+    }
+}
+```
+
+
+
+# 八、工具类
+
+## 解析property文件
+
+```java
+Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+```
+
+## 根据全限定类名和加载器获取class文件
+
+```java
+Class<?> instanceClass = ClassUtils.forName(name, classLoader);
+```
+
+## 根据构造器和创建创建Bean对象
+
+```java
+T instance = (T) BeanUtils.instantiateClass(constructor, args);
+```
+
+# 十、TODO
 
 2.spring 提供了哪些配置方式？
 

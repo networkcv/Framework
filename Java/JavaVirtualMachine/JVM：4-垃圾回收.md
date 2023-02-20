@@ -1861,6 +1861,7 @@ CMS收集器特点：
 
 ### 5.2 GC参数小结
 
+-  -XX:+TraceClassLoading	用于追踪运行类的加载信息并打印出来（在类的VM option 中进行配置）
 - -XX:+ UseSerialGC	在新生代和老年代使用串行收集器
 - -XX:SurvivorRatio	设置eden区大小和survivior区大小的比例
 - -XX:NewRatio	新生代和老年代的比
