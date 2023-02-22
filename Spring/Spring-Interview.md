@@ -135,7 +135,7 @@ Java 对象创建流程是 实例化，属性赋值，初始化，提前暴露�
 
 
 
-## Spirng容器刷新源码解析
+## Spirng容器刷新方法源码解析
 
 ```java
 // Prepare this context for refreshing.
@@ -687,7 +687,7 @@ public class MyBeanFactory {
 
 
 
-## Bean后置处理器的9次调用
+## BeanPostProcessor的9次调用
 
 ![image-20220314171112781](img/Spring-Interview/image-20220314171112781.png)
 
