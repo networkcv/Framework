@@ -37,6 +37,10 @@ Java 中创建一个对象前，需要分配对应的内存空间。
 
 使用哪种分配方式，其实和虚拟机的堆是否规整相关，堆的规整又和垃圾回收算法相关，使用标记清除的算法（如CMS），就会产生内存碎片，只能使用空闲列表的方式，如果使用标记整理或标记复制算法，就可以使用简单高效的指针碰撞方式了。
 
+### 指针压缩
+
+参考链接：https://blog.csdn.net/liujianyangbj/article/details/108049482
+
 ### TLAB
 
 Thread Local Allocation Buffer
