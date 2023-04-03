@@ -389,7 +389,7 @@ final void treeify(Node<K,V>[] tab) {
 }
 ```
 
-![img](img/693998858-5a659719ba5df_articlex.jfif)
+![img](img/think of Java：HashMap 源码分析/693998858-5a659719ba5df_articlex.jfif)
 
 HashMap 在设计之初，并没有考虑到以后会引入红黑树进行优化。所以并没有像 TreeMap 那样，要求键类实现 comparable 接口或提供相应的比较器。但由于树化过程需要比较两个键对象的大小，在键类没有实现 comparable 接口的情况下，怎么比较键与键之间的大小了就成了一个棘手的问题。为了解决这个问题，HashMap 是做了三步处理，确保可以比较出两个键的大小，如下：
 
@@ -397,7 +397,7 @@ HashMap 在设计之初，并没有考虑到以后会引入红黑树进行优化
 2. 检测键类是否实现了 Comparable 接口，如果实现调用 compareTo 方法进行比较
 3. 如果仍未比较出大小，就需要进行仲裁了，仲裁方法为 tieBreakOrder
 
-![img](img/1319480885-5a659719a15dc_articlex.jfif)
+![img](img/think of Java：HashMap 源码分析/1319480885-5a659719a15dc_articlex.jfif)
 
 橙色的箭头表示 TreeNode 的 next 引用。由于空间有限，prev 引用未画出。可以看出，链表转成红黑树后，原链表的顺序仍然会被引用仍被保留了（红黑树的根节点会被移动到链表的第一位），我们仍然可以按遍历链表的方式去遍历上面的红黑树。这样的结构为后面红黑树的切分以及红黑树转成链表做好了铺垫，我们继续往下分析。
 

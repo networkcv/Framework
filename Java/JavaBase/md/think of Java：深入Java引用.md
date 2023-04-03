@@ -11,7 +11,7 @@
 
 在介绍五个成员变量之前，首页要明确一点，Reference是有状态的，Reference对象的一共有四种状态。如下图所示
 
-![img](img/5611237-39f910daeec0ef14.webp)
+![img](./img/think of Java：深入Java引用/5611237-39f910daeec0ef14.webp)
 
 image.png
 
@@ -78,7 +78,7 @@ public abstract class Reference<T> {
 
 上述discovered与pending的关系可以用下图表示
 
-![img](img/5611237-e256908d0c80a2e9.webp)
+![img](./img/think of Java：深入Java引用/5611237-e256908d0c80a2e9.webp)
 
 5） **next**: 当Reference对象在queue中时（即Reference处于Enqueued状态），next描述当前引用节点所存储的下一个即将被处理的节点。
 
@@ -126,7 +126,7 @@ boolean enqueue(Reference<? extends T> r) { /* Called only by Reference class */
 
 可以看到入队的Reference节点r进入队列，Reference节点被放在队列头，所以这是一个**先进后出队列**。 入队的示意图如下：
 
-![img](img/5611237-0a1dc360d23886cb.webp)
+![img](img/think of Java：深入Java引用/5611237-0a1dc360d23886cb.webp)
 
 
 
@@ -151,7 +151,7 @@ public abstract class Reference<T> {
 }
 ```
 
-![image-20200401135404024](img/image-20200401135404024.png)
+![image-20200401135404024](img/think of Java：深入Java引用/image-20200401135404024.png)
 
 ```java
 private static class ReferenceHandler extends Thread {
@@ -295,7 +295,7 @@ Reference具有的**Active（活跃状态）、Pending（未决定状态）、En
 
 ### Reference 核心处理流程：
 
-![img](http://ifeve.com/wp-content/uploads/2020/01/p-2.jpeg)
+![img](img/think of Java：深入Java引用/p-2.jpeg)
 
 Reference的核心处理流程：JVM在GC时如果当前对象只被Reference对象引用，JVM会根据Reference具体类型与堆内存的使用情况决定是否把对应的Reference对象加入到一个由Reference构成的pending链表上，如果能加入pending链表JVM同时会通知ReferenceHandler线程进行处理。ReferenceHandler线程收到通知后会调用Cleaner#clean或ReferenceQueue#enqueue方法进行处理。如果引用当前对象的Reference类型为WeakReference且堆内存不足，那么JMV就会把WeakReference加入到pending-Reference链表上，然后ReferenceHandler线程收到通知后会异步地做入队列操作。而我们的应用程序中的线程便可以不断地去拉取ReferenceQueue中的元素来感知JMV的堆内存是否出现了不足的情况，最终达到根据堆内存的情况来做一些处理的操作。实际上WeakHashMap低层便是过通上述过程实现的，只不过实现细节上有所偏差，这个后面再分析。再来看看ReferenceHandler线程收到通知后可能会调用的另外一个类Cleaner的实现。
 
