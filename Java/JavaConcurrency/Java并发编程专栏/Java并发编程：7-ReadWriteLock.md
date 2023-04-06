@@ -164,7 +164,7 @@ ReentrantReadWriteLock<font color=Crimson>不支持锁的升级</font>，但是<
 
 ReentrantReadWriteLock内部还是使用的AQS框架，通过前面的学习我们知道，在AQS中，通过`volatile int state `来表示线程锁的状态，ReentrantReadWriteLock有两把锁：读锁和写锁，它们保护的都是同一个资源，如何用一个共享变量来区分写锁和读锁的状态呢？答案就是按位拆分。
 
-![](D:\study\Framework\Java\img\30-读写锁的state拆分.jpg)
+![](img/Java并发编程：7-ReadWriteLock/30-读写锁的state拆分.jpg)
 
 由于state是int类型的变量，在内存中占用4个字节，也就是32位。将其拆分为两部分：高16位和低16位，其中高16位用来表示读锁状态，低16位用来表示写锁状态。这样就可以用一个int变量来表示两种锁的状态，低16位写锁的加锁和释放锁操作不会发生变化，仍是state+1/state-1；但高16位的加锁和释放锁就变成了state +  (1<<16)/ state-(1<<16)。
 
@@ -245,7 +245,7 @@ protected final boolean tryAcquire(int acquires) {
 
 
 下面附上tryAcquire()的流程图：
-![](D:\study\Framework\Java\img\31-写锁加锁流程.jpg)
+![](img/Java并发编程：7-ReadWriteLock/31-写锁加锁流程.jpg)
 
 tryAcquire返回false的后续操作。
 
@@ -362,7 +362,7 @@ protected final int tryAcquireShared(int unused) {
 
 下面附上tryAcquireShared()的流程图：
 
-![](D:\Study\Framework\Java\img\32-读锁加锁流程.jpg)
+![](img/Java并发编程：7-ReadWriteLock/32-读锁加锁流程.jpg)
 
 ### 3.4 读锁释放
 

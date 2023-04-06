@@ -110,18 +110,18 @@ Q ：为什么wait和notify/notifyAll要定义在Object中？
 ## 2.Thread中的方法
 &emsp;&emsp;通过Thread中的属性，大致了解了Thread类的结构，下面我们通过线程状态转换图来学习Thread类中的方法。  
 
-![6-线程状态转换图.jpg](./img/6-线程状态转换图.jpg)
+![6-线程状态转换图.jpg](img/Java并发编程：3-Thread类的使用/6-线程状态转换图.jpg)
 
 ### 2.1 start()、run()和stop()
 &emsp;&emsp;在我们实例化一个Thread对象后，这个对象处于初始状态，也就是threadStatus为NEW，此时这个对象只是堆中的一个普通Java对象，虽然被称为线程对象，但其实在操作系统中并没有与之对应的线程，只有当调用该对象的start，操作系统才会创建一个新线程，我们可以通过断点进行查看。  
 
 在执行thread.start()之前
 
-![8-线程创建时机.jpg](./img/8-线程创建时机.jpg)
+![8-线程创建时机.jpg](img/Java并发编程：3-Thread类的使用/8-线程创建时机.jpg)
 
 在执行thread.start()之后
 
-![9-线程创建时机.jpg](./img/9-线程创建时机2.jpg)
+![9-线程创建时机.jpg](img/Java并发编程：3-Thread类的使用/9-线程创建时机2.jpg)
 
 &emsp;&emsp;Java的线程是不允许启动两次的，第二次调用会抛出IllegalThreadStateException，这是一种运行时异常。
 
@@ -341,7 +341,7 @@ Java的线程工作方式是协作式，这样设计是为了让线程自身能�
 &emsp;&emsp;在多线程环境下有著名问题“Lost wake-up”。线程进入等待状态后，丢失了唤醒操作，导致线程永远处于等待状态。
 假如有两个线程，一个消费者线程，一个生产者线程。生产者线程的任务生产商品简化为count+1，而后唤醒消费者；消费者则是判断有无商品，有则消费商品，无则进入等待。  
 
-![10-LostWeakUp.jpg](./img/10-LostWeakUp.jpg)
+![10-LostWeakUp.jpg](img/Java并发编程：3-Thread类的使用/10-LostWeakUp.jpg)
 
 &emsp;&emsp;在消费者执行的过程中，先判断了count的状态，随后发生上下文切换，生产者执行了全部操作，由于消费者还没有进入等待状态，所以生产者的notify没有任何作用，于是在此处唤醒操作就丢失了。执行权切换到消费者，继续执行，但此时的count已经被修改为1，所以之前的判断失效，消费者没有重新判断count状态，就继续执行，进入等待后没有唤醒操作，导致无限制等待。
 

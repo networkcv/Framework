@@ -14,3 +14,4 @@ ReentrantLock、CountDownLatch、Semaphore 就是AQS的实现。
 
 ## AQS的结构
 
+![1576486508(1)](img/Java并发编程：10-AQS/1576486508(1)-0775288.jpg)

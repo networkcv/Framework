@@ -142,7 +142,7 @@ ConcurrentSkipListMap是一种基于SkipList（跳表）实现的，有序存储
 
 下面借用一下小争哥[《数据结构与算法之美》](https://time.geekbang.org/column/article/42896)中的图片：
 
-![2级索引跳表](http://my-blog-to-use.oss-cn-beijing.aliyuncs.com/18-12-9/93666217.jpg)
+![2级索引跳表](img/Java并发编程：12-同步容器和并发容器/93666217.jpg)
 
 对于一个没有建立索引的单链表，也就是原始链表，如果想要找到18这个节点，则需要从头开始遍历18次才能找到。如果建立了索引，从第二级的索引上去找，只需要遍历7次即可。针对链表长度比较大的时候，构建索引查找效率的提升就会非常明显。那么是不是索引越多级越好？显然不是，以上图为例，建立三级索引后，依然需要遍历6次。每多建立一级索引，都需要额外的空间来存储索引，**跳表是一种利用空间换时间的算法。**因此需要在执行效率和内存消耗之间找到一个均衡点。
 
@@ -226,7 +226,7 @@ PriorityBlockingQueue 基础的优先级队列，可以阻塞读取操作
 
 BlockingQueue 是一个接口，继承自 Queue，所以其实现类也可以作为 Queue 的实现来使用，而 Queue 又继承自 Collection 接口。下面是 BlockingQueue 的相关实现类：
 
-![BlockingQueue 的实现类](http://my-blog-to-use.oss-cn-beijing.aliyuncs.com/18-12-9/51622268.jpg)
+![BlockingQueue 的实现类](img/Java并发编程：12-同步容器和并发容器/51622268.jpg)
 
 **下面主要介绍一下:ArrayBlockingQueue、LinkedBlockingQueue、PriorityBlockingQueue，这三个 BlockingQueue 的实现类。**
 

@@ -139,8 +139,6 @@ networkcavalry@NetworkCavalry-MBP ZeroBraneStudio-1.90 % ./zbstudio.sh
 
 执行前需要进行配置
 
-![image-20210124230845841](https://pic.networkcv.top/2021/01/24/image-20210124230845841.png)
-
 ```
 path.lua="/usr/local/bin/lua"
 ```

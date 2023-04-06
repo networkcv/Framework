@@ -1,186 +1,33 @@
-## 1.线程和进程  ok！
-- [1进程](#1.1进程)
-  - [1.1.1进程的由来](#1.1.1进程的由来)
-  - [1.1.2并行和并发](#1.1.2并行和并发)
-  - [1.1.3从应用层面理解进程](#1.1.3从应用层面理解进程)
-- [1.2线程](#1.2线程)
-  - [1.2.1线程的由来](#1.2.1线程的由来)
-  - [1.2.2Java中的线程](#1.2.2Java中的线程)
-- [1.3多线程的优缺点](#1.3多线程的优缺点)
-  - [1.3.1多线程的优势](#1.3.1多线程的优势)
-  - [1.3.2多线程带来的风险](#1.3.2多线程带来的风险)
+### 线程的五大状态
 
-## 2.线程的生命周期  ok！
-- [1.如何创建一个线程](#1.如何创建一个线程)
-  - [1.1实现Runnable接口](#1.1实现Runnable接口)
-  - [1.2继承Thread类](#1.2继承Thread类)
-  - [1.3实现Callable接口](#1.3实现Callable接口)
-  - [1.4对创建线程的一些个人理解](#1.4对创建线程的一些个人理解)
-- [2.线程的生命周期和状态](#2.线程的生命周期和状态)
+​    新建：new Thread()后处于新建状态
+​    就绪：start方法启动线程，等待cpu分给时间片来调用run方法
+​    运行：获得时间片后，run方法被调用
+​    阻塞：可能因为I/O，线程调用sleep方法 或 访问加锁的公共资源 时，进入阻塞状态，将时间片让给其他就绪线程使用
+​        1.join 合并线程
+​        2.yield 暂停自己的线程 static 但不是绝对意义上的暂停，当cpu再次请求调度该线程的时候，状态从阻塞转为就绪，获取时间片后执行线程
+​        3.sleep 休眠 暂停当前线程 不会释放锁， 排他锁 抱着对象休眠 ，可以用来倒计时，或者模拟网络延时
+​    死亡：run方法调用完成自然死亡，一个未捕获的异常终止了run方法导致线程提前死亡，可以使用isAlive方法，判断线程是否在可运行状态（就绪运行阻塞），另外stop方法可以提前结束线程
 
-## 3.Thread类的使用  ok！
-- [1.Thread中的属性](#1.Thread中的属性)
-- [2.Thread中的方法](#2.Thread中的方法)
-  - [2.1 start()、run()和stop()](#2.1start()、run()和stop())
-  - [2.2 suspend()和resume()](#2.2suspend()和resume())
-  - [2.3 sleep()和TimeUnit](#2.3sleep()和TimeUnit)
-  - [2.4 interrupt()、isInterrupted()和Thread.interrupted()](#2.4interrupt()、isInterrupted()和Thread.interrupted())
-  - [2.5 wait()和notify()/notifyAll()](#2.5wait()和notify()/notifyAll())
-  - [2.6 yeild()和join()](#2.6yeild()和join())
+    isAlive()   判断线程是否还活着，即线程是否还未终止
+    getPriority()   获取线程优先级数值  优先级是获取cpu时间片的概率
+    setPriority()   设置线程优先级数值  10最大 1最小 5正常
+    getName()   获取线程名称
+    setName()   设置线程名称
+    currentThread() 获取当前正在运行的线程对象，取得自己本身
+    
+    线程同步与锁定 synchronized
+    同步：多线程对同一份资源的共同访问，造成资源的不安全性，为了资源的准确和安全所以需要加入同步
+        一、同步块
+            synchronized(引用类型|this|类.class){}
+        二、同步方法
+            synchronized
+        三、死锁：过多的同步容易造成死锁
+            解决办法：生产者消费者模式 信号灯法(建立标志位) 管程法(使用容器)
+            wait()  等待，释放锁/资源  sleep() 等待 不释放资源/锁
+            notify() notifyall()   唤醒
+            wait 和 notify 在同步下使用notify
+    参考：
+    https://blog.csdn.net/peter_teng/article/details/10197785
 
-## 4.Java内存模型  ok！
-- [1.硬件内存架构、Java内存结构和Java内存模型](#1.硬件内存架构、Java内存结构和Java内存模型)
-    - [1.1 硬件内存架构](#1.1硬件内存架构)
-    - [1.2 Java内存结构](#1.2Java内存结构)
-    - [1.3 Java内存模型](#1.3Java内存模型)
-- [2.并发编程常见问题来源](#2.并发编程常见问题来源)
-    - [2.1 原子性问题](#2.1原子性问题)
-    - [2.2 可见性问题](#2.2可见性问题)
-    - [2.3 有序性问题](#2.3有序性问题)
-- [3.Java如何解决并发问题](#3.Java如何解决并发问题)
-    - [3.1 Happens-Before](#3.1Happens-Before)
-    - [3.2 volatile](#3.2volatile)
-    - [3.3 synchronized](#3.3synchronized)
-
-## 5.线程安全  ok！
-- [1.活跃性问题](#1.活跃性问题)
-	- [1.1 死锁](#1.1 死锁)
-	- [1.2 活锁](#1.2 活锁)
-	- [1.3 饥饿](#1.3 饥饿)
-- [2.性能问题](#2.性能问题)
-	- [2.1 上下文切换](#2.1 上下文切换)
-	- [2.2 内存同步](#2.2 内存同步)
-    - [2.3 阻塞](#2.3 阻塞)
-- [3.线程安全](#3.线程安全)
-	- [3.1 加锁机制](#3.1 加锁机制)
-	- [3.2 保证可见性](#3.2 保证可见性)
-	- [3.3 线程封闭](#3.3 线程封闭)
-	- [3.4 实例封闭](#3.4 实例封闭)
-
-## 6.Lock&Condition  ok!
-- [1.管程](#1.管程)
-    - [1.1 如何解决互斥](#1.1 如何解决互斥)
-    - [1.2 如何解决同步](#1.2 如何解决同步)
-    - [1.3 管程发展史上出现的三种模型](#1.3 管程发展史上出现的三种模型)
-- [2.Lock ](#2.Lock )
-	- [2.1 Lock接口的由来](#2.1 Lock接口的由来)
-	- [2.2 ReentrantLock原理](#2.2 内存同步)
-    - [2.3 可重入](#2.3 可重入)
-    - [2.4 公平锁与非公平锁](#2.4 公平锁与非公平锁)
-- [3.Condition](#3.Condition)
-	- [3.1 Condition简介](#3.1 Condition简介)
-	- [3.2 Condition原理](#3.2 Condition原理)
-- [4.总结](#4.总结)
-
-
-
-## 7.ReadWriteLock  ok!
-
-- [1.ReadWriteLock简介]()
-- [2.ReentrantReadWriteLock使用]()
-
-	- [2.1 锁降级]()
-
-	- [2.2 写锁支持条件变量]()
-- [3.ReentrantReadWriteLock原理]()
-
-	- [3.1 写锁加锁]()
-
-	- [3.2 写锁释放]()
-
-	- [3.3 读锁加锁]()
-
-	- [3.4 读锁释放]()
-- [4.总结]()
-
-## 8.Semaphore  ok!
-
-- 1.[信号量模型]()
-- [2.Semaphore使用]()
-- [3.Semaphore解析]()
-  - [3.1 申请许可]()
-  - [3.2 释放许可]()
-  - [3.3 小结]()
-- [4.总结]()
-
-## 9.CountDownLatch & CyclicBarrier  ok!
-- 1.[CountDownLatch]()
-  - [1.1 CountDownLatch介绍]()
-  - [1.1 CountDownLatch使用]()
-  - [1.1 CountDownLatch原理]()
-- [2.CyclicBarrier]()
-  - [2.1 CyclicBarrier介绍]()
-  - [2.2 CyclicBarrier使用]()
-  - [2.3 CyclicBarrier原理]()
-  - [2.4小结]()
-- [3.总结]()
-
-
-## 10.AQS  TODO?
-
-- AQS介绍
-- AQS原理
-- AQS设计模式
-- JUC的总结 
-
-## 11.并发级别和无锁类  ok!
-
-- 1.[并发级别]()
-  - [1.1 阻塞]()
-  - [1.1 无饥饿]()
-  - [1.1 无障碍]()
-  - [1.1 无锁]()
-  - [1.1 无等待]()
-- [2.无锁类2]()
-  - [2.1 无锁类的介绍]()
-  - [2.2 AtomicInteger]()
-  - [2.3 AtomicIntegerArray]()
-  - [2.4AtomicReference]()
-  - [2.5AtomicIntegerFieldUpdater]()
-  - [2.6LongAdder]()
-  - [2.7Unsafe类]()
-- [3.总结]()
-
-
-## 12.同步容器和并发容器
-
-同步容器,并发容器,阻塞队列 ConcurrentModificationException
-ConcurrentHashMap CopyOnWriteArrayList
-
-## 13.线程池  ok!
-- 1.为什么要使用线程池
-  - 1.1 使用线程池的好处
-  - 1.2 初探线程池
-- 2.Executor
-  - 2.1 任务的定义(Runnable /Callable)
-  - 2.2 任务的执行(Executor)
-  - 2.3 异步执行的结果(Future)
-  - 2.4 Executor使用示例
-  - 2.5 Executor 使用分析
-- 3.ThreadPoolExecutor
-  - 3.1 ThreadPoolExecutor 构造参数解析
-  - 3.2 ThreadPoolExecutor 使用示例
-  - 3.3 ThreadPoolExecutor 原理分析
-  - 3.4 终止线程池
-  - 3.5 核心线程数量设置
-- 4.常见线程池详解
-  - 4.1 FixedThreadPool
-  - 4.2 SingleThreadExecutor
-  - 4.3 CachedThreadPool 
-  - 4.4 WorkStealingPool
-  - 4.5 ForkJoinPool
-  - 4.6 ScheduledThreadPool
-  - 4.7 小结
-
-## 锁优化
-
-减时间 减粒度 锁分离 锁粗化 锁消除
-
-偏向锁，轻量级锁，自旋锁总结
-
-
-
- StampedLock
-
-
-
+### 

@@ -214,7 +214,7 @@ public int intValue()
 
 unsafe是sun.misc.Unsafe类型，该类是JDK内部使用的专属类，主要提供一些用于执行低级别、不安全操作的方法，涉及到指针，如直接访问系统内存资源、自主管理内存资源等，这些方法在提升Java运行效率、增强Java语言底层资源操作能力方面起到了很大的作用。
 
-![](D:\study\Framework\Java\img\33-Unsafe.jpg)
+![](img/Java并发编程：11-并发级别和无锁类/33-Unsafe.jpg)
 
 **如何获取**
 
@@ -266,7 +266,7 @@ public final native boolean compareAndSwapInt(Object o, long offset, int expecte
 
 - 参数 x：要设置的值。
 
-  ![](D:\study\Framework\Java\img\34-CAS.jpg)
+  ![](img/Java并发编程：11-并发级别和无锁类/34-CAS.jpg)
 
 ```java
 public native int getInt(long offset);

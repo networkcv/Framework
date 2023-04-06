@@ -179,7 +179,7 @@ public interface ExecutorService extends Executor {
 
 ### 2.2 任务的执行(Executor)
 
-![](C:\Respository\Framework\JavaConcurrency\Java并发编程专栏\img\36-任务的执行相关接口.jpg)
+![](img/Java并发编程：13-线程池/36-任务的执行相关接口.jpg)
 
 
 
@@ -211,7 +211,7 @@ public interface Future<V> {
 
 下面我们来看看 **Future** 的继承结构。
 
-![](C:\Respository\Framework\JavaConcurrency\Java并发编程专栏\img\37-执行的结果.jpg)
+![](img/Java并发编程：13-线程池/37-执行的结果.jpg)
 
 
 
@@ -249,7 +249,7 @@ public interface Future<V> {
 
 就以烧水泡茶这个工序来举例，用两个线程T1和T2来完成烧水泡茶程序，T1负责洗水壶、烧开水、泡茶这三道工序，T2负责洗茶壶、洗茶杯、拿茶叶三道工序，其中T1在执行泡茶这道工序时需要等待T2完成拿茶叶的工序。对于T1的这个等待动作，可以有很多种办法，例如Thread.join()、CountDownLatch，甚至阻塞队列都可以解决，不过今天我们用Future特性来实现。
 
-![](./img/38-烧水时序图.png)
+![](img/Java并发编程：13-线程池/38-烧水时序图.png)
 
 代码实现：
 
@@ -284,7 +284,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 
 ### 2.5 Executor 使用分析
 
-![Executor 框架的使用示意图](img/39-Executor 框架的使用示意图.jpg)
+![Executor 框架的使用示意图](img/Java并发编程：13-线程池/39-Executor 框架的使用示意图.jpg)
 
 1. 主线程首先要创建实现 Runnable 或者 Callable 接口的任务对象，也可以直接创建 FutureTask 对象。
 
@@ -334,7 +334,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 
 当有需求进来时，会让**corePoolSize** 也就是正式员工来完成这些需求，随着需求来增加正式员工的数量，当**corePoolSize**达到最大时，也就是公司坐不下了，但需求还不断的提交过来，给每个正式员工排了满满一年的工作安排，这时候就相当于 **workQueue** 满了，为了处理这些需求，只能招一些外包人员来做，也就是 **maximumPoolSize** 创建线程来完成需求。
 
-![40-线程池各个参数的关系.png](img/40-线程池各个参数的关系.png)
+![40-线程池各个参数的关系.png](img/Java并发编程：13-线程池/40-线程池各个参数的关系.png)
 
 **ThreadPoolExecutor 其他常见参数:**
 
@@ -378,7 +378,7 @@ ThreadPoolExecutor线程池有如下几种状态：
 4. TIDYING：表示线程池正在停止运作，中止所有任务，销毁所有工作线程，当线程池执行terminated()方法时进入TIDYING状态；
 5. TERMINATED：表示线程池已停止运作，所有工作线程已被销毁，所有任务已被清空或执行完毕，terminated()方法执行完成；
 
-![企业微信截图_dfa820f7-13aa-47a6-a01c-f59d6534e8cf](img/Java并发编程：13-线程池/企业微信截图_dfa820f7-13aa-47a6-a01c-f59d6534e8cf.png)
+![企业微信截图](img/Java并发编程：13-线程池/企业微信截图_dfa820f7-13aa-47a6-a01c-f59d6534e8cf.png)
 
 ### 3.2 ThreadPoolExecutor 使用示例
 
@@ -549,7 +549,7 @@ Finished all threads
 
 `FixedThreadPool` 被称为可重用固定线程数的线程池。创建一个指定工作线程数量的线程池。每当提交一个任务就创建一个工作线程，如果工作线程数量达到线程池初始的最大数，则将提交的任务存入到池队列中。 
 
-其 `execute()` 方法运行示意图：![42-FixedThreadPool.jpg](./img/42-FixedThreadPool.jpg)
+其 `execute()` 方法运行示意图：![42-FixedThreadPool.jpg](img/Java并发编程：13-线程池/42-FixedThreadPool.jpg)
 
 1. 如果当前运行的线程数小于 corePoolSize， 如果再来新任务的话，就创建新的线程来执行任务；
 2. 当前运行的线程数等于 corePoolSize 后， 如果再来新任务的话，会将任务加入 `LinkedBlockingQueue`；
@@ -568,7 +568,7 @@ Finished all threads
 
 `SingleThreadExecutor` 是只有一个线程的线程池。可以保证任务执行的顺序 且在任意给定的时间不会有多个线程是活动的 .包含一个无界队列，保证所有任务按照指定顺序（FIFO/LIFO/优先级）执行；
 
-SingleThreadExecutor 的运行示意图：![SingleThreadExecutor的运行示意图](img/aHR0cDovL215LWJsb2ctdG8tdXNlLm9zcy1jbi1iZWlqaW5nLmFsaXl1bmNzLmNvbS8xOC00LTE2LzgyMjc2NDU4LmpwZw.jpg)
+SingleThreadExecutor 的运行示意图：![SingleThreadExecutor的运行示意图](img/Java并发编程：13-线程池/aHR0cDovL215LWJsb2ctdG8tdXNlLm9zcy1jbi1iZWlqaW5nLmFsaXl1bmNzLmNvbS8xOC00LTE2LzgyMjc2NDU4LmpwZw.jpg)
 
 **上图说明;**
 
@@ -605,7 +605,7 @@ SingleThreadExecutor 的运行示意图：![SingleThreadExecutor的运行示意�
 
 `CachedThreadPool` 的`corePoolSize` 被设置为空（0），`maximumPoolSize`被设置为 Integer.MAX.VALUE，即它是无界的，这也就意味着如果主线程提交任务的速度高于 `maximumPool` 中线程处理任务的速度时，`CachedThreadPool` 会不断创建新的线程。极端情况下，这样会导致耗尽 cpu 和内存资源。
 
-**CachedThreadPool 的 execute()方法的执行示意图（该图片来源：《Java 并发编程的艺术》）：** ![CachedThreadPool的execute(img/aHR0cDovL215LWJsb2ctdG8tdXNlLm9zcy1jbi1iZWlqaW5nLmFsaXl1bmNzLmNvbS8xOC00LTE2LzE4NjExNzY3LmpwZw.jpg)方法的执行示意图](https://imgconvert.csdnimg.cn/aHR0cDovL215LWJsb2ctdG8tdXNlLm9zcy1jbi1iZWlqaW5nLmFsaXl1bmNzLmNvbS8xOC00LTE2LzE4NjExNzY3LmpwZw?x-oss-process=image/format,png)
+**CachedThreadPool 的 execute()方法的执行示意图（该图片来源：《Java 并发编程的艺术》）：** ![](img/Java并发编程：13-线程池/execute执行图.png)
 
 **上图说明：**
 

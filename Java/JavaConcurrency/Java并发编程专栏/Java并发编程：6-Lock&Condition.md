@@ -20,7 +20,7 @@ Q ：**ReentrantLock**与**synchronized**的区别？
 
 将共享变量以及对共享变量的操作 统一封装起来，如下图，多个线程想要访问共享变量queue，只能通过管程提供的enq()和deq()方法实现，这两个方法保持互斥性，且只允许一个线程进入管程。管程的模型和面向对象模型的契合度很高，这也可功能是Java一开始选择管程的原因（JDK5增加了信号量），互斥锁背后的模型其实就是它。
 
-![](D:\study\Framework\Java\img\21-管程解决互斥.jpg)
+![](img/Java并发编程：6-Lock&Condition/21-管程解决互斥.jpg)
 
 ### 1.2 如何解决同步
 
@@ -32,7 +32,7 @@ Q ：**ReentrantLock**与**synchronized**的区别？
 
 同理，生产者线程会唤醒消费者线程，自己调用wait()进入“库存为满”这个条件变量的等待队列中，被唤醒后会到入口等待队列中重新排队获取锁。这样就能解决线程之间的通信协作。
 
-![](D:\study\Framework\Java\img\22-管程解决同步.jpg)
+![](img/Java并发编程：6-Lock&Condition/22-管程解决同步.jpg)
 
 
 
@@ -267,7 +267,7 @@ final boolean tryAcquire(int acquires) {
 
 Condition是一个接口，这个接口是为了结合ReentrantLock实现管程模型。再次搬出Java中的管程示意图。
 
-![](D:\Study\Framework\Java\img\22-管程解决同步.jpg)
+<img src="img/Java并发编程：6-Lock&Condition/image-20230406175401752.png" alt="image-20230406175401752" style="zoom:50%;" />
 
 Lock与Condition这两者之间的关系可以参考synchronized和wait()/notify()。
 
@@ -374,9 +374,9 @@ consumer.signalAll();
 
 自己动手实践才是真理，自己写两个线程，然后使用线程断点一步一步的跟着看，在每个环节尽可能自己模拟多线程并发的情况来观察程序的运行变化。
 
-![](.\img\28-多线程断点.jpg)
+![](img/Java并发编程：6-Lock&Condition/28-多线程断点.jpg)
 
-![](.\img\29-多线程断点.jpg)
+![](img/Java并发编程：6-Lock&Condition/29-多线程断点.jpg)
 
 > 在本人学习这一部分内容时，也对AQS源码进行了阅读，大致的流程很容易走下来，但是在流程背后的一些设计细节，却不知其所以然。因此在本篇中没有对整个AQS原理进行详细的介绍，学习是一个逐渐深入的过程。有的东西需要周期反复的思考才能理解透彻。
 
