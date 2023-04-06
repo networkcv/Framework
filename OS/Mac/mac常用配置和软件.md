@@ -1,4 +1,4 @@
-## 操作：
+## 操作
 
 1. Option + Space 快捷打开 spotlight，可以搜索文件，也可以当计算器还，可以输入ter可以快捷打开terminal
 2. Option + Command + Space 快捷打开 Finder 的文件搜索，可以设置搜索范围
@@ -10,14 +10,14 @@
 8. Control + ⬆️  打开调度中心 ，Control +  ⬇️ 打开App expose（程序窗口）
 9. 左下屏幕角 返回桌面，右上屏幕角 打开启动台
 
-## Finder：
+## Finder
 
 1. Command + Shift + **.** 可以 切换是否显示 隐藏文件
 2. Command + Shift + G 快速前往某个路径
 3. 复制/粘贴 Command + C / Command + V
 4. 剪切/粘贴 Command + C / Option + Command + V
 
-## 应用：
+## 应用
 
 1. https://macwk.com/ mac破解软件下载
 

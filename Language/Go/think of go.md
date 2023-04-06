@@ -139,7 +139,7 @@ a [:3] //1,2,3
 
 其中 len 个元素会被初始化为默认值，未初始化元素不可访问。Java中数组在创建时会将全部元素初始化。
 
-![image-20210313165726604](https://pic.networkcv.top/2021/03/13/image-20210313165726604.png)
+![image-20210313165726604](img/think of go/image-20210313165726604.png)
 
 ```go
 var slice1 [] int
@@ -160,7 +160,7 @@ func TestSliceInsert(t *testing.T) {
 
 ### 切片共享存储结构
 
-<img src="https://pic.networkcv.top/2021/03/14/image-20210314105743622.png" alt="image-20210314105743622" style="zoom: 50%;" />
+<img src="img/think of go/image-20210314105743622.png" alt="image-20210314105743622" style="zoom: 50%;" />
 
 ### 切片的比较
 
@@ -285,7 +285,7 @@ func TestStringRune(t *testing.T) {
 
 编码与存储
 
-<img src="https://pic.networkcv.top/2021/03/14/image-20210314172601493.png" alt="image-20210314172601493" style="zoom: 50%;" />
+<img src="img/think of go/image-20210314172601493.png" alt="image-20210314172601493" style="zoom: 50%;" />
 
 ### 输出与格式化
 
@@ -554,7 +554,7 @@ func TestObjectFunc(t *testing.T) {
 
 ### 接口变量
 
-<img src="https://pic.networkcv.top/2021/03/14/image-20210314223342324.png" alt="image-20210314223342324" style="zoom:50%;" />
+<img src="img/think of go/image-20210314223342324.png" alt="image-20210314223342324" style="zoom:50%;" />
 
 ### 自定义类型
 
@@ -702,6 +702,12 @@ func TestObjectExtendFunc(t *testing.T) {
 
 # 八、Go的错误机制
 
+
+
+[GO的异常处理](http://jintang.zone/2021/04/28/go%E4%B8%AD%E7%9A%84err!=nil%E5%A5%BD%E7%83%A6%EF%BC%9F%E6%95%99%E4%BD%A0%E6%80%8E%E4%B9%88%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86error.html)
+
+
+
 1. 没有异常机制
 
 2. error  类型实现了 error 接口
@@ -778,7 +784,7 @@ defer func(){
 
 - Groutine 是 M：N
 
-  <img src="https://pic.networkcv.top/2021/03/15/image-20210315203941615.png" alt="image-20210315203941615" style="zoom:50%;" />
+  <img src="img/think of go/image-20210315203941615.png" alt="image-20210315203941615" style="zoom:50%;" />
 
 ```go
 func TestGroutine(t *testing.T) {
@@ -864,7 +870,7 @@ func TestCounterWaitGroup(t *testing.T) {
 
 ## CSP
 
-### <img src="https://pic.networkcv.top/2021/03/15/image-20210315211008813.png" alt="image-20210315211008813" style="zoom:50%;" />
+### <img src="img/think of go/image-20210315211008813.png" alt="image-20210315211008813" style="zoom:50%;" />
 
 ```go
 
@@ -1147,7 +1153,7 @@ func TestObjPool(t *testing.T) {
 
 ###  对象缓存
 
-<img src="https://pic.networkcv.top/2021/03/16/image-20210316222511290.png" alt="image-20210316222511290" style="zoom:50%;" />
+<img src="img/think of go/image-20210316222511290.png" alt="image-20210316222511290" style="zoom:50%;" />
 
 
 

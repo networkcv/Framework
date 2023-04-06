@@ -1,6 +1,4 @@
-
-
-
+## [automake,autoconf使用详解](https://www.laruence.com/2009/11/18/1154.html)
 
 ## [Linux_top命令详解](https://www.cnblogs.com/ggjucheng/archive/2012/01/08/2316399.html)
 

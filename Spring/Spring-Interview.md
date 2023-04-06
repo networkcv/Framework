@@ -908,6 +908,8 @@ JBoss AOP 使用自定义的ClassLoader作为织入器
 
 在初始化Bean的过程中 BeanPostProcessor#postProcessAfterInitialization 方法，由 AbstractAutoProxyCreator对原始对象进行包装，产生包含通知的代理类。
 
+## [AOP相关的坑 @Async注解导致循环依赖](https://mp.weixin.qq.com/s/8aJBWTSuw9RjX6-wW2Xx9g)
+
 
 
 # 三、Spring 事务

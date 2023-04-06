@@ -1,15 +1,93 @@
+
+
+
+
+### man
+
+`man` 命令是一个非常有用的命令，当你不会使用某个`Linux` 命令时，可以使用`man` 来查看其帮助文档。`man` 命令查到的手册来源于目录`/usr/share/man/`，可以看到该目录下有9 个这样的目录：
+
+```shell
+ls /usr/share/man/
+
+man1
+man2
+man3
+man4
+man5
+man6
+man7
+man8
+man9
+```
+
+`man` 手册分9 种，用数字`[1-9]` 来区分，分别代表的含义如下（可以用`man man` 命令来查看）：
+
+<img src="img/Linux指南/image-20230404152845055.png" alt="image-20230404152845055" style="zoom:50%;" />
+
+可以通过设置不同的数字来查看不同的手册，如下：
+
+```text
+man 1 系统命令名
+man 2 系统函数名
+man 3 库函数名
+```
+
+如果没有带这个数字，则会从`1` 查到`9`，直到查到第一个为止。
+
+**.man**文件是一个Unix风格（只有LF换行符）的纯文本文件，包含一个命令或其他项目的描述。它的格式是使用传统的 "troff "文本格式化工具。在GNU/Linux机器上，全系统的manpages通常位于"/usr/share/man "目录下，按语言分类并打包成gzip（.gz）档案。**.man**后缀本身通常只用于第三方的manpage文件。任何**.man**文件都可以用文本编辑器轻松打开。
+
+### groff
+
+groff（GUN roff） 是 roff 排版系统现在最常用的实现，其它实现有troff、nroff、ditroff等等。尽管历史悠久，roff当前还在广泛使用中。UNIX系统的man手册页、很多软件书籍和标准是用roff来写的。
+
+[Groff概览](https://www.chungkwong.cc/groff.html)
+
+[使用 groff 编写 man 手册页](https://linux.cn/article-9122-1.html)
+
+[Unix, Linux 和MacOS](https://juejin.cn/post/6844903841901576199)
+
+
+
+### cat
+
+显示最后一屏内容	
+
+cat 文件名	 cat 是由第一行到最后一行连续显示在屏幕上，而 tac 则是由最后一行到第一行反向在屏幕上显示出来
+
+
+
+### tail
+
+查看文件的后几行	
+
+tail -n  -10 文件名	Ctrl + C 强制退出
+
+
+
+### more
+
+`more` 命令用于查看Linux 文件的内容，用`more filename` 打开一个文件后，可以控制`向上`或`向下`翻滚页面。
+
+回车 往下滚一行
+
+空格 往下滚一页
+
+Ctrlµ  + B 往上滚一页
+
+
+
 ### mkdir 
 
 mkdir -p /a/b 可以创建多级文件夹
 
 
 
+### telnet
+
 在linux和centos下，我们就直接可以用telnet命令来测试端口是否畅通。具体用法：telnet 指定的IP或者 域名 端口号.
 
 ```bash
 比如：telnet 192.168.1.102 3306
-
-
 
 内网 telnet 127.0.0.1 8090
 ```
@@ -21,6 +99,16 @@ nc -vz -w 2 192.168.1.104 3306
 ```
 
 
+
+今天介绍几个我常用的Linux 命令，每个命令这里只介绍其常用参数。
+
+对于每个`Linux 命令`都可以使用`man + 命令名称`，查看其完整使用方法。
+
+
+
+### Others
+
+[常用Linux命令](https://zhuanlan.zhihu.com/p/132549442)
 
 目录操作:
 	cd		切换目录
@@ -36,8 +124,7 @@ nc -vz -w 2 192.168.1.104 3306
 文件操作:
 	touch		创建文件 touch 文件名
 	echo 2 >myid	将2输出到myid中，也可以简单创建文件
-	cat		显示最后一屏内容	cat	 文件名	 cat 是由第一行到最后一行连续显示在萤幕上，而 tac 则是由最后一行到第一行反向在萤幕上显示出来
-	tail	查看文件的后几行	tail -n  -10 文件名	Ctrl+C强制退出
+	
 	head	与tail相反 	查看文件的前几行  head -n 10  test.log   查询日志文件中的头10行日志;
 	vim		修改文件内容		vim	 文件名
 			vim有3种模式，开始是命令 按i进入编辑模式 按Esc返回命令底行模式 保存退出:wq
