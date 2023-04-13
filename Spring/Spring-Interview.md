@@ -1588,16 +1588,18 @@ https://xie.infoq.cn/article/9456ec818707cd6e44950019c
 
 # 七、常见接口和类
 
-## Order 和 PriorityOrder
+## Order 和 PriorityOrder 
 
-**spring中提供了2个可以给bean排序的接口**，规则如下：
+[Bean加载顺序的错误使用](https://spring.hhui.top/spring-blog/2019/10/23/191023-SpringBoot%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8B%E4%B9%8BBean%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%E4%B9%8B%E9%94%99%E8%AF%AF%E4%BD%BF%E7%94%A8%E5%A7%BF%E5%8A%BF%E8%BE%9F%E8%B0%A3/)
+
+**注意：`@Order `注解不能指定bean的加载顺序，它适用于AOP的优先级，以及将多个Bean注入到集合时，这些bean在集合中的顺序**
+
+oder 和 priorityOrdere 的规则如下：
 
 1. 实现了PriorityOrdered的接口优先级比Orderd 高
 2. 其次再按照getOrder的方法比较大小，数值越小，优先级越高
 3. 实现了Orderd接口的bean比普通bean的优先级高
 4. 顺序: PriorityOrdered > Orderd >>普通bean
-
-参考 https://www.nanxhs.com/article/111
 
 spring中2个接口的定义如下
 
@@ -1629,6 +1631,14 @@ public interface PriorityOrdered extends Ordered {
 ```
 
 
+
+## @AutoConfigureOrder
+
+`@AutoConfigureOrder`指定外部依赖的AutoConfig的加载顺序（即定义在`/META-INF/spring.factories`文件中的配置bean优先级)
+
+比如我引入两个外部的AutoConfig包，这两个包实现了同一个接口在当前工程中使用这个注解并没有什么鸟用。
+
+同样的 `@AutoConfigureBefore`和 `@AutoConfigureAfter`这两个注解的适用范围和`@AutoConfigureOrder`一样
 
 ## OrderComparator
 
