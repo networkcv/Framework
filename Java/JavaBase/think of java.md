@@ -2026,9 +2026,9 @@ class BFilter extends Filter {
 
 
 
-# 23.图形界面
+# 23.Log
 
-### [SWING](./md/think of Java：SWING.md)
+### [log框架](./md/think of Java：Log.md)
 
 # 其他
 
