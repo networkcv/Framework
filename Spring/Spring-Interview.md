@@ -1180,7 +1180,15 @@ public class ServiceAlias {
 // @org.springframework.stereotype.Component(value=serviceAlias)
 ```
 
-## @Autowired和@Resource的区别 TODO
+## @Autowired和@Resource的区别 
+
+1.来源不同：@Autowired是Spring自带的注解，而@Resource是J2EE提供的注解。
+
+2.注入属性的方式不同：@Autowired默认按照类型（byType）进行自动装配，如果有多个类型匹配的bean，则根据字段名称或方法参数名称进行匹配；而@Resource默认按照名称（byName）进行自动装配，如果找不到bean的名称与注解名称匹配，则会抛出NoSuchBeanDefinitionException异常。
+
+3.使用场景不同：@Autowired适用于Spring应用程序中的自动装配，而@Resource主要用于J2EE应用程序中的装配。
+
+4.可选性不同：@Autowired注解的属性required默认为true，表示必须存在匹配的bean，否则会抛出NoSuchBeanDefinitionException异常；而@Resource注解的属性required默认为false，表示可以不存在匹配的bean，此时对应的属性为null。
 
 
 

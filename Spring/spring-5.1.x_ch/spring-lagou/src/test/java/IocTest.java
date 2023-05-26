@@ -11,7 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class IocTest {
 
 	/**
-	 *  Ioc 容器源码分析基础案例
+	 * Ioc 容器源码分析基础案例
 	 */
 	@Test
 	public void testIoC() {

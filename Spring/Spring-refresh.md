@@ -8,43 +8,43 @@
 //org.springframework.context.support.AbstractApplicationContext#refresh
 public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
+			// 一：Prepare this context for refreshing.
 			prepareRefresh();
 
-			// Tell the subclass to refresh the internal bean factory.
+			// 二：Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
-			// Prepare the bean factory for use in this context.
+			// 三：Prepare the bean factory for use in this context.
 			prepareBeanFactory(beanFactory);
 
 			try {
-				// Allows post-processing of the bean factory in context subclasses.
+				// 四：Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 
-				// Invoke factory processors registered as beans in the context.
+				// 五：Invoke factory processors registered as beans in the context.
         // 调用工厂处理器，将bean注册到容器中
 				invokeBeanFactoryPostProcessors(beanFactory);
 
-				// Register bean processors that intercept bean creation.
+				// 六：Register bean processors that intercept bean creation.
 				registerBeanPostProcessors(beanFactory);
 
-				// Initialize message source for this context.
+				// 七：Initialize message source for this context.
 				initMessageSource();
 
-				// Initialize event multicaster for this context.
+				// 八：Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
 
-				// Initialize other special beans in specific context subclasses.
+				// 九：Initialize other special beans in specific context subclasses.
 				onRefresh();
 
-				// Check for listener beans and register them.
+				// 十：Check for listener beans and register them.
 				registerListeners();
 
-				// Instantiate all remaining (non-lazy-init) singletons.
+				// 十一：Instantiate all remaining (non-lazy-init) singletons.
         // 完成Bean工厂初始化，实例化所有剩余的（非懒加载的）单例对象
 				finishBeanFactoryInitialization(beanFactory);
 
-				// Last step: publish corresponding event.
+				// 十二：Last step: publish corresponding event.
 				finishRefresh();
 			}
 
@@ -75,7 +75,7 @@ public void refresh() throws BeansException, IllegalStateException {
 
 
 
-# invokeBeanFactoryPostProcessors
+# 五、invokeBeanFactoryPostProcessors
 
 调用工厂处理器，将bean注册到容器中
 
@@ -96,7 +96,7 @@ protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory b
 
 
 
-# finishBeanFactoryInitialization
+# 十一、finishBeanFactoryInitialization
 
 实例化所有剩余的（非懒加载的）单例对象 来完成Bean工厂初始化。
 
