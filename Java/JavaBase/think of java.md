@@ -1,6 +1,23 @@
 # 0.基础操作
 
+参考：https://www.cnblogs.com/mq0036/p/8566427.html#a33
+
 ## javac 命令
+
+```sh
+javac tom.java -d ~/target 
+# 指定输出的文件目录
+```
+
+```sh
+javac -cp ～/tom.jar Hello.class 
+```
+
+这里的 -cp 表示 -classpath，指的是把tom.jar加入classpath路径下
+
+如果Hello.clss用到了tom.jar中的东西，在编译时，不将依赖的包加入classPath下，会报类似于下面的错误：
+
+MyApp.java:4: 错误: 程序包com.lwj.agent不存在
 
 ## jar 命令
 
@@ -24,27 +41,36 @@
     -C  更改为指定的目录并包含以下文件
 ```
 
-### 查看jar包
+**查看jar包**
 
 ```
 jar tf test.jar
 ```
 
-### 解压jar包
+**解压jar包**
 
 ```
 jar xvf test.jar
 ```
 
-### 压缩jar包
+**压缩jar包**
 
 ```
 cd 项目内部
 jar cvf test.jar .
-jar cvfe test.jar 
-jar cfvm test.jar ./META-INF/MANIFEST.MF .
-
 ```
+
+```sh
+jar -cvfm test.jar ～/META-INF\MENIFEST.MF .   
+```
+
+这个META-INF\MENIFEST.MF需要提前准备好，路径是绝对路径
+
+如果依赖的外部的lib，需要在 MENIFEST.MF中 定义Class-Path信息，例如，Class-Path: lib/agent.jar，这个是相对路径
+
+需要注意的是，class-path 属性中的路径可以使用相对路径或绝对路径。如果是相对路径，则相对于包含 manifest.mf 文件的 jar 文件所在的目录。在设置 class-path 属性时，也可以使用通配符，例如使用 * 表示当前目录下的所有 jar 文件。
+
+如果在运行时，classPath下找不到对应的包，就会报NoClassDefFoundError : com/lwj/agent/Person
 
 ## java 命令
 
@@ -54,7 +80,19 @@ jar cfvm test.jar ./META-INF/MANIFEST.MF .
 java -jar test.jar
 ```
 
+## vim 命令修改jar包
 
+使用vim可以直接修改jar 中的文件，但是无法修改class文件。
+
+通过vim 工具打开 Jar 包，将会显示 Jar 包中的所有文件夹和文件绝对路径，每行显示一个。
+
+[![img](img/think of java/20200518084041.png)](https://img.iszy.xyz/20200518084041.png)
+
+通过将光标移动到需要修改的文件上，回车进入文件，像编辑普通文件一样进行修改，修改完成后，`:wq` 退出返回到文件列表。
+
+接下来可以选择继续编辑其他文件或退出 Jar 包。退出 Jar 包时，请一定要通过`:q` 退出，这个很重要，如果你像上面保存文件一样加了 w 参数，这个 Jar 包就废了，它将会变成保存了文件列表的一个文本文件。所以请千万通过`:q` 参数退出 Jar 包，切记
+
+接下来可以选择继续编辑其他文件或退出 Jar 包。退出 Jar 包时，请一定要通过`:q` 退出，这个很重要，如果你像上面保存文件一样加了 w 参数，这个 Jar 包就废了，它将会变成保存了文件列表的一个文本文件。所以请千万通过`:q` 参数退出 Jar 包，切记！
 
 # 1.基本数据类型
 
