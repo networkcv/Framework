@@ -1,3 +1,61 @@
+# 0.基础操作
+
+## javac 命令
+
+## jar 命令
+
+```sh
+用法: jar {ctxui}[vfmn0PMe] [jar-file] [manifest-file] [entry-point] [-C dir] files ...
+选项:
+    -c  创建新档案
+    -t  列出档案目录
+    -x  从档案中提取指定的 (或所有) 文件
+    -u  更新现有档案
+    -v  在标准输出中生成详细输出
+    -f  指定档案文件名
+    -m  包含指定清单文件中的清单信息
+    -n  创建新档案后执行 Pack200 规范化
+    -e  为捆绑到可执行 jar 文件的独立应用程序
+        指定应用程序入口点
+    -0  仅存储; 不使用任何 ZIP 压缩
+    -P  保留文件名中的前导 '/' (绝对路径) 和 ".." (父目录) 组件
+    -M  不创建条目的清单文件
+    -i  为指定的 jar 文件生成索引信息
+    -C  更改为指定的目录并包含以下文件
+```
+
+### 查看jar包
+
+```
+jar tf test.jar
+```
+
+### 解压jar包
+
+```
+jar xvf test.jar
+```
+
+### 压缩jar包
+
+```
+cd 项目内部
+jar cvf test.jar .
+jar cvfe test.jar 
+jar cfvm test.jar ./META-INF/MANIFEST.MF .
+
+```
+
+## java 命令
+
+运行jar包
+
+```
+java -jar test.jar
+```
+
+
+
 # 1.基本数据类型
 
 基本类型的表示范围：
