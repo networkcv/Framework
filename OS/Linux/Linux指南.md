@@ -113,9 +113,15 @@ cat 文件名	 cat 是由第一行到最后一行连续显示在屏幕上，而 
 
 ### tail
 
+[tail命令详解](https://www.myfreax.com/linux-tail-command/)
+
 查看文件的后几行	
 
-tail -n  -10 文件名	Ctrl + C 强制退出
+tail -10 文件名	
+
+持续输出某个文件的后续变化
+
+tail -f  文件名
 
 
 
@@ -127,7 +133,7 @@ tail -n  -10 文件名	Ctrl + C 强制退出
 
 空格 往下滚一页
 
-Ctrlµ  + B 往上滚一页
+Ctrl  + B 往上滚一页
 
 
 
