@@ -23,6 +23,7 @@ print(type(bool_d))
 - `chr()`：将整数转换成该编码对应的字符串（一个字符）。
 - `ord()`：将字符串（一个字符）转换成对应的编码（整数）。
 """
+print(str(1))
 print(ord('a'))
 print(chr(97))
 
@@ -49,7 +50,6 @@ print("%.2s is %s" % ("abc", str_name))
 f = 1
 c = 2
 print(f'{f:.1f}华氏度 = {c:.1f}摄氏度')
-
 
 """
 input 输入函数

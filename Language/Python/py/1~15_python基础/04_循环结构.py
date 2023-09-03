@@ -1,10 +1,17 @@
-sum = 0
-
+# 数组求和
+count_sum = 0
 for x in [1, 2, 3]:
-    sum += x
-print(sum)
+    count_sum += x
+print(count_sum)
 
-print(len(range(100)))
+# range(0,10) 左开右闭
+count_sum = 0
+for x in range(1, 4):
+    count_sum += x
+print(count_sum)
+
+print('1.1111保留两位小数%.2f ' % 1.1111)
+print('range(100)的总数量 %.2i ' % len(range(100)))
 
 for x in range(90, 100, 2):
     print(x)
@@ -23,13 +30,13 @@ for x in range(90, 100, 2):
 #     print('是素数')
 
 # 打印星号
-space = 5
-start = 1
-for row in range(5):
-    for sp in range(space):
-        print(' ', end="")
-    for sp in range(start):
-        print('*', end="")
-    print()
-    start += 2
-    space -= 1
+# space = 5
+# start = 1
+# for row in range(5):
+#     for sp in range(space):
+#         print(' ', end="")
+#     for sp in range(start):
+#         print('*', end="")
+#     print()
+#     start += 2
+#     space -= 1
