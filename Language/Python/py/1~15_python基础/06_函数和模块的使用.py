@@ -34,5 +34,6 @@ import _06.model2 as m2
 m1.foo()
 m2.foo()
 
-# python隐含变量，函数入口的名称才是__main__，其他的是当前的模块名 __name__ is _06.model1
+# python隐含变量，函数入口的名称才是__main__，其他的是当前的模块名+文件名 __name__ is _06.model1
 print(__name__)
+print(10 // 3)
