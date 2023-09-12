@@ -1,4 +1,11 @@
+import datetime
+import logging
+
 import requests
+
+# 配置日志记录器
+logging.basicConfig(level=logging.DEBUG, filename="app.log", filemode="w",
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 cookies = {
     '_zcy_log_client_uuid': 'b06801f0-329b-11ee-96f2-d5bbef343142',
@@ -33,13 +40,38 @@ data = {
     'group': 'default',
     'node': '',
     'paramsStr': '[{"shopItemIdList":[1,2]}]',
-    'dubboTag': 'default',
+    'dubboTag': '乌柏',
     'method': 'deleteShopItemByQuery(com.gov.zcy.operate.pilot.core.client.shopitem.query.SCMShopItemQuery)',
     'attachment': '',
 }
 
 
-def doCall(list):
-    data['paramsStr'] = f'[{{"shopItemIdList":{list}}}]'
+def call(param_str):
+    cur = datetime.datetime.now()
+    data['paramsStr'] = param_str
+    logging.info(f'请求参数：{data}')
     response = requests.post('http://rock.paas.cai-inc.com/conf/dubboTest', cookies=cookies, headers=headers, data=data, verify=False)
-    print(response.text)
+    logging.info(f'调用结果：{response.text}')
+    return response.text
+
+
+class DeleteQueryRequest:
+
+    @classmethod
+    def print_class_method(cls):
+        print(cls)
+
+    @staticmethod
+    def print():
+        print(__name__)
+
+    def __init__(self, id_list):
+        self._shop_item_id_list = id_list
+
+    @property
+    def shop_item_id_list(self):
+        return self._shop_item_id_list
+
+    @shop_item_id_list.setter
+    def shop_item_id_list(self, value):
+        self._shop_item_id_list = value
