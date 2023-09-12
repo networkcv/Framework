@@ -1,5 +1,4 @@
 import concurrent.futures
-import logging
 
 import pandas as pd
 from more_itertools import chunked
@@ -17,30 +16,44 @@ def parse_excel(path):
     return _list
 
 
+def write_excel(data):
+    pd.DataFrame(data).to_excel('file/惠民删除数据调用结果.xlsx', index=False)
+
+
 def get_delete_ids(_id_list):
-    for sub_id_list in list(chunked(_id_list, 5)):
-        req_data_param = [{
-            "shopItemIdList": sub_id_list
-        }]
-        return str(req_data_param)
+    return chunked(_id_list, 5)
+    # for sub_id_list in list(chunked(_id_list, 5)):
+    #     req_data_param = [{
+    #         "shopItemIdList": sub_id_list
+    #     }]
+    #     return str(req_data_param)
 
 
 if __name__ == '__main__':
+    data = {
+        "col1": [1, 2],
+        "col2": [True, False]
+
+    }
+    write_excel(data)
+
     # id_list = parse_excel('file/惠民要删除数据id.xlsx')
     id_list = [1, 2, 3, 4, 5, 6, 7]
-    logging.info(id_list)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         # 提交任务给线程池
         tasks = []
         for sub_list in get_delete_ids(id_list):
-            future = executor.submit(dsq.call, sub_list)
+            req_data_param = f'[{{"shopItemIdList": {sub_list}}}]'
+            future = executor.submit(dsq.call, req_data_param)
             tasks.append(future)
 
         # 获取已完成任务的结果
+
         for future in concurrent.futures.as_completed(tasks):
             result = future.result()
-            logging.info(result)
+
+        # write_excel
     print("所有任务执行完毕")
 
 # print(id_list_new)

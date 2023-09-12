@@ -1,21 +1,21 @@
-import datetime
 import logging
-
-import requests
 
 # 配置日志记录器
 logging.basicConfig(level=logging.DEBUG, filename="app.log", filemode="w",
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+import requests
+
 cookies = {
     '_zcy_log_client_uuid': 'b06801f0-329b-11ee-96f2-d5bbef343142',
-    'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ0ODIxODEsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.SPSK_hHJJYsyV3HnEc1NCbyjc3nBFj4Hwhn3EbODgoc',
-    '__sso_token__': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ0ODIxODEsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.SPSK_hHJJYsyV3HnEc1NCbyjc3nBFj4Hwhn3EbODgoc',
+    'redirect': 'http%3A%2F%2Fipaas.cai-inc.com%2Fdashboard%2Fguinie%2Fapplication',
+    'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ2MjUxNTUsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.l8QbIzHlJlxzUwga02Tk9_fbBI53Rez5LHOpUYxS-aw',
+    '__sso_token__': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ2MjUxNTUsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.l8QbIzHlJlxzUwga02Tk9_fbBI53Rez5LHOpUYxS-aw',
     '__sso_user__': 'liuwangjie',
     '__sso_department__': '%E4%BE%9B%E5%BA%94%E9%93%BE',
     '__sso_realName__': '%E5%88%98%E6%97%BA%E6%9D%B0',
     '__sso_nickName__': '%E4%B9%8C%E6%9F%8F',
-    'JSESSIONID': '942FE1C7E7413E5731A26E2A324E28B4',
+    'JSESSIONID': 'ED19F6B78F57F79E4FB0D722C35B3402',
 }
 
 headers = {
@@ -23,7 +23,7 @@ headers = {
     'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8',
     'Connection': 'keep-alive',
     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    # 'Cookie': '_zcy_log_client_uuid=b06801f0-329b-11ee-96f2-d5bbef343142; token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ0ODIxODEsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.SPSK_hHJJYsyV3HnEc1NCbyjc3nBFj4Hwhn3EbODgoc; __sso_token__=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ0ODIxODEsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.SPSK_hHJJYsyV3HnEc1NCbyjc3nBFj4Hwhn3EbODgoc; __sso_user__=liuwangjie; __sso_department__=%E4%BE%9B%E5%BA%94%E9%93%BE; __sso_realName__=%E5%88%98%E6%97%BA%E6%9D%B0; __sso_nickName__=%E4%B9%8C%E6%9F%8F; JSESSIONID=942FE1C7E7413E5731A26E2A324E28B4',
+    # 'Cookie': '_zcy_log_client_uuid=b06801f0-329b-11ee-96f2-d5bbef343142; redirect=http%3A%2F%2Fipaas.cai-inc.com%2Fdashboard%2Fguinie%2Fapplication; token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ2MjUxNTUsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.l8QbIzHlJlxzUwga02Tk9_fbBI53Rez5LHOpUYxS-aw; __sso_token__=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQ2MjUxNTUsImlzcyI6ImxpdXdhbmdqaWUiLCJ1c2VyaWQiOiI2MDcyOTI0OTYiLCJ1bmlvbmlkIjoiWHdpaTdoOWlTQkJXaFlGTUhORmd4eWpnaUVpRSIsInVzZXJOYW1lIjoibGl1d2FuZ2ppZSIsIm5pY2tOYW1lIjoi5LmM5p-PIiwicmVhbE5hbWUiOiLliJjml7rmnbAiLCJtYWlsIjoibGl1d2FuZ2ppZUBjYWktaW5jLmNvbSIsImVtcGxveWVlSWQiOiJDMDE0MzMiLCJtb2JpbGUiOiIxNTIyOTI2NTM1MSIsImRlcGFydG1lbnQiOls4NzE5NzA2NTZdLCJkZXBhcnRtZW50cyI6WyLkvpvlupTpk74iXSwiQWxsUGF0aCI6WyLkvpvlupTpk74s5ZWG5a625Lia5YqhLOeglOWPkemDqCzmlL_ph4fkupHmnInpmZDlhazlj7giXSwiQWxsUGF0aElkcyI6W1s4NzE5NzA2NTYsNzIwOTIyMDQ5LDQyNjY0NjksMV1dLCJpc0xlYWRlciI6ZmFsc2UsInBvc2l0aW9uIjoiIiwiYXZhdGFyIjoiIn0.l8QbIzHlJlxzUwga02Tk9_fbBI53Rez5LHOpUYxS-aw; __sso_user__=liuwangjie; __sso_department__=%E4%BE%9B%E5%BA%94%E9%93%BE; __sso_realName__=%E5%88%98%E6%97%BA%E6%9D%B0; __sso_nickName__=%E4%B9%8C%E6%9F%8F; JSESSIONID=ED19F6B78F57F79E4FB0D722C35B3402',
     'Origin': 'http://rock.paas.cai-inc.com',
     'Referer': 'http://rock.paas.cai-inc.com/',
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
@@ -39,15 +39,14 @@ data = {
     'version': '1.0.0',
     'group': 'default',
     'node': '',
-    'paramsStr': '[{"shopItemIdList":[1,2]}]',
-    'dubboTag': '乌柏',
+    'paramsStr': '[{"shopItemIdList":[3,4]}]',
+    'dubboTag': 'default',
     'method': 'deleteShopItemByQuery(com.gov.zcy.operate.pilot.core.client.shopitem.query.SCMShopItemQuery)',
     'attachment': '',
 }
 
 
 def call(param_str):
-    cur = datetime.datetime.now()
     data['paramsStr'] = param_str
     logging.info(f'请求参数：{data}')
     response = requests.post('http://rock.paas.cai-inc.com/conf/dubboTest', cookies=cookies, headers=headers, data=data, verify=False)
