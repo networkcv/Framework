@@ -73,7 +73,7 @@ print(str2.isalpha())  # False
 print(str2.isalnum())  # True
 str3 = '  jackfrued@126.com '
 print(str3)
-# 获得字符串修剪左右两侧空格之后的拷贝
+# 获得字符串修剪左右两侧空格和回车换行符之后的拷贝
 print(str3.strip())
 
 list1 = [1, 3, 5, 7, 100]
@@ -238,3 +238,7 @@ print(scores.pop('骆昊', 100))
 # 清空字典
 scores.clear()
 print(scores)
+
+list1 = [1, 2, 3]
+a = lambda list1: list1
+print(a(list1))
