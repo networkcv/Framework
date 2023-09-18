@@ -35,8 +35,8 @@ public class ArthasQuickStart {
             print(number, primeFactors);
 
         } catch (Exception e) {
-            log.warn(String.format("illegalArgumentCount:%3d, ", illegalArgumentCount) + e.getMessage());
-            log.error(String.format("illegalArgumentCount:%3d, ", illegalArgumentCount) + e.getMessage());
+//            log.warn(String.format("illegalArgumentCount:%3d, ", illegalArgumentCount) + e.getMessage());
+//            log.error(String.format("illegalArgumentCount:%3d, ", illegalArgumentCount) + e.getMessage());
         }
     }
 
@@ -48,7 +48,7 @@ public class ArthasQuickStart {
         if (sb.charAt(sb.length() - 1) == '*') {
             sb.deleteCharAt(sb.length() - 1);
         }
-        log.info("{}", sb);
+//        log.info("{}", sb);
     }
 
     public List<Integer> primeFactors(int number) {
