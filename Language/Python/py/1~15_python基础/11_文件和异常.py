@@ -60,7 +60,7 @@ except FileNotFoundError as e:
     print("[waring] file not found")
 
 
-# 手动抛出异常
+# 手动抛出异常 和java的 throw 关键字类似
 def test_throw(raise_flag):
     if raise_flag:
         raise CustomBizException("手动抛出异常")
