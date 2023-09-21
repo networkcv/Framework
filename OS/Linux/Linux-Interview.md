@@ -172,19 +172,3 @@ write 为写数据。一般而言服务端接受客户端的请求之后，会�
 综上，read 和 write 都会发生阻塞。
 
 
-
-## -XX:MaxDirectMemorySize堆外内存大小限制失效
-
-上面的结论有点不完善:
-
-如果通过反射的方式拿到Unsafe的实例,然后用Unsafe的allocateMemory方法分配堆外内存. 确实不受-XX:MaxDirectMemorySize这个JVM参数的限制 . 所以限制的内存大小为操作系统的内存.
-
-如果使用Java自带的 ByteBuffer.allocateDirect(size) 或者直接 new DirectByteBuffer(capacity) , 这样受-XX:MaxDirectMemorySize 这个JVM参数的限制. 其实底层都是用的Unsafe#allocateMemory,区别是对大小做了限制. 如果超出限制直接OOM.
-
-如果不设置-XX:MaxDirectMemorySize 默认的话,是跟堆内存大小保持一致. [堆内存大小如果不设置的话,默认为操作系统的 1/4, 所以 DirectMemory的大小限制JVM的Runtime.getRuntime().maxMemory()内存大小 . ], 代码入下:
-
-
-
-## 为啥Metadata GC会触发Full GC？
-
-## https://www.zhihu.com/question/442664600
