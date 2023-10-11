@@ -156,6 +156,8 @@ Index Alias 实现零停机运维
 
 ![image-20210107232750514](img/ElasticSearch核心技术与实践二/image-20210107232750514.png)
 
+- 内置衰减函数 [decay functions](https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-function-score-query.html#function-decay): `gauss`, `linear`, `exp`
+
 ![image-20210107233044138](img/ElasticSearch核心技术与实践二/image-20210107233044138.png)![image-20210107233108968](img/ElasticSearch核心技术与实践二/image-20210107233108968.png)
 
 可以看到点赞数对 _source的影响很大，但这并不是我们想要的，我们可以使用Modifier来控制它的影响度
