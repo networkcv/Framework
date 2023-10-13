@@ -390,11 +390,13 @@ git rm --cached  <file path>
 
 ## 撤销相关操作 
 
+reset 可以指定commit的版本号，指定reset后操作就包含了从该版本号之后的变更内容。
+
 - 将暂存区的操作撤销回工作区  
 
 > git reset 
 
-- 撤销工作区和工作区的所有操作  
+- 撤销工作区和暂存区的所有操作  
 
 > git reset -\-hard 
 
@@ -414,10 +416,29 @@ git rm --cached  <file path>
 
 > git checkout -\- fileName 
 
-<br>
+**补充知识：**
+
+![img](img/Git使用指南/webp)
+
+Git中存在三个区域：
+
+**Working Tree**：工作区，当前的工作区域，当被git管理的文件变更时，变更会先记录到工作区。
+
+**Index/Stage** ：暂存区，和git stash命令暂存的地方不一样。使用git add xx，就可以将xx添加近Stage里面。
+
+**Repository** ：本地仓库，对应图中的history区域，即使用git commit提交后的结果。
+
+实际工作中，暂存区用到的还是比较少的，我们进行了变更后，直接从工作区提交到本地仓库中了，像内容比对这类操作都是针对commit来做的，弱化了暂存区的功能。在IDEA中可以设置 always add file，将所有对工作区的操作自动保存到暂存区中。
 
 
-实际工作中，暂存区用到的还是比较少的，我们进行了操作后直接就从工作区提交到commit中，像内容比对这类操作都是针对commit来做的，弱化了暂存区的功能。在IDEA中可以设置，将所有对工作区的操作自动保存到暂存区中。
+
+reset --hard：重置工作区，暂存区和本地仓库到指定位置的commit。
+
+reset --soft：保留工作目录，并把重置 HEAD 所带来的新的差异放进暂存区
+
+reset  --mixed：保留工作区，将暂存区的内容混合放到工作区，并清空暂存区。--mixed 是默认参数
+
+
 
 
 ## 暂存未提交的修改
