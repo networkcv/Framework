@@ -2,7 +2,7 @@ def partition(list_, size=20):
     """
     拆分list
     :param list_: 列表
-    :param size: 子列表大小
+    :param size: 子列表大小 默认20
     :return: 子列表数组
     """
     if list_:

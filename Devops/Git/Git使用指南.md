@@ -390,13 +390,11 @@ git rm --cached  <file path>
 
 ## 撤销相关操作 
 
-reset 可以指定commit的版本号，指定reset后操作就包含了从该版本号之后的变更内容。
-
 - 将暂存区的操作撤销回工作区  
 
 > git reset 
 
-- 撤销工作区和暂存区的所有操作  
+- 撤销工作区和工作区的所有操作  
 
 > git reset -\-hard 
 
@@ -416,31 +414,10 @@ reset 可以指定commit的版本号，指定reset后操作就包含了从该版
 
 > git checkout -\- fileName 
 
-**补充知识：**
-
-![img](img/Git使用指南/webp)
-
-Git中存在三个区域：
-
-**Working Tree**：工作区，当前的工作区域，当被git管理的文件变更时，变更会先记录到工作区。
-
-**Index/Stage** ：暂存区，和git stash命令暂存的地方不一样。使用git add xx，就可以将xx添加近Stage里面。
-
-**Repository** ：本地仓库，对应图中的history区域，即使用git commit提交后的结果。
-
-实际工作中，暂存区用到的还是比较少的，我们进行了变更后，直接从工作区提交到本地仓库中了，像内容比对这类操作都是针对commit来做的，弱化了暂存区的功能。在IDEA中可以设置 always add file，将所有对工作区的操作自动保存到暂存区中。
+<br>
 
 
-
-reset --hard：重置工作区，暂存区和本地仓库到指定位置的commit。
-
-reset --soft：保留工作目录，并把重置 HEAD 所带来的新的差异放进暂存区
-
-reset  --mixed：保留工作区，将暂存区的内容混合放到工作区，并清空暂存区。--mixed 是默认参数
-
-参考文章：[Git Reset 三种模式](https://www.jianshu.com/p/c2ec5f06cf1a)
-
-
+实际工作中，暂存区用到的还是比较少的，我们进行了操作后直接就从工作区提交到commit中，像内容比对这类操作都是针对commit来做的，弱化了暂存区的功能。在IDEA中可以设置，将所有对工作区的操作自动保存到暂存区中。
 
 
 ## 暂存未提交的修改
@@ -507,15 +484,9 @@ Switched to a new branch 'temp2'
 
 ## 分离头指针开发
 
-`detached HEAD` 可以称为「游离 HEAD」，也有称为「分离 HEAD」的。
+- detached head 分离头指针，相当于创建了一个临时分支来使用，切回主分支后需要手动保存，不然会被git清除，具体操作如下：
 
-一般情况下，我们的 `HEAD` 会指向某个分支的某个 Commit-ID。**但是 `HEAD` 偶尔会发生「没有指向某个本地分支」的情况，这种状态的 `HEAD` 称为 `detached HEAD`。**
-
-以下情况，就可能会出现 `detached HEAD`：
-
-> 1. 使用 `git checkout` 跳转至某个 Commit-ID，而这个 Commit-ID 刚好目前没有分支指向它。
-> 2. Rebase 的过程其实也是处于不断的 detached HEAD 状态。
-> 3. 切换至某个远程分支的时候。
+> git checkout 版本号
 
 ```
 $ git checkout 4813a70f369340d6ac18bb719dd05c1575788fb
@@ -723,5 +694,3 @@ $ git cat-file -p dab7902aa1
 ![mark](http://pic.networkcv.top//network/20200813/Aig7asliLcLz.png?imageslim)
 
 ![mark](http://pic.networkcv.top//network/20200813/5tU6wOdieTdY.png?imageslim)
-
-## [origin、HEAD、FETCH_HEAD 相关内容](https://www.jianshu.com/p/b494ee197ea8)
