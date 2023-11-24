@@ -10,7 +10,7 @@ class Person:
     # 两个下划线开头的才是私有成员变量,私有成员方法同理,当在类上下文中使用时，触发"名称修饰"。由Python解释器强制执行。
     __private_var2 = 2
 
-    # 不是私有的成员变量,表示Python语言定义的特殊方法。避免在你自己的属性中使用这种命名方案。
+    # 不是私有的成员变量,表示Python语言定义的特殊方法,比如main方法 避免在你自己的属性中使用这种命名方案。
     __private_var1__ = 1
 
     # 单下划线开头，是一种命名习惯，表示外部代码访问该属性时，需要保持慎重，这种做法不是语法上的规则
@@ -57,9 +57,11 @@ print(Person('lwj', 20) <= Person('lws', 20))  # Ture
 print(Person('lwj', 20) == Person('lws', 20))  # False
 print(Person('lwj', 20) == Person('lwj', 20))  # Ture
 
+print("==")
 
-# print(Person('wb').__private_var1__)  # 1
-# print(Person('wb').__private_var2)  # 'Student' object has no attribute '__private_var2'. Did you mean: '__private_var1__'?
+
+# print(Person('wb',1).__private_var1__)  # 1
+# print(Person('wb',1).__private_var2)  # object has no attribute '__private_var2'. Did you mean: '__private_var1__'?
 
 
 class Profession(metaclass=ABCMeta):
@@ -86,7 +88,7 @@ class Student(Person, Profession):
     使用成员方法：父类名.成员方法(self)
 
     方式2：
-    使用super(调用父类成员
+    使用super()调用父类成员
     使用成员变量：super().成员变量
     使用成员方法：super().成员方法(）
     """
@@ -99,9 +101,11 @@ class Student(Person, Profession):
         super().__init__(name, age)
 
     def fun1(self):
-        print(f'student:{Person.age}')
-        print(f'student:{Person._age}')
-        print(f'student:{super().age}')
+        print(f'Person 通过父类名称调用:{Person.age}')
+        print(f'Person 通过父类名称调用:{Person._age}')
+        print(f'Person 通过 super()方法调用:{super().age}')
+        print(f'Student self.age {self.age}')
+        print(f'Student self.name {self.name}')
         return 1
 
     # 这里实现了父类Profession中的抽象方法abstract_fun
@@ -109,4 +113,6 @@ class Student(Person, Profession):
         pass
 
 
-print(Student('name', 18).fun1())
+student = Student('lwj', 18)
+print(student)
+print(student.fun1())
