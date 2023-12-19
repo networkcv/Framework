@@ -1,4 +1,5 @@
 # 列表元素可以修改
+
 list1 = [1, 3, 5, 7, 100]
 # 元组元素不能修改
 tuple1 = ('骆昊', 38, True, '四川成都')
@@ -240,6 +241,43 @@ print(scores.pop('骆昊', 100))
 scores.clear()
 print(scores)
 
-list1 = [1, 2, 3]
-a = lambda list1: list1
-print(a(list1))
+# 生成器 generator
+# 通过列表生成式，可以直接创建一个列表，但是收到内存限制，列表的大小肯定有限制。而且如果创建一个100w大小的列表，只使用前几个元素会很浪费。
+# 那么通过生成器可以解决这个问题,这样就可以在不断循环的过程中推算出后续元素，从而节省大量空间。
+# 要创建一个generator，有很多种方法。第一种方法很简单，只要把一个列表生成式的[]改成()，就创建了一个generator：
+l = [x * x for x in range(10)]
+print(l)
+# output [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+g = (x * x for x in range(10))
+print(g)
+# output <generator object <genexpr> at 0x102fc4110>
+# 使用next()遍历生成器
+print(next(g))
+print(next(g))
+# 打印生成器
+for x in g:
+    print(x, end=" ")
+
+
+# 如果一个函数中包含了 yield 关键字，那么该函数就是一个generator函数，调用一个generator函数将返回一个generator,而调用普通函数返回结果
+# 例如下边这个函数就是一个 generator函数
+def fib(max):
+    n, a, b = 0, 0, 1
+    while n < max:
+        yield b
+        a, b = b, a + b
+        n = n + 1
+    return 'done'
+
+
+# 这里，最难理解的就是generator函数和普通函数的执行流程不一样。普通函数是顺序执行，遇到return语句或者最后一行函数语句就返回。
+# 而变成generator的函数，在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行。
+# 但是用for循环调用generator时，发现拿不到generator的return语句的返回值。如果想要拿到返回值，必须捕获StopIteration错误，返回值包含在StopIteration的value中：
+g = fib(6)
+while True:
+    try:
+        x = next(g)
+        print('g:', x)
+    except StopIteration as e:
+        print('Generator return value:', e.value)
+        break
