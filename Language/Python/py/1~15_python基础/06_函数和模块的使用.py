@@ -111,5 +111,72 @@ def foo(a, b, /, c, d):
 
 
 foo(1, 2, 3, 4)  # 输出: 1 2 3 4
-foo(a=1, b=2, c=3, d=4)  # 报错，不允许使用关键字参数传递位置参数之后的参数
+# foo(a=1, b=2, c=3, d=4)  # 报错，不允许使用关键字参数传递位置参数之后的参数
 foo(1, 2, d=4, c=3)  # 输出: 1 2 3 4，可以使用关键字参数传递位置参数之前的参数
+
+
+# *
+# keyword-only参数
+# keyword-only参数是Python3中新加入的特性，比较不多见。
+# 定义时有一个单独的*号，其实这也只是一种规定，*号看上去像是一个参数，其实它不占参数个数，是给解释器看的。规定*号后面的参数，能且只能用key=value的方式传入
+
+def func(a, b, *, c=3, d=4):
+    print("a:", a)
+    print("b:", b)
+    print("c:", c)
+    print("d:", d)
+
+
+if __name__ == '__main__':
+    func(1, 2, c=3, d=4)
+
+# 输出:
+# a: 1
+# b: 2
+# c: 3
+# d: 4
+
+
+"""
+在 Python 中，可以使用 * 操作符将一个列表（list）中的元素作为可变位置参数传递给函数。这个操作符的使用方式是在列表前面加上 *，例如 func(*my_list)。
+
+下面是一个简单的示例，演示了如何将一个列表传入 *args 中：
+
+
+在这个示例中，my_list 是一个包含整数的列表，我们希望将它作为位置参数传递给 my_function。通过使用 * 操作符，我们可以将列表中的元素拆分开来，作为多个位置参数传递给 my_function。
+
+当然，这里要注意的是，*args 只是一种约定俗成的写法，你也可以使用其他名字，比如 *values、*items 等，只要在定义函数时加上 * 即可。
+"""
+
+
+def my_function(*args):
+    print(*args, sep=',', end='.\n')
+
+
+my_list = [*range(0, 6)]
+
+my_function(my_list)  # [0, 1, 2, 3, 4, 5].
+my_function(*my_list)  # 0,1,2,3,4,5.
+
+# builtin 内建函数
+
+# filter() 该函数返回的是一个generator  <filter object at 0x104d13fd0>
+f = filter(lambda x: x > 5, range(10))
+print(*f)
+
+# map() <map object at 0x105543d00>
+m = map(lambda x: x * 2, range(5))
+print(m)  # <map object at 0x105543d00>
+print(*m)  # 0 2 4 6 8
+
+#  map对两个list做映射
+mm = map(lambda x, y: x + y, range(5), range(5, 10))
+print(*mm)  # 5 7 9 11 13
+
+# zip() 将多个列表合并成为一个tuple
+z = zip(range(0, 5), 'abcde', range(5, 10))
+print(*z)  # (0, 'a', 5) (1, 'b', 6) (2, 'c', 7) (3, 'd', 8) (4, 'e', 9)
+
+# dict() 转换成字典
+print(dict(a='a', b='b'))  # {'a': 'a', 'b': 'b'}
+print(dict(zip(range(0, 5), 'abcde')))  # {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e'}

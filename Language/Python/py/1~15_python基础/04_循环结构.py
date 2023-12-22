@@ -1,4 +1,5 @@
 # 数组求和
+
 count_sum = 0
 for x in [1, 2, 3]:
     count_sum += x
@@ -40,3 +41,27 @@ for x in range(90, 100, 2):
 #     print()
 #     start += 2
 #     space -= 1
+
+# 列表推导式 list expression
+print([x for x in range(0, 10)])  # output [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# 生成器表达式 generator
+print((x for x in range(0, 10)))  # output <generator object <genexpr> at 0x1043d4110>
+
+# 这里是个语法糖
+print(x for x in range(0, 10))
+
+# 列表推导式使用
+lst = [*range(0, 10)]
+print(lst)  # 两种打印结果相同 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+lst = [x for x in range(0, 10)]
+print(lst)  # 两种打印结果相同 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# 过滤出lst中大于5的数字
+print([x for x in lst if x > 5])  # output [6, 7, 8, 9]
+
+# 还可以使用 builtin 函数 filter(),该函数返回的是一个generator
+f = filter(lambda x: x > 5, lst)
+print(f)  # <filter object at 0x104d13fd0>
+print(*f)  # 6 7 8 9
