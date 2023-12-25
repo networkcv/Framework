@@ -56,6 +56,8 @@ async def main():
 
 asyncio.run(main())
 
+print("4.asyncio.TaskGroup 类提供了 create_task() 的更现代化的替代")
+
 
 # 4.asyncio.TaskGroup 类提供了 create_task() 的更现代化的替代。 使用此 API，之前的例子将变为:
 async def main():
@@ -71,3 +73,19 @@ async def main():
     # The await is implicit when the context manager exits.
 
     print(f"finished at {time.strftime('%X')}")
+
+
+asyncio.run(main())
+
+
+# await 后边跟的是 可等待对象有三种主要类型: 协程, 任务 和 Future.
+
+async def fun2():
+    print(42)
+
+
+async def fun1():
+    task = asyncio.create_task(fun2())
+
+
+asyncio.run(fun1())
