@@ -1,4 +1,7 @@
 import asyncio
+import time
+
+from util import times
 
 
 # 1. 普通函数 FunctionType
@@ -81,3 +84,63 @@ a中一步有await，当程序碰到关键字await b后；
 如果await后面跟的b函数不是异步函数，那么操作就只能等b执行完再返回，无法在b执行的过程中返回，这样就相当于直接调用b函数，没必要使用await关键字了。
 因此，需要await后面跟的是异步函数
 """
+
+
+async def coroutine_fun(time):
+    # 这里方便调用，使用了异步的sleep方法。正常情况下，这里可以是异步的网络io，比如使用aiohttp包发出的http请求
+    await asyncio.sleep(time)
+    return time
+
+
+async def main():
+    """
+    将一个coroutine协程对象包装成一个task，coroutine只有变成task才会被执行，
+    当然很多时候python会自动帮忙进行转换，比如await coroutine的时候和gather coroutine的时候
+    """
+    task1 = asyncio.create_task(coroutine_fun(1))
+    task2 = asyncio.create_task(coroutine_fun(2))
+
+    print(times.cur_ft_time())
+    time.sleep(3)
+    print(times.cur_ft_time())
+    # 方式一：
+    # 在进行await的时候 才会把线程的控制权交给 eventloop,交给eventloop的时候才会分配执行具体的协程任务，
+    # 当eventloop开始调度task时，只有当task中遇到await操作显示的交还控制权，或者task执行完成交还控制权。
+    # await 等待的可以是 coroutine、task、future
+    task1_res = await task1
+    task2_res = await task2
+    print(f'task1_res:{task1_res}')
+    print(f'task2_res:{task2_res}')
+    print(times.cur_ft_time())
+    """
+    output
+    2024-01-09 17:25:26 
+    2024-01-09 17:25:29
+    task1_res:1
+    task2_res:2
+    2024-01-09 17:25:31
+    """
+    # 方式二：
+    future = asyncio.gather(task1, task2)
+    # 在await的时候，相当于等待future里边的两个task都完成才返回，同时会把多个task的返回结果包装到list中返回
+    task_future_res = await future
+    print(task_future_res)
+    print(times.cur_ft_time())
+    """
+    2024-01-09 17:27:46
+    2024-01-09 17:27:49
+    task1_res:1
+    task2_res:2
+    2024-01-09 17:27:51
+    [1, 2]
+    2024-01-09 17:27:51 这里可以看到，一个task执行完成后，下次await就可以直接获取结果了
+    """
+
+    # 方式三：
+    # 是方式二的一个改进，gather可以帮我们把coroutine对象转换为task
+    future2 = asyncio.gather(coroutine_fun(0.1), coroutine_fun(0.2))
+    print(await future2)
+
+
+# 这个方法通常作为一个协程处理程序的开始
+asyncio.run(main())
