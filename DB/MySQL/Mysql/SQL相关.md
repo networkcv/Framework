@@ -70,6 +70,29 @@ select u.name ,u.uid ,r.rtid ,r.sleep_avg_heartrate heartrate ,r.sleep_avg_breat
 
 
 
+### Left join  多个表
+
+在 SQL 中，可以通过 `LEFT JOIN` 来连接多个表。假设有三个表 A、B、C，它们之间的关系如下：
+
+```
+复制代码A (a_id, a_name)
+B (b_id, b_name, a_id)
+C (c_id, c_name, b_id)
+```
+
+其中 B 表和 C 表都有一个外键与 A 表关联，现在要查询 A 表中的所有记录以及与其关联的 B 表和 C 表的数据，可以使用如下语句：
+
+```
+sql复制代码SELECT A.*, B.*, C.*
+FROM A
+LEFT JOIN B ON A.a_id = B.a_id
+LEFT JOIN C ON B.b_id = C.b_id;
+```
+
+这条 SQL 语句使用了两次 `LEFT JOIN`，首先将 A 表和 B 表连接起来，然后再将 B 表和 C 表连接起来。这样就可以得到 A 表、B 表和 C 表的所有记录，其中 A 表的记录会在 B 表和 C 表之前显示出来。
+
+需要注意的是，如果在 `LEFT JOIN` 中涉及到了多个表，那么连接的顺序会影响查询结果。在上述例子中，先将 A 表和 B 表连接再将 B 表和 C 表连接会得到不同于先将 B 表和 C 表连接再将 A 表和 B 表连接的结果。因此，在编写含有多个表的 SQL 查询语句时，需要仔细考虑连接的顺序。
+
 ## 从主表复制数据到副表
 
 ```mysql

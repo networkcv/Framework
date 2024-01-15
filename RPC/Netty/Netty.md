@@ -1,4 +1,4 @@
-## 为什么Netty使用NIO而不是AIO？**
+## 为什么Netty使用NIO而不是AIO？
 
 1. Netty不看重Windows上的使用，在Linux系统上，AIO的底层实现仍使用EPOLL，没有很好实现AIO，因此在性能上没有明显的优势，而且被JDK封装了一层不容易深度优化
 2. Netty整体架构是reactor模型, 而AIO是proactor模型, 混合在一起会非常混乱,把AIO也改造成reactor模型看起来是把epoll绕个弯又绕回来

@@ -94,8 +94,7 @@ async def coroutine_fun(time):
 
 async def main():
     """
-    将一个coroutine协程对象包装成一个task，coroutine只有变成task才会被执行，
-    当然很多时候python会自动帮忙进行转换，比如await coroutine的时候和gather coroutine的时候
+    将一个coroutine协程对象包装成一个task，当然coroutine对象也可以直接执行
     """
     task1 = asyncio.create_task(coroutine_fun(1))
     task2 = asyncio.create_task(coroutine_fun(2))
