@@ -11,6 +11,7 @@
     <modules>
         <module>netty-nio</module>
         <module>netty-demo</module>
+        <module>netty-source-study</module>
     </modules>
 
     <properties>
