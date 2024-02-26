@@ -8,17 +8,17 @@ import java.util.concurrent.TimeUnit;
 public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("channelActive");
+        System.out.println("ServerChannelActive");
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) {
-        System.out.println("channelRegistered");
+        System.out.println("ServerChannelRegistered");
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        System.out.println("handlerAdded");
+        System.out.println("ServerHandlerAdded");
     }
 
     @Override

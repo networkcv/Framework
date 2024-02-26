@@ -80,10 +80,10 @@ public class NioClient {
 
 一个Channel在Selector注册其代表的是一个`SelectionKey`事件，`SelectionKey`的类型包括：
 
-- `OP_READ`：可读事件；值为：`1<<0`
-- `OP_WRITE`：可写事件；值为：`1<<2`
-- `OP_CONNECT`：客户端连接服务端的事件(tcp连接)，一般为创建`SocketChannel`客户端channel；值为：`1<<3`
-- `OP_ACCEPT`：服务端接收客户端连接的事件，一般为创建`ServerSocketChannel`服务端channel；值为：`1<<4`
+- `OP_READ`：可读事件；值为：`1<<0`  1
+- `OP_WRITE`：可写事件；值为：`1<<2` 2
+- `OP_CONNECT`：客户端连接服务端的事件(tcp连接)，一般为创建`SocketChannel`客户端channel；值为：`1<<3` 8
+- `OP_ACCEPT`：服务端接收客户端连接的事件，一般为创建`ServerSocketChannel`服务端channel；值为：`1<<4` 16
 
 一个Selector内部维护了三组keys：
 
@@ -121,6 +121,8 @@ Pipeline  对应 获取数据流后的处理逻辑流程，在创建 Channel 的
 ChannelHandler 对应 获取数据流后的处理逻辑 
 
 # 一、Netty服务端启动
+
+## Netty Server端代码
 
 ```java
  ServerBootstrap b = new ServerBootstrap();
@@ -1017,7 +1019,7 @@ private static void doBind0(
 
 <img src="img/Netty源码学习/image-20240208165615336.png" alt="image-20240208165615336" style="zoom:50%;" />
 
-## 检测新连接
+## 检测新连接（BossGroup的EventLoop线程
 
 <img src="img/Netty源码学习/image-20240208170535642.png" alt="image-20240208170535642" style="zoom:50%;" />
 
@@ -1052,46 +1054,13 @@ private static void doBind0(
             } catch (Throwable t) {
                 exception = t;
             }
-
-            int size = readBuf.size();
-            for (int i = 0; i < size; i ++) {
-                readPending = false;
-                pipeline.fireChannelRead(readBuf.get(i));
-            }
-            readBuf.clear();
-            allocHandle.readComplete();
-            pipeline.fireChannelReadComplete();
-
-            if (exception != null) {
-                closed = closeOnReadError(exception);
-
-                pipeline.fireExceptionCaught(exception);
-            }
-
-            if (closed) {
-                inputShutdown = true;
-                if (isOpen()) {
-                    close(voidPromise());
-                }
-            }
-        } finally {
-            // Check if there is a readPending which was not processed yet.
-            // This could be for two reasons:
-            // * The user called Channel.read() or ChannelHandlerContext.read() in channelRead(...) method
-            // * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method
-            //
-            // See https://github.com/netty/netty/issues/2254
-            if (!readPending && !config.isAutoRead()) {
-                removeReadOp();
-            }
-        }
-    }
+			//	...
 }
 ```
 
 NioServerSocketChannel 和 NioSocketChannel 是netty封装
 
-ServerSocketChannel 和 SocketChannel JDK底层nio的包	
+ServerSocketChannel 和 SocketChannel JDK底层nio的类
 
 ```java
 //io.netty.channel.socket.nio.NioServerSocketChannel#doReadMessages
@@ -1124,12 +1093,270 @@ protected int doReadMessages(List<Object> buf) throws Exception {
 
 ## 创建NioSeocketChannel
 
+![image-20240208174656891](img/Netty源码学习/image-20240208174656891.png)
+
+```
+public NioSocketChannel(Channel parent, SocketChannel socket) {
+				//创建Netty封装的NioSocketChannel
+        super(parent, socket);
+        //构建 NioSocketChannelConfig 
+        config = new NioSocketChannelConfig(this, socket.socket());
+    }
+```
+
+在创建 NioSocketChannel 的时候会创建 unsafe 和 pipline，其中 unsafe 负责数据的读写，pipline 负责数据的业务处理逻辑链
+
+**SelectionKey的事件类型**
+
+```
+1 读事件
+public static final int OP_READ = 1 << 0;
+4 写事件
+public static final int OP_WRITE = 1 << 2;
+8 连接事件
+public static final int OP_CONNECT = 1 << 3;
+16 监听事件
+public static final int OP_ACCEPT = 1 << 4;
+```
+
+<img src="img/Netty源码学习/image-20240211110733679.png" alt="image-20240211110733679" style="zoom:50%;" />
+
+NioSocketChannel 的 read 是读取数据。
+
+NioServerSocketChannel 的read 是读取连接。
+
+![image-20240211110759936](img/Netty源码学习/image-20240211110759936.png)
+
 ## 分配线程及注册selector
+
+![image-20240211113515199](img/Netty源码学习/image-20240211113515199.png)
+
+服务端Channel 使用 ServerBootstrapAcceptor 给当前的客户端 Channel选择 NioEventLoop，并将Channel绑定到唯一的selector上。
+
+注册selector这部分和Netty服务端启动的注册逻辑类似
+
+将新的客户端 Channel 注册到 selector 上
+
+`pipeline.invokeHandlerAddedIfNeeded()` 其中最终会调用到 构建 childHandler 的 initChannel 方法。
+
+`pipeline.fireChannelActive()` 其中最终会调用到 构建 childHandler 的 channelActive 方法。
+
+```java
+//io.netty.channel.AbstractChannel.AbstractUnsafe#register0
+private void register0(ChannelPromise promise) {
+  try {
+      // check if the channel is still open as it could be closed in the mean time when the register
+      // call was outside of the eventLoop
+      if (!promise.setUncancellable() || !ensureOpen(promise)) {
+          return;
+      }
+      boolean firstRegistration = neverRegistered;
+      doRegister();
+      neverRegistered = false;
+      registered = true;
+
+      // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
+      // user may already fire events through the pipeline in the ChannelFutureListener.
+    	//会调用到 自定义childHandler 的 initChannel 方法
+      pipeline.invokeHandlerAddedIfNeeded();
+      safeSetSuccess(promise);
+      pipeline.fireChannelRegistered();
+      // Only fire a channelActive if the channel has never been registered. This prevents firing
+      // multiple channel actives if the channel is deregistered and re-registered.
+      if (isActive()) {
+          if (firstRegistration) {
+            	// 触发Channel的激活事件
+              pipeline.fireChannelActive();
+          } else if (config().isAutoRead()) {
+        // This channel was registered before and autoRead() is set. This means we need to begin read
+        // again so that we process inbound data.
+        //
+        // See https://github.com/netty/netty/issues/4805
+              beginRead();
+          }
+      }
+}
+```
 
 ## 向selector注册读事件
 
+在register0里调用 `pipeline.fireChannelActive();` 触发激活事件， channelActive 在传播Channel激活事件时，除了会传播active事件，还会自动注册一个读事件到selector上
+
+```java
+//io.netty.channel.DefaultChannelPipeline.HeadContext#channelActive
+@Override
+public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    ctx.fireChannelActive();
+		//这个是当channel注册到selector上后，再自动向selector注册一个读事件上去
+    readIfIsAutoRead();
+}
+```
+
 ## Netty新连接接入面试题
 
-Netty是在哪里检测有新连接接入的？
+**Netty是在哪里检测有新连接接入的？**
 
-新连接是怎样注册到NioEventLoop线程的？
+BossGroup 的 NioEventLoop 在run方法中轮训出 OP_ACCEPT 事件，然后通过JDK底层的 accept 方法来获取连接，再封装成NioSocketChannel。
+
+`io.netty.channel.MultithreadEventLoopGroup#register(io.netty.channel.Channel)`
+
+**新连接是怎样注册到NioEventLoop线程的？**
+
+BossGroup 的 NioEventLoop 线程通过调用 EventExecutorChooser 选择器的next方法，拿到一个 WorkGroup 的 NioEventLoop线程，然后将这条连接注册到 NioEventLoop 的Selector上去。
+
+# 四、Pipeline
+
+## pipeline 的初始化
+
+### pipelin 在创建 Channel 时被创建
+
+无论是客户端 Channel 还是 服务端 Channel 都会调用  AbstractChannel 的构造方法。实际创建的是  DefaultChannelPipeline 
+
+```java
+//io.netty.channel.AbstractChannel#AbstractChannel(io.netty.channel.Channel)
+protected AbstractChannel(Channel parent) {
+      this.parent = parent;
+      id = newId();
+      unsafe = newUnsafe();
+      pipeline = newChannelPipeline();
+}
+```
+
+```java
+//io.netty.channel.DefaultChannelPipeline#DefaultChannelPipeline
+protected DefaultChannelPipeline(Channel channel) {
+      this.channel = ObjectUtil.checkNotNull(channel, "channel");
+      succeededFuture = new SucceededChannelFuture(channel, null);
+      voidPromise =  new VoidChannelPromise(channel, true);
+
+      tail = new TailContext(this);
+      head = new HeadContext(this);
+
+      head.next = tail;
+      tail.prev = head;
+}
+```
+
+### pipeline 节点数据结果：ChannelHandlerContext
+
+在 pipeline 的构造函数中，维护了一个链表，每一个节点都是 ChannelHandlerContext，它实现了ChannelInboundInvoker（读、连接） 和ChannelOutboundInvoker（写）接口
+
+```java
+public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
+
+    Channel channel();
+
+    EventExecutor executor();
+
+    String name();
+
+    ChannelHandler handler();
+
+    @Override
+    ChannelHandlerContext fireChannelRegistered();
+    @Override
+    ChannelHandlerContext fireChannelUnregistered();
+    @Override
+    ChannelHandlerContext fireChannelActive();
+		//  ...
+}
+```
+
+ ChannelHandlerContext 的 handler 会返回一个 ChannelHandler，这个是真正执行的 handler。
+
+![TailContext](img/Netty源码学习/TailContext.png)
+
+### pipeline 的两个哨兵 head 和 tail
+
+headContext 虽然 ChannelOutboundHandler, ChannelInboundHandler 两个接口都实现了，但构造的时候设置的是 outBound，而且内部还持有了 unsafe 类用来操作底层读写
+
+![image-20240226165639591](img/Netty源码学习/image-20240226165639591.png)
+
+tailContext 是 inBound，它用来做最后的收尾处理
+
+![image-20240226165627678](img/Netty源码学习/image-20240226165627678.png)
+
+当 pipeline 中有异常没有捕获，到了 tailContext里，它会吞掉异常，不让程序中断，并且记录warn日志。
+
+```java
+//io.netty.channel.DefaultChannelPipeline.TailContext#exceptionCaught
+public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+      onUnhandledInboundException(cause);
+  }
+  
+//io.netty.channel.DefaultChannelPipeline#onUnhandledInboundException
+protected void onUnhandledInboundException(Throwable cause) {
+        try {
+        logger.warn(
+	        "An exceptionCaught() event was fired, and it reached at the tail of the pipeline. " +
+          "It usually means the last handler in the pipeline did not handle the exception.",
+                    cause);
+        } finally {
+            ReferenceCountUtil.release(cause);
+        }
+    }
+```
+
+
+
+## 添加删除 ChannelHandler
+
+### 添加 ChannelHandler
+
+```java
+//io.netty.channel.DefaultChannelPipeline#addLast
+public final ChannelPipeline addLast(EventExecutorGroup group, String name, ChannelHandler handler) {
+        final AbstractChannelHandlerContext newCtx;
+        synchronized (this) {
+	          //检查是否重复
+            checkMultiplicity(handler);
+
+            newCtx = newContext(group, filterName(name, handler), handler);
+
+            addLast0(newCtx);
+
+          // If the registered is false it means that the channel was not registered on an eventloop yet.
+          // In this case we add the context to the pipeline and add a task that will call
+          // ChannelHandler.handlerAdded(...) once the channel is registered.
+            if (!registered) {
+                newCtx.setAddPending();
+                callHandlerCallbackLater(newCtx, true);
+                return this;
+            }
+
+            EventExecutor executor = newCtx.executor();
+            if (!executor.inEventLoop()) {
+                newCtx.setAddPending();
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        callHandlerAdded0(newCtx);
+                    }
+                });
+                return this;
+            }
+        }
+        callHandlerAdded0(newCtx);
+        return this;
+    }
+```
+
+判断是否重复添加
+
+创建节点并添加至链表
+
+回调添加完成事件
+
+
+
+## 事件和异常的传播
+
+**Netty是如何判断 ChannelHandler 类型的？**
+
+inbound or  outbound
+
+**对于 ChannelHandler 的添加应该遵循什么样的顺序？**
+
+**用户手动触发事件传播，不同的触发方式有什么区别？**
+
+# 五、ByteBuf
