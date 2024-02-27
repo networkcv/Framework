@@ -1303,6 +1303,12 @@ protected void onUnhandledInboundException(Throwable cause) {
 
 ### 添加 ChannelHandler
 
+- 判断ChannelHandler是否重复添加
+
+- 将ChannelHandler包装成一个ChannelHandlerContext节点并添加至链表
+
+- 回调添加完成事件
+
 ```java
 //io.netty.channel.DefaultChannelPipeline#addLast
 public final ChannelPipeline addLast(EventExecutorGroup group, String name, ChannelHandler handler) {
@@ -1310,14 +1316,15 @@ public final ChannelPipeline addLast(EventExecutorGroup group, String name, Chan
         synchronized (this) {
 	          //检查是否重复
             checkMultiplicity(handler);
-
+						// filterName方法构建
             newCtx = newContext(group, filterName(name, handler), handler);
-
+						//向链表末尾追加ctx节点
             addLast0(newCtx);
 
           // If the registered is false it means that the channel was not registered on an eventloop yet.
           // In this case we add the context to the pipeline and add a task that will call
           // ChannelHandler.handlerAdded(...) once the channel is registered.
+//如果 registered 的注册状态是false的话，意味着当前channel还没注册到eventloop上，这种情况下，我们会添加这个					context节点到pipeline中，然后添加一个任务，当有channel被注册时会触发ChannelHandler.handlerAdded(...) 的回调方法
             if (!registered) {
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
@@ -1330,6 +1337,7 @@ public final ChannelPipeline addLast(EventExecutorGroup group, String name, Chan
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
+                      //
                         callHandlerAdded0(newCtx);
                     }
                 });
@@ -1341,11 +1349,64 @@ public final ChannelPipeline addLast(EventExecutorGroup group, String name, Chan
     }
 ```
 
-判断是否重复添加
+自定义的 ChildHandler，继承自 ChannelInitializer，通常是在 initChannel方法 中添加自定义的业务handler，而这个ChildHandler则会在调用 initChannel 后将自身从 pipeline 中移除。
 
-创建节点并添加至链表
+```java
+public class ChildHandler extends ChannelInitializer<SocketChannel> {
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+      	//一定要调用父类方法
+        super.handlerAdded(ctx);
+        System.out.println("ClientCandlerAdded");
+    }
 
-回调添加完成事件
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        System.out.println("ClientChannelActive");
+    }
+
+    @Override
+    public void initChannel(SocketChannel ch) {
+      //添加自定义的业务handler
+      ch.pipeline().addLast(new AuthHandler());
+      //..
+    }
+}
+```
+
+```java
+//io.netty.channel.ChannelInitializer#handlerAdded
+public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    if (ctx.channel().isRegistered()) {
+  // This should always be true with our current DefaultChannelPipeline implementation.
+  // The good thing about calling initChannel(...) in handlerAdded(...) is that there will be no ordering
+  // suprises if a ChannelInitializer will add another ChannelInitializer. This is as all handlers
+  // will be added in the expected order.
+      initChannel(ctx);
+    }
+}
+```
+
+```java
+//io.netty.channel.ChannelInitializer#initChannel(io.netty.channel.ChannelHandlerContext)
+private boolean initChannel(ChannelHandlerContext ctx) throws Exception {
+      if (initMap.putIfAbsent(ctx, Boolean.TRUE) == null) { // Guard against re-entrance.
+          try {
+            //调用 initChannel（）
+              initChannel((C) ctx.channel());
+          } catch (Throwable cause) {
+    // Explicitly call exceptionCaught(...) as we removed the handler before calling initChannel(...).
+    // We do so to prevent multiple calls to initChannel(...).
+              exceptionCaught(ctx, cause);
+          } finally {
+            //移除当前 ChildHandler
+              remove(ctx);
+          }
+          return true;
+      }
+      return false;
+  }
+```
 
 
 
