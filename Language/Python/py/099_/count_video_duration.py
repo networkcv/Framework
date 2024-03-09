@@ -2,7 +2,7 @@ from moviepy.editor import VideoFileClip
 import os
 
 # 指定视频文件所在的文件夹路径
-path="/Users/networkcavalry/Study/系分资料/视频/基础视频"
+path="/Users/networkcavalry/Study/系分资料/视频/a"
 
 total_duration = 0
 
