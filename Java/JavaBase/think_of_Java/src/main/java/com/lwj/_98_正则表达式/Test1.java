@@ -51,7 +51,7 @@ public class Test1 {
     }
 
     @Test
-    public void test3(){
+    public void test3() {
         Pattern pattern = Pattern.compile("(\\d??)(9*)");
         Matcher matcher = pattern.matcher("9999");
         System.out.println(matcher.matches());
@@ -62,7 +62,7 @@ public class Test1 {
     }
 
     @Test
-    public void test4(){
+    public void test4() {
         String s = "the quick brown fox jumps over the lazy dog.";
         Pattern p = Pattern.compile("\\wo\\w");
         Matcher m = p.matcher(s);
@@ -73,20 +73,20 @@ public class Test1 {
     }
 
     @Test
-    public void test5(){
-        HashMap<String,String> map =new HashMap<>();
-        map.put("field","name");
-        map.put("table","user");
-        String sql="select #{field} from #{table} order by id ";
+    public void test5() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("field", "name");
+        map.put("table", "user");
+        String sql = "select #{field} from #{table} order by id ";
         Pattern templateEngine = Pattern.compile("\\#\\{(\\w+)}");
         Matcher matcher = templateEngine.matcher(sql);
         StringBuffer res = new StringBuffer();
-        while(matcher.find()){
+        while (matcher.find()) {
             //用于截取获得 "#{field}" 中的 field
-            String key=sql.substring(matcher.start() + 2, matcher.end() - 1);   //field
+            String key = sql.substring(matcher.start() + 2, matcher.end() - 1);   //field
             //这里第一次find到的内容是 "select #{field}"，appendReplacement方法将 #{field} 替换为map.get(key)的内容
             //然后将结果 "select name" 添加到res中
-            matcher.appendReplacement(res,map.get(key));
+            matcher.appendReplacement(res, map.get(key));
         }
         matcher.appendTail(res);
         System.out.println(res.toString());
