@@ -21,4 +21,4 @@ for file_name in os.listdir(path):
         except Exception as e:
             print(f"Error processing {file_name}: {e}")
 
-print(f"Total duration of all videos in the folder: {round(total_duration/60/60,0)} hour")
+print(f"Total duration of all videos in the folder: {round(total_duration/60/60,2)} hour")
