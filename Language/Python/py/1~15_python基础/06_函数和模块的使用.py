@@ -58,16 +58,16 @@ lambda 是关键字，表示定义匿名函数
 fun3(lambda **x: print(f'匿名函数 and 执行逻辑{x}'))
 
 # 后导入的包会覆盖前边的，从哪里导入什么
-from _06.model1 import foo
+from code._06.model1 import foo
 
 foo()
 
-from _06.model2 import foo
+from code._06.model2 import foo
 
 foo()
 
-import _06.model1 as m1
-import _06.model2 as m2
+import code._06.model1 as m1
+import code._06.model2 as m2
 
 m1.foo()
 m2.foo()

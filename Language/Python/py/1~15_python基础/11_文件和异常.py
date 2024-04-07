@@ -16,7 +16,7 @@ import json
 
 """
 
-f = open("_011/a.txt")
+f = open("code/_011/a.txt")
 # 对于同一个文件的读取，会记录上次读取的位置
 print(f.read().count('aa'))
 
@@ -24,11 +24,11 @@ print(f.read().count('aa'))
 # f = open("_011/a.txt", 'w', encoding='utf-8')
 # print(f.readline())
 
-f = open("_011/a.txt")
+f = open("code/_011/a.txt")
 # 读取所有文件内容到列表里，会把换行符号读取到
 print(f.readlines())
 
-f = open("_011/b.txt", "w")
+f = open("code/_011/b.txt", "w")
 f.write("a")
 f.flush()
 
@@ -50,10 +50,10 @@ finally:
 
 # 以二进制模式读取图片，并复制
 try:
-    with open('_011/car2.jpg', 'rb') as fr:
+    with open('code/_011/car2.jpg', 'rb') as fr:
         data = fr.read()
         # print(data)
-    with open('_011/car2.jpg', 'wb') as fw:
+    with open('code/_011/car2.jpg', 'wb') as fw:
         fw.write(data)
 except FileNotFoundError as e:
 
@@ -96,7 +96,7 @@ mydict = {
     ]
 }
 try:
-    with open('_011/data.json', 'w', encoding='utf-8') as fs:
+    with open('code/_011/data.json', 'w', encoding='utf-8') as fs:
         #  ensure_ascii=False，默认是true这个参数会让生成的文件中的汉字不以ascii码展示，不然中文会展示为 \u767d\u5143\u82b3 这样的utf-8编码方式
         # json.dump(mydict, fs)
         json.dump(mydict, fs, ensure_ascii=False)

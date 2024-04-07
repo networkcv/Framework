@@ -2,6 +2,14 @@
 
 ## vim
 
+/ 搜索  n 是下一个， N 是上一个。
+
+:set number 开启行号
+
+:数字 快速跳转行号
+
+CTRL + END 跳到最后
+
 - **Ctrl + A**：将光标移到命令行或文本行的开头（A 表示 "Beginning"，即移动到行首）。
 - **Ctrl + E**：将光标移到命令行或文本行的末尾（E 表示 "End"，即移动到行尾）。
 - **Ctrl + F**：向前移动一个字符（F 表示 "Forward"，即向前移动）。
@@ -130,3 +138,106 @@ nc -vz -w 2 192.168.1.104 3306
 
 
 
+## sftp
+
+https://zhuanlan.zhihu.com/p/51749905
+
+1）连接远程服务器
+
+```text
+sftp remote_user@remote_host
+```
+
+2）使用端口进行连接
+
+```text
+sftp -P remote_port remote_user@remote_host
+```
+
+3）从远程服务器拉取文件
+
+```text
+get /path/remote_file
+```
+
+4）上传本地文件到服务器
+
+```text
+put local_file
+```
+
+5）查看远程服务器目录内容
+
+```text
+ls
+```
+
+6）查看本地目录内容
+
+```text
+lls
+```
+
+7）执行本地 Shell 命令
+
+```text
+![command]
+```
+
+
+
+## scp
+
+复制文件到服务器 
+
+```bash
+scp /Users/networkcavalry/Documents/IDEAProjects/article-center/target/article-center-1.0-SNAPSHOT.jar   root@47.97.244.231:/root
+```
+
+
+
+## find
+
+查找命令
+
+```bash
+find / -name my.cnf
+```
+
+
+
+## lsof
+
+Linux 查看端口占用情况可以使用 **lsof** 和 **netstat** 命令。
+
+lsof(list open files)是一个列出当前系统打开文件的工具。
+
+```bash
+lsof -i:端口号
+```
+
+
+
+## chmod
+
+https://www.runoob.com/linux/linux-comm-chmod.html
+
+Linux chmod（英文全拼：change mode）命令是控制用户对文件的权限的命令
+
+Linux/Unix 的文件调用权限分为三级 : 文件所有者（Owner）、用户组（Group）、其它用户（Other Users）。
+
+<img src="img/Linux命令/file-permissions-rwx.jpg" alt="img" style="zoom:33%;" />
+
+只有文件所有者和超级用户可以修改文件或目录的权限。可以使用绝对模式（八进制数字模式），符号模式指定文件的权限。
+
+<img src="img/Linux命令/rwx-standard-unix-permission-bits.png" alt="img" style="zoom: 90%;" />
+
+| 7    | 读 + 写 + 执行 | rwx  | 111  |
+| ---- | -------------- | ---- | ---- |
+| 6    | 读 + 写        | rw-  | 110  |
+| 5    | 读 + 执行      | r-x  | 101  |
+| 4    | 只读           | r--  | 100  |
+| 3    | 写 + 执行      | -wx  | 011  |
+| 2    | 只写           | -w-  | 010  |
+| 1    | 只执行         | --x  | 001  |
+| 0    | 无             | ---  | 000  |
