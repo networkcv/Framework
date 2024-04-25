@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 requests = "*"
 moviepy = "*"
+replit = "*"
+bs4 = "*"
+nltk = "*"
 
 [dev-packages]
 
