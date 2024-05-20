@@ -163,7 +163,7 @@ public List<Integer> primeFactors(int number) {
 |         `[m <arg>]` | 指定 Class 最大匹配数量，默认值为 50。长格式为`[maxMatch <arg>]`。 |
 
 ```java
-watch demo.MathGame funName {params,target,returnObj} -x
+watch demo.MathGame funName {params,target,returnObj} -x 1
 watch demo.MathGame funName {params,target,returnObj} -x 
 ```
 
