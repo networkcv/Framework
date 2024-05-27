@@ -76,6 +76,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+
 class ThreeU1WK4 {
     public static void main(String[] args) {
         Solution solution = new ThreeU1WK4().new Solution();

@@ -26,6 +26,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
+
 class ErChaShuDeJingXiangLcof {
     public static void main(String[] args) {
         Solution solution = new ErChaShuDeJingXiangLcof().new Solution();

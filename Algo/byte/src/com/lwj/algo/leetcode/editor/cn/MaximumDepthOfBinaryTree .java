@@ -18,6 +18,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
+
 class MaximumDepthOfBinaryTree {
     public static void main(String[] args) {
         Solution solution = new MaximumDepthOfBinaryTree().new Solution();

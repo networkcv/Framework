@@ -1,7 +1,5 @@
 package com.lwj.algo.leetcode.editor.cn.utils;
 
-import com.lwj.algo.leetcode.editor.cn.TreeNode;
-
 import java.util.*;
 
 /**

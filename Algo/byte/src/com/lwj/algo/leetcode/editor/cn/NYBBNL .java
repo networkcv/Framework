@@ -38,6 +38,7 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
 import com.lwj.algo.leetcode.editor.cn.utils.TreeNodeUtil;
 
 class NYBBNL {

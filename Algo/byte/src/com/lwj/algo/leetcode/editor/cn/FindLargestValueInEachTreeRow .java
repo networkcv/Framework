@@ -34,7 +34,7 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
-import jdk.jfr.Frequency;
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

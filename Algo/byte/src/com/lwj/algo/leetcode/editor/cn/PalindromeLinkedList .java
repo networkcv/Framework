@@ -33,6 +33,7 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
 import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
 
 class PalindromeLinkedList {

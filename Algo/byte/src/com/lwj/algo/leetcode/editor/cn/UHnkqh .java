@@ -48,6 +48,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+
 class UHnkqh {
     public static void main(String[] args) {
         Solution solution = new UHnkqh().new Solution();

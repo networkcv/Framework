@@ -62,6 +62,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+
 class C32eOV {
     public static void main(String[] args) {
         Solution solution = new C32eOV().new Solution();

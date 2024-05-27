@@ -35,6 +35,8 @@
 
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+
 class ReverseLinkedListIi {
     public static void main(String[] args) {
         Solution solution = new ReverseLinkedListIi().new Solution();

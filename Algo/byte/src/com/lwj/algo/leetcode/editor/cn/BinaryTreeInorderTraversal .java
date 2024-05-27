@@ -40,6 +40,8 @@
   
 package com.lwj.algo.leetcode.editor.cn;
 
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
