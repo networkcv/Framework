@@ -29,8 +29,8 @@ import os
 
 # 7. listdir(): 获取某个文件夹下所有文件，返回一个列表
 # print(os.listdir())
-# print(os.listdir('aa'))
+print(os.listdir('resource'))
 
 # 8. rename() -- 重命名文件夹  bb重命名为bbbb
-os.rename('bb', 'resource/bbbb')
+# os.rename('bb', 'resource/bbbb')
 

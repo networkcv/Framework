@@ -9,6 +9,7 @@ moviepy = "*"
 replit = "*"
 bs4 = "*"
 nltk = "*"
+chardet = "*"
 
 [dev-packages]
 

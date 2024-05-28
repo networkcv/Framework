@@ -18,9 +18,9 @@ def test1(a):
 
 
 b = 100
+print(id(b))
 test1(b)
 
-
 c = [11, 22]
+print(id(c))
 test1(c)
-
