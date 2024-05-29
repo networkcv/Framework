@@ -58,6 +58,7 @@ class Prentice(School):
 
 
 daqiu = Prentice()
+print(Prentice.mro())
+print(Prentice.__mro__)
 
 daqiu.make_old_cake()
-

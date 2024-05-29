@@ -17,7 +17,7 @@ class School(object):
 
 
 # 2. 定义徒弟类，继承师父类 和 学校类， 添加和父类同名的属性和方法
-class Prentice(School, Master):
+class Prentice(Master, School):
     def __init__(self):
         self.kongfu = '[独创煎饼果子技术]'
 
@@ -47,8 +47,3 @@ xiaoqiu.make_cake()
 xiaoqiu.make_master_cake()
 
 xiaoqiu.make_school_cake()
-
-
-
-
-

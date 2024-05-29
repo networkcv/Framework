@@ -19,11 +19,13 @@ class School(object):
 # 2. 定义徒弟类，继承师父类 和 学校类， 添加和父类同名的属性和方法
 class Prentice(School, Master):
     def __init__(self):
+        School.__init__(self)
+        Master.__init__(self)
         self.kongfu = '[独创煎饼果子技术]'
 
     def make_cake(self):
         # 加自己的初始化的原因：如果不加这个自己的初始化，kongfu属性值是上一次调用的init内的kongfu属性值
-        self.__init__()
+        # self.__init__()
         print(f'运用{self.kongfu}制作煎饼果子')
 
     # 子类调用父类的同名方法和属性：把父类的同名属性和方法再次封装
@@ -47,5 +49,3 @@ daqiu.make_master_cake()
 daqiu.make_school_cake()
 
 daqiu.make_cake()
-
-
