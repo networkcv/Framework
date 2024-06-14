@@ -85,3 +85,7 @@ print([x for x in lst if x > 5])  # output [6, 7, 8, 9]
 f = filter(lambda x: x > 5, lst)
 print(f)  # <filter object at 0x104d13fd0>
 print(*f)  # 6 7 8 9
+
+list_=[(1,'a'),(2,'b'),(3,'c'),(4,'d')]
+for num,name in list_:
+    print(f'{num} {name}')
