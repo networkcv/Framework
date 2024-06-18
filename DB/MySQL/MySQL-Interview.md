@@ -126,6 +126,68 @@ select * from t force index(a) where a between 10000 and 20000;
 
 ## 一条insert语句执行过程
 
+## 一条Select语句执行过程
+
+、典型SELECT语句完整的执行顺序
+1）from子句组装来自不同数据源的数据；
+2）使用on进行join连接的数据筛选
+3）where子句基于指定的条件对记录行进行筛选；
+4）group by子句将数据划分为多个分组；
+5）cube， rollup
+6）使用聚集函数进行计算；
+7）使用having子句筛选分组；
+8）计算所有的表达式；
+9）计算select的字段；
+10）使用distinct 进行数据去重
+11）使用order by对结果集进行排序。
+12）选择TOPN的数据
+
+二、from
+如果是采用的 关联 from tableA, tableB ，这2个表会先组织进行笛卡尔积，然后在进行下面的 where、group by 等操作。
+
+三、on
+如果使用left join， inner join 或者 outer full join的时候，使用on 进行条件筛选后，在进行join。
+
+看下面的2个sql 和结果。2者的区别仅仅是在on后面的一个语句在on和where位置的不同。 由此可以看出是先通过on 进行条件筛选，然后在join，最后在进行where条件筛选。
+假如：是先进行join，在进行on的话，会产生一个笛卡尔积，然后在筛选。这样的left join 和 直连接 没有任何的区别。 所以肯定是先on 条件筛选后，在进行join。
+
+假如：是在进行where 后，在on，在进行join， 下面2个sql的返回结果应该是一样的。由此可以见，where是针对 join 后的集合进行的筛选。
+
+综上： 先 执行on 条件筛选， 在进行join， 最后进行where 筛选
+
+SELECT DISTINCT a.domain , b.domain
+FROM mal_nxdomains_raw a
+LEFT JOIN mal_nxdomains_detail b ON a.domain = b.domain AND b.date = ‘20160403’
+WHERE a.date = ‘20160403’
+
+SELECT DISTINCT a.domain , b.domain
+FROM mal_nxdomains_raw a
+LEFT JOIN mal_nxdomains_detail b ON a.domain = b.domain #and b.date = ‘20160403’
+WHERE a.date = ‘20160403’
+AND b.date = ‘20160403’
+
+
+四、on 条件与where 条件
+1、使用位置
+on 条件位置在join后面
+
+where 条件在join 与on完成的后面
+
+2、使用对象
+on 的使用对象是被关联表
+
+where的使用对象可以是主表，也可以是关联表
+
+3、选择与使用
+主表条件筛选：只能在where后面使用。
+被关联表，如果是想缩小join范围，可以放置到on后面。如果是关联后再查询，可以放置到where 后面。
+
+如果left join 中，where条件有对被关联表的 关联字段的 非空查询，与使用inner join的效果后，在进行where 筛选的效果是一样的。不能起到left join的作用。
+
+五、join 流程
+tableA join tableB， 从A表中拿出一条数据，到B表中进行扫描匹配。所以A的行数决定查询次数，B表的行数决定扫描范围。例如A表100条，B表200表，需要100次从A表中取出一条数据到B表中进行200次的比对。相对来说从A表取数据消耗的资源比较多。所以尽量tableA选择比较小的表。同时缩小B表的查询范围。
+但是实际应用中，因为二者返回的数据结果不同，使用的索引也不同，导致条件放置在on 和 where 效率是不一定谁更好。要根据需求来确定。
+
 
 
 # redolog 和 binlog

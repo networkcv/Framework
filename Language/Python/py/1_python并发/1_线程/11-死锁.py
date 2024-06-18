@@ -1,7 +1,6 @@
 # 死锁: 一直等待对方释放锁的情景叫做死锁
 import threading
 
-
 # 创建互斥锁
 lock = threading.Lock()
 
@@ -16,7 +15,7 @@ def get_value(index):
         print("下标越界:", index)
         # 取值不成功，也需要释放互斥锁，不要影响后面的线程去取值
         # 锁需要在合适的地方进行释放，防止死锁
-        lock.release()
+        # lock.release()
         return
 
     # 根据下标取值
