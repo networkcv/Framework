@@ -59,5 +59,44 @@ python 除了支持进程、线程，还支持协程（使用asyncio），这种
 
 
 
+# 商城项目实战
+
+前后端不分离的开发模式，有助于SEO
+
+后端框架采用 Django + Jinja2模版引擎，整体由后端完成渲染。
+
+前端框架采用 Vue.js，局部部分由前端完成渲染。
+
+
+
+## 项目整体架构
+
+![img](img/py/18项目架构设计.png)
+
+
+
+- Uwsgi 服务器类似于 Tomcat Web服务器
+- Celery 类似于Java 的 Quartz
+
+## Django
+
+创建Django项目
+
+```django
+django-admin startproject mall
+```
+
+切换到 manage.py 目录下启动项目
+
+```python
+ python manage.py runserver
+```
+
+
+
+
+
+
+
 
 
