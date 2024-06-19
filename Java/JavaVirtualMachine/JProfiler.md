@@ -66,3 +66,10 @@ Call tree 通过树形图清晰地展现了方法间的层次调用关系。同�
 - `aliyun-log-producer-0-failure-batch-handler`用于处理发送失败的 batch。由于没有数据发送失败，它一直处于等待状态。
 
 通过上述分析可知，这些线程的状态特征都是符合预期的。
+
+
+
+
+
+
+
