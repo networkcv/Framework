@@ -4,14 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requests = "*"
-moviepy = "*"
-replit = "*"
-bs4 = "*"
-nltk = "*"
-chardet = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.12.2"
+python_version = "3.11"
