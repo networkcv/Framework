@@ -25,7 +25,7 @@ def travel_dir_get_viedo_count(cur_path):
             travel_dir_get_viedo_count(sub_path)
 
 
-path = "/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【01】商城项目1/第1节  商城项目准备"
+path = "/Users/networkcavalry/Study/Python/极客-Python进阶训练营第02期/06- 第06周：Django Web开发入门"
 
 travel_dir_get_viedo_count(path)
 print(f"Total duration of all videos in the folder: {round(total_duration / 60 / 60, 2)} hour")

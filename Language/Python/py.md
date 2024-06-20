@@ -93,6 +93,54 @@ python 除了支持进程、线程，还支持协程（使用asyncio），这种
 
 
 
+# Django
+
+## MTV框架模式
+
+![image-20240620125641214](img/py/image-20240620125641214.png)
+
+## DRY
+
+do not repeat yourself，强调快速开发和代码复用
+
+提供了丰富的组件：
+
+- ORM（对象关系映射）映射类来构建数据模型 
+- URL 支持正则表达式
+- 模板可继承
+
+- 内置用户认证，提供用户认证和权限功能 
+- admin 管理系统
+- 内置表单模型、Cache 缓存系统、国际化系统等
+
+## 版本
+
+建议使用稳定版本
+
+```python
+# 直接安装
+pip install django==2.2.13
+
+# 升级版本
+pip install --upgrade django==2.2.13
+
+# 查看Django版本号 
+pip list | grep Django     
+
+import django
+print(django.__version__)
+```
+
+
+
+## 环境搭建
+
+```python
+django-admin startproject mall
+
+python manage.py help     
+```
+
 
 
 # 商城项目实战
