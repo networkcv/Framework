@@ -1,3 +1,39 @@
+# python 虚拟环境
+
+为了避免污染系统环境下的python，在开发项目时，会在项目的根目录下使用python虚拟环境。
+
+## pipenv
+
+可以指定不同版本的python环境，可信文件通过 pipfile来管理。
+
+```python
+# pipenv 前置安装
+pip install pipenv 
+
+# 查看已经创建了的虚拟环境，可以在项目中复用虚拟环境，减少重复包的下载
+pipenv --venv 
+```
+
+```python
+# 在当前目录创建 python 3.8.8 的虚拟环境
+pipenv --python 3.8.8 
+
+# 激活虚拟环境，激活后 在当前目录下的 python 和 pip 命令都会指向虚拟环境中对应的命令
+pipenv shell 
+
+# 可以查看pip命令的指向
+which pip
+~/.local/share/virtualenvs/py-r_NpycGu/bin/pip
+
+# 可以像使用 pip 命令一样简单
+pip install requests 
+
+# 移除当前虚拟环境，但不会删除pipfile
+pipenv --rm
+```
+
+
+
 # 并发编程
 
 线程是真正被CPU调度的最小单位，进程是为线程提供资源的单位（同样也是资源分配的最小单位）。
