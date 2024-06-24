@@ -138,7 +138,14 @@ print(django.__version__)
 ```python
 django-admin startproject mall
 
-python manage.py help     
+python manage.py help    
+
+python manage.py startapp index
+
+python manage.py runserver 
+
+# 指的是服务器启动后会监听所有网络接口上的8888接口
+python manage.py runserver  0.0.0.0:8888 
 ```
 
 

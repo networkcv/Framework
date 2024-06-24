@@ -1,86 +1,239 @@
-### 垃圾回收机制
+# JVM源码
 
-​    寻找需要回收的对象，垃圾回收算法
-​        1.引用计数器
-​        2.引用可达法
-​    通用的分代垃圾回收机制：
-​        根据不同的生命周期将对象划分为 年轻代，年老代，持久代。
-​        JVM将堆内存划分为 Eden Survivor Tenured/Old空间
-​        年轻代在 Eden Survivor1 Survivor2   年老代在 Tenured/Old   持久代在方法区
-​    垃圾回收过程：
-​        1.新创建的对象，绝大多数都会存储在Eden中
-​        2.当Eden满了(达到一定比例)不能创建新对象，则触发垃圾回收，通过算法将无用对象清理掉
-​          然后剩余对象复制到某个Survivor，如Survivor1，同时清空Eden区
-​        3.当Eden再次满了，会对Survivor1进行清理，然后将剩余的对象存到另一个Survivor中，如Survivor2
-​          同时将Eden区中不能清空的对象，也复制到Survivor2中，保证Eden和Survivor1,均被清空
-​        4.重复多次（默认15次）Survivor中没有被清理的对象，则会复制到老年代Tenured/Old
-​        5.当Tenured/Old满了，则会触发一个一次完整地垃圾回收（FullGC），清理年轻代，老年代，成本较高，会对系统性能产生影响
+## 编译JDK
 
-### 开发中容易造成内存泄漏的地方：
+https://juejin.cn/post/6969389200416178213
 
-​    1.创建大量无用对象
-​    2.静态集合类的使用，静态集合类所包含的对象不能被释放
-​    3.各种连接对象(IO流对象，数据库连接对象，网络连接对象)未关闭
-​    4.释放对象时没有删除对应当监听器
+https://www.jianshu.com/p/ee7e9176632c
 
 
 
-### JVM内存划分
+https://developer.apple.com/download/all/?q=command
 
-java虚拟机内存可以分为三个区域：栈stack、堆heap、方法区method area
-    栈stack
-        1.jvm为每个线程创建一个栈，，栈中存放该线程执行方法的信息（实际参数、局部变量） 
-        2.是描述方法执行的内存模型，每个方法被调用都会创建一个栈帧（存储局部变量、操作数等）
-        3.所以栈是私有的，不同线程不能共享
-        4.存储特点是“先进后出，后进先出”
-        5.系统自动分配的连续内存空间，速度快
-    堆heap 
-        1.堆用于存储创建好的对象和数组（数组也是对象）
-        2.JVM只有一个堆，被所有线程共享
-        3.堆是一个不连续的内存空间，分配灵活，速度慢
-    方法区
-        1.JVM只有一个方法区，被所有线程共享
-        2.方法区实际也是堆，只是用于存储类，常量相关的信息
-        3.用于存放程序中永远不变或唯一的内容，（类信息[Class对象]，静态变量，字符串常量等）
+https://jdk.java.net/java-se-ri/22
 
-JVM启动的时候会根据当前线程在内存中创建一个栈，在内存中创建方法区并加载 字节码文件、静态变量、静态方法、字符串常量
-然后在静态方法中寻找main方法，开始程序的入口，并为main方法在栈中创建一个栈帧，存储局部变量、操作数、方法出口等
+```sh
+bash configure --with-debug-level=slowdebug --with-jvm-variants=server --enable-dtrace --disable-warnings-as-errors
+```
 
 
 
-### JVM核心机制
+```sh
+#第一次编译的话需要编译全量  
+make all
 
-​    类加载机制
-​        加载
-​            将class文件字节码内容加载到内存中，并将class文件中的静态数据结构转换成方法区中的运行时数据结构，就是在方法区生成一个运行时数据（方法区类数据）
-​            在堆中生成一个代表这个类的java.lang.Class对象，作为方法区类数据的唯一访问入口，
-​        链接
-​            验证
-​                确保加载的类信息符合JVM规范，没有安全方面的问题
-​            准备
-​                正式为类变量(static变量)分配内存并设置类变量初始值(这里的值是数据类型默认值)的阶段，这些内存都将在方法区中进行分配
-​            解析
-​                虚拟机常量池内的符号引用替换为直接引用的过程
-​        初始化
-​            初始化阶段是执行类构造器<clinit>()方法的过程，类构造器<clinit>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的
-​            当初始化一个类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化
-​            虚拟机会保证一个类的<clinit>()方法在多线程环境中被正确加锁和同步
-​            当访问一个java类的静态域时，只有真正声明这个域的类才会被初始化
+#也可以使用 compiledb
+compiledb make all
 
-### 动态编译
+#如修改了jdk后，增量的编译镜像
+make images
+```
 
-​    JavaCompiler       
-​    JavaCompiler compiler=ToolProvider.getSystem.javaCompiler();
-​    int result=compiler.run(null,null,null,sourceFile);
-​    第一个参数：为java编译器提供参数 为InputStream
-​    第二个参数：得到Java编译器输出的参数，为OutputStream
-​    第三个参数：接收编译器的错误信息，也是输出流
-​    第四个参数：可变参数，（是一个String数组）能传入一个或多个Java源文件
-​    返回值：0表示编译成功，非0表示编译失败
-字节码操作 Javassist
+## JVM 启动源码
+
+https://www.cnblogs.com/springmorning/p/17478964.html
 
 
 
-### 对象头大小
 
-Mark Word:标记位4字节,类似轻量级锁标记位,偏向锁标记位等。2. Class对象指针:4字节,指向对象对应class对象的内存地址。3,对象实际数据:对象所有成员变量。4,对齐对齐填充字节,按照8个字节填充。Integer占用内存大小, 4+4+4+4-16字节。****
+
+# 类加载器相关
+
+
+
+## 源码阅读工具
+
+source insight
+
+## HSDB
+
+HSDB 查看代理类class
+
+HSDB：HotSpot Debugger Jvm自带工具，用于查看JVM运行时的状态
+
+使用jhsdb时，保证作为attach目标的进程JDK版本和jhsdb所在的JDK版本一致
+
+```java
+jhsdb hsdb 
+```
+
+
+
+## Oop-Klass模型
+
+https://juejin.cn/post/6844904054561193992
+
+JVM参数：
+
+-XX:+TraceClassLoading	打印类的加载日志
+
+## 加载阶段
+
+对.class文件加载到内存进行解析后生成klass信息，这些元信息存储在方法区。然后在堆区生成运行时class对象，也就是InstanceMirrorKlass的实例，也就是通过反射获取的class对象。
+
+InstanceKlass 实例klass
+
+- InstanceMirrorKlass 描述java.lang.class的实例，镜像Klass
+- InstanceRefKlass 描述java.lang.ref.Reference的子类
+
+ArrayKlass 数组klass
+
+- TypeArrayKlass 基本类型数组对应的数据结构
+- ObjArrayKlass 引用类型数组对应的数据结构
+
+
+
+Klass中定义的静态属性也会保留在堆区
+
+
+
+## 连接阶段（验证-准备-解析）
+
+**验证**
+
+1、文件格式验证
+2、元数据验证
+3、 宇节码验证
+4、 符号引用验证
+
+**准备**
+
+为class对象中的静态变量分配内存，赋初值，就是数据类型的默认值
+
+![image-20240621144244869](img/JVM/image-20240621144244869.png)
+
+个人理解：因为我们的代码中可以只声明静态变量而不赋值，所以在class对象中需要提前把变量定义好，如果准备阶段不对静态属性赋值，后边jvm运行阶段中的class对象中则没有这个字段了。 
+
+如果被fina/修饰，在编译的时候会给属性添加ConstantValue属性，准备阶段直接完成赋值，即没有初始化这一步
+
+**解析**
+
+类被加载后不一定会立马进行解析和初始化。初始化的时候会去检查是否完成解析。 
+
+符号引用转换为直接引用，因为在加载阶段
+
+符号引用：静态常量池的索引，此时还是类的全限定描述
+
+<img src="img/JVM/image-20240621231104703.png" alt="image-20240621231104703" style="zoom: 33%;" /><img src="img/JVM/image-20240621231132730.png" alt="image-20240621231132730" style="zoom: 33%;" />
+
+
+
+直接引用：内存地址，可以看到下图中索引为3的常量就指向了一个内存地址值，这个就是指向类的class对象
+
+![image-20240621231014542](img/JVM/image-20240621231014542.png)
+
+常量池：
+
+- 静态常量池
+- 运行时常量池（存在运行时常量池缓存）
+- 字符串常量池
+
+
+
+
+
+类或接口的解析
+
+字段解析
+
+类方法解析
+
+接口方法解析
+
+方法类型解析
+
+方法句柄解析
+
+调用点限定符解析
+
+
+
+## 初始化阶段
+
+通过执行\<clinit>方法，对静态变量、静态代码块进行初始化。
+
+如果只定义了静态变量但未赋值，也表示没有需要初始化的内容，不会生成\<clinit>方法。
+
+如果静态变量被final修饰，表示该变量的指向不会变化，那么直接可以在准备阶段完成赋值，在初始化阶段同样不会生成\<clinit>方法。
+
+一个字节码文件只有一个 \<clinit>方法，且clinit方法中代码顺序和java代码中的顺序一致。
+
+
+
+类加载时不一定会触发该类的clinit调用。只有下边的情况会触发clinit方法：
+
+1. new、getstatic、putstatic、invokestatic
+2. 反射
+3. 初始化一个子类的clinit会去加载并初始化其父类
+4. 启动类（main函数所在类） 
+
+
+
+### clinit初始化死锁
+
+这种情况的死锁不是java级别的，而是jvm级别的死锁。因此像jstack或者jconsole监测不到死锁。
+
+```java
+package com.lwj.classLoader;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Date: 2024/6/21
+ * <p>
+ * Description:
+ *
+ * @author 乌柏
+ */
+public class ClassLoaderDeadLock {
+
+    public static void main(String[] args) {
+        new Thread(() -> A.test()).start();
+        new Thread(() -> B.test()).start();
+    }
+
+}
+
+class A {
+    static {
+        System.out.println("classA init");
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        new B();
+    }
+
+    public static void test() {
+        System.out.println("AAA");
+    }
+}
+
+
+class B {
+    static {
+        System.out.println("classB init");
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        new A();
+    }
+
+    public static void test() {
+        System.out.println("BBB");
+    }
+}
+```
+
+
+
+## 双亲委派机制
+
+当发现一个类需要加载的时候，先委托其父类去加载该类，比如应用类加载器委托扩展类加载器，扩展类加载器委托启动类加载器，优先让顶级的类加载去加载类，如果父级加载不到，再由当前类加载器去加载。这样能保证核心路径的类优先被加载，比如rt.jar包所在的路径。

@@ -25,7 +25,14 @@ def travel_dir_get_viedo_count(cur_path):
             travel_dir_get_viedo_count(sub_path)
 
 
-path = "/Users/networkcavalry/Study/Python/极客-Python进阶训练营第02期/06- 第06周：Django Web开发入门"
-
+# path = "/Users/networkcavalry/Study/JVM/【3779】子牙-深入Hotspot带你深入理解JVM" 21 h
+# path = "/Users/networkcavalry/Study/JVM/【3141】尚硅谷宋红康JVM精讲与GC调优/视频" 18 h
+# path = "/Users/networkcavalry/Study/JVM/P7/03 任务二：JVM优化" 12.95 hour
+# path="/Users/networkcavalry/Study/Python/极客-Python进阶训练营第02期" 37.27 hour
+# path="/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【01】商城项目1" 49.98 hour
+# path="/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【02】DRF框架" 12.36 hour
+# path="/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【03】商城后台" 15 hour
+# path="/Users/networkcavalry/Study/Python/python实现数据库" 40.58 hour
+path = ""
 travel_dir_get_viedo_count(path)
 print(f"Total duration of all videos in the folder: {round(total_duration / 60 / 60, 2)} hour")

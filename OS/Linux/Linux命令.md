@@ -1,4 +1,8 @@
-### 
+## 常用命令
+
+https://fr3nky.uk/2024/02/02/linux/
+
+
 
 ## vim
 
@@ -273,7 +277,7 @@ Linux/Unix 的文件调用权限分为三级 : 文件所有者（Owner）、用�
 
 
 
-## >（重定向 ）
+## >（重定向）
 
 重定向也称为输出重定向，把在终端执行命令的结果保存到目标文件。
 
@@ -286,7 +290,15 @@ Linux/Unix 的文件调用权限分为三级 : 文件所有者（Owner）、用�
 
 ## |（管道）
 
-管道(|)：一个命令的输出可以通过管道做为另一个命令的输入，
+管道(|)：一个命令的输出可以通过管道做为另一个命令的输入。
+
+xargs 可以接收管道输出的参数，并且作为另外一个命令的参数，而非输入。
+
+```sh
+ ls | grep test | xargs find
+```
+
+
 
 ## ln 链接
 
@@ -473,3 +485,109 @@ exit				#退出登录用户
 
 
 ## 用户和用户组 TODO
+
+
+
+
+
+## OrbStack
+
+```sh
+orb #进入默认机器
+orb -m [machine_name] #进入指定机器
+```
+
+
+
+
+
+## systemctl
+
+https://segmentfault.com/a/1190000023029058
+
+systemctl命令是Systemd中最重要的一个命令，而Systemd是管理linux系统的程序。
+
+systemctl 可以对服务进行启动，停止等操作，在Systemd中有Unit的概念，每个进程都是一个Unit，总共有十二种Unit类型：
+
+- Service unit，系统服务
+- Target unit，多个 Unit 构成的一个组
+- Device Unit，硬件设备
+- Mount Unit，文件系统的挂载点
+- Automount Unit，自动挂载点
+- Path Unit，文件或路径
+- Scope Unit，不是由 Systemd 启动的外部进程
+- Slice Unit，进程组
+- Snapshot Unit，Systemd 快照，可以切回某个快照
+- Socket Unit，进程间通信的 socket
+- Swap Unit，swap 文件
+- Timer Unit，定时器
+
+**常用操作**
+
+```sh
+# 列出正在运行的Unit
+systemctl list-units，可以直接使用systemctl
+
+# 列出所有Unit，包括没有找到配置文件的或者启动失败的
+systemctl list-units --all
+
+# 列出所有没有运行的 Unit
+systemctl list-units --all --state=inactive
+
+# 列出所有加载失败的 Unit
+systemctl list-units --failed
+
+# 列出所有正在运行的、类型为service的Unit
+systemctl list-units --type=service
+
+# 显示某个 Unit 是否正在运行
+systemctl is-active application.service
+
+# 显示某个 Unit 是否处于启动失败状态
+systemctl is-failed application.service
+
+# 显示某个 Unit 服务是否建立了启动链接
+systemctl is-enabled application.service
+
+# 立即启动一个服务
+sudo systemctl start apache.service
+
+# 立即停止一个服务
+sudo systemctl stop apache.service
+
+# 重启一个服务
+sudo systemctl restart apache.service
+
+# 重新加载一个服务的配置文件
+sudo systemctl reload apache.service
+
+# 重载所有修改过的配置文件
+sudo systemctl daemon-reload
+```
+
+
+
+
+
+## iptables和firewalld
+
+centos7以前的版本默认使用iptables服务进行管理防火墙规则。centos7以及其以上版本默认使用firewalld服务管理防火墙。所以在centos8中，就使用其默认的firewalld配置防火墙。
+
+ubuntu系统默认防火墙是UFW（Uncomplicated Firewall），用户管理 iptables 防火墙规则
+
+https://www.cnblogs.com/johnyong/p/13473133.html
+
+[防火墙官方介绍](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/security_guide/sec-using_firewalls#sec-Comparison_of_Firewalld_to_system-config-firewall_and_iptables)
+
+
+
+## ifconfig
+
+```sh
+install net-tools 
+```
+
+查看和设置 网卡信息
+
+https://wangchujiang.com/linux-command/c/ifconfig.html
+
