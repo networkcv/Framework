@@ -11,7 +11,7 @@ public class ClassLoaderHSDB {
 
     private int a = 10;
 
-    private final  static int b = 1;
+    private final static int b = 1;
 
     public static void main(String[] args) {
 

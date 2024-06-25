@@ -1,7 +1,5 @@
 package com.lwj.arthas;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,30 +12,40 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 乌柏
  */
-@Slf4j
-public class ArthasQuickStart {
+public class ArthasQuickStart2 {
     private static Random random = new Random();
 
     private int illegalArgumentCount = 0;
 
     public static void main(String[] args) throws InterruptedException {
-        log.info("1");
-        ArthasQuickStart game = new ArthasQuickStart();
+        ArthasQuickStart2 game = new ArthasQuickStart2();
+        Thread thread = new Thread(game::run2, "wb");
+        thread.start();
+        thread.join();
+    }
+
+    public void run2() {
         while (true) {
-            game.run();
-            TimeUnit.SECONDS.sleep(1);
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+                ArrayList<ArthasQuickStart2> obj = createObj();
+                int number = random.nextInt() / 10000;
+                List<Integer> primeFactors = primeFactors(number);
+                if (obj.size() % 2 == 0) {
+                    print(number, primeFactors);
+                }
+            } catch (Exception e) {
+            }
         }
     }
 
-    public void run() throws InterruptedException {
-        try {
-            int number = random.nextInt() / 10000;
-            List<Integer> primeFactors = primeFactors(number);
-            print(number, primeFactors);
-
-        } catch (Exception e) {
-            log.warn("illegalArgumentCount:{} ", illegalArgumentCount, e);
+    private ArrayList<ArthasQuickStart2> createObj() {
+        ArrayList<ArthasQuickStart2> objects = new ArrayList<>();
+        for (int i = 0; i < 500; i++) {
+            ArthasQuickStart2 obj = new ArthasQuickStart2();
+            objects.add(obj);
         }
+        return objects;
     }
 
     public static void print(int number, List<Integer> primeFactors) {
@@ -48,7 +56,7 @@ public class ArthasQuickStart {
         if (sb.charAt(sb.length() - 1) == '*') {
             sb.deleteCharAt(sb.length() - 1);
         }
-        log.info("{}", sb);
+        System.out.println(sb);
     }
 
     public List<Integer> primeFactors(int number) {

@@ -240,6 +240,16 @@ lsof -i:端口号
 
 
 
+## diff 文件比较
+
+```·
+diff a.txt b.txt 
+
+diff a.txt b.txt -y
+```
+
+
+
 ## z 快速路径切换
 
 https://commandnotfound.cn/linux/1/589/z-%E5%91%BD%E4%BB%A4

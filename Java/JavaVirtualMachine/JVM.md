@@ -31,6 +31,11 @@ make images
 
 ## JVM 启动源码
 
+```sh
+java -classpath /Users/networkcavalry/Documents/GitHub/Framework/Java/JavaVirtualMachine/jvm/arthas/src/main/java  com.lwj.arthas.ArthasQuickStart2
+
+```
+
 https://www.cnblogs.com/springmorning/p/17478964.html
 
 
@@ -237,3 +242,145 @@ class B {
 ## 双亲委派机制
 
 当发现一个类需要加载的时候，先委托其父类去加载该类，比如应用类加载器委托扩展类加载器，扩展类加载器委托启动类加载器，优先让顶级的类加载去加载类，如果父级加载不到，再由当前类加载器去加载。这样能保证核心路径的类优先被加载，比如rt.jar包所在的路径。
+
+
+
+# 字节码
+
+**Java 虚拟机规定义了 u1、u2、u4 三种数据结构来表示 1、2、4 字节无符号整数，**相同类型的若干条数据集合用表（table）的形式来存储。表是一个变长的结构，由代表长度的表头（n）和 紧随着的 n 个数据项组成。class 文件采用类似 C 语言的结构体来存储数据。
+
+## 常量池
+
+常量池结构如下所示：
+
+```c
+{
+    u2             constant_pool_count;
+    cp_info        constant_pool[constant_pool_count-1];
+}
+```
+
+- 常量池大小（cp_info_count），常量池是 class 文件中第一个出现的变长结构，既然是池，就有大小，常量池大小的由两个字节表示。假设为值为 n，常量池真正有效的索引是 1 ~ n-1。0 属于保留索引，用来表示不指向任何常量池项。
+
+- 常量池项（cp_info）集合，最多包含 n-1 个。为什么是最多呢？Long 和 Double 类型的常量会占用两个索引位置，如果常量池包含了这两种类型，实际的常量池项的元素个数比 n-1 要小。
+
+  
+
+常量池由常量项组成，Java 虚拟机目前一共定义了 14 种常量类型，这些常量名都以 "CONSTANT" 开头，以 "info" 结尾
+
+每个常量项都由两部分构成：表示类型的 tag 和表示内容的字节数组，但u1可表示的范围是2个字节的有符号整数的范围。1个字节是8个二进制位，表示的范围是256个数字，字节码中是以16进制来表示的，只需要2位就能表示一个字节。
+
+```c
+cp_info {
+    u1 tag;
+    u1 info[];
+}
+```
+
+字节码中是以16进制来表示的，1位可以表示16个数字，1个字节是8个二进制位，
+
+
+
+**CONSTANT_Integer_info、CONSTANT_Float_info**
+
+这两种结构分别用来表示 int 和 float 类型的常量，这两种类型的结构很类似，都用四个字节来表示具体的数值常量，它们的结构定义如下：
+
+```c
+CONSTANT_Integer_info {
+    u1 tag;	 	 // 3 表示是为一个integer的常量项
+    u4 bytes;  // 表示这个常量项需要4个字节，对应在字节码中就是8位
+}
+
+CONSTANT_Float_info {
+    u1 tag; 	 // 4 表示是为一个float的常量项
+    u4 bytes;	
+}
+```
+
+<img src="img/JVM/16d5ec4797cc171a~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp" alt="图1-9 整型常量项结构" style="zoom:50%;" />
+
+Java 语言规范还定义了 boolean、byte、short 和 char 类型的变量，但在常量池中都会被当做 CONSTANT_Integer_info 来处理。
+
+
+
+**CONSTANT_Long_info 和 CONSTANT_Double_info**
+
+这两种结构分别用来表示 long 和 double 类型的常量，这两个结构类似，都用 8 个字节表示具体的常量数值。它们的结构如下：
+
+```c
+CONSTANT_Long_info {
+    u1 tag;  // tag为5
+    u4 high_bytes;
+    u4 low_bytes;
+}
+
+CONSTANT_Double_info {
+    u1 tag; // tag为6
+    u4 high_bytes;
+    u4 low_bytes;
+}
+```
+
+**CONSTANT_Utf8_info**
+
+CONSTANT_Utf8_info 存储的是经过 MUTF-8(modified UTF-8) 编码的字符串，结构如下:
+
+```c
+CONSTANT_Utf8_info {
+    u1 tag; //tag为1
+    u2 length; //表示长度
+    u1 bytes[length]; //字节数组
+}
+```
+
+由三部分构成：第一个字节是 tag，值为固定为 1，tag 之后的两个字节 length 表示字符串的长度，第三部分是采用 MUTF-8 编码的长度为 length 的字节数组。
+
+如果要存储的字符串是"hello"，存储结构如下图所示
+
+![图1-13 UTF8 类型常量项结构](img/JVM/16d5ec47c7f49b65~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp)
+
+![image-20240624174324197](img/JVM/image-20240624174324197.png)
+
+
+
+# 虚拟机栈
+
+## 栈帧
+
+主要是由局部变量表和操作数栈组成。
+
+## 虚拟机指令	
+
+if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次顶部元素 >= 顶部元素，则重定向到偏移量为 21 的指令
+
+像这种需要多个参数的指令，靠近栈顶的是最靠后的参数。
+
+
+
+
+
+# 其他
+
+## 对象实例话
+
+每一个构造方法都会对应一个\<init>方法，每个\<init>方法中都会包含类中定义的代码块，每次调用时都会触发代码块的调用。
+
+
+
+准备阶段为静态变量赋初值，初始化阶段完成静态变量初始化。
+
+
+
+
+
+
+
+
+
+JDK7 支持动态类型语言，新增了 invokedynamic 指令。
+
+https://www.cnblogs.com/wade-luffy/p/6058087.html
+
+
+
+5 1 10 6
