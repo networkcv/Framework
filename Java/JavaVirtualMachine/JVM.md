@@ -50,18 +50,6 @@ https://www.cnblogs.com/springmorning/p/17478964.html
 
 source insight
 
-## HSDB
-
-HSDB 查看代理类class
-
-HSDB：HotSpot Debugger Jvm自带工具，用于查看JVM运行时的状态
-
-使用jhsdb时，保证作为attach目标的进程JDK版本和jhsdb所在的JDK版本一致
-
-```java
-jhsdb hsdb 
-```
-
 
 
 ## Oop-Klass模型
@@ -343,13 +331,13 @@ CONSTANT_Utf8_info {
 
 
 
-# 虚拟机栈
+
 
 ## 栈帧
 
 主要是由局部变量表和操作数栈组成。
 
-## 虚拟机指令	
+# 虚拟机指令	
 
 if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次顶部元素 >= 顶部元素，则重定向到偏移量为 21 的指令
 
@@ -357,11 +345,95 @@ if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次
 
 
 
+## 5种方法调用指令
+
+- invokestatic：用于调用静态方法
+- invokespecial：用于调用priveate私有实例方法、final修饰的方法，构造器，以及使用 super 关键字调用父类的实例方法或构造器，和所实现接口的默认方法
+- invokevirtual：用于调用非私有实例方法
+- invokeinterface：用于调用接口方法
+- invokedynamic：用于调用动态方法
+
+![image-20240626121241995](img/JVM/image-20240626121241995.png)
+
+
+
+## 静态绑定和动态绑定
+
+在编译时时能确定目标方法叫做**静态绑定**，相反地，需要在运行时根据调用者的类型动态识别的叫**动态绑定**。
+
+- invokestatic 用来调用静态方法，即使用 static 关键字修饰的方法。 它要调用的方法在编译期间确定，运行期不会修改，属于静态绑定。
+
+- invokespecial 用在在类加载时就能确定需要调用的具体方法，而不需要等到运行时去根据实际的对象值去调用该对象的方法。private 方法不会因为继承被覆写的，所以 private 方法归为了 invokespecial 这一类。
+
+- invokevirtual 用在方法要根据对象类型不同动态选择的情况，在编译期不确定。invokevirtual 会根据对象的实际类型进行分派（虚方法分派），在编译期间不能确定最终会调用子类还是父类的方法。
+
+- invokeinterface 每个类文件都关联着一个「虚方法表」（virtual method table），这个表中包含了父类的方法和自己扩展的方法。为了在运行时快速确定调用的是父类方法或者当前类方法，B继承A类的时候，同样也会继承A的虚方法表，如果B重写了method2方法，同时也会替换虚方法表的函数引用，invokevirtual 可以直接根据固定索引快速定位要执行的方法。
+
+  而invokevirtual 调用 methodX 就不能直接从固定的虚方法表索引位置拿到对应的方法链接。invokeinterface 不得不搜索整个虚方法表来找到对应方法，效率上远不如 invokevirtual
+
+  <img src="img/JVM/1684c2a4fabfa6b7~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp" alt="-w699" style="zoom:50%;" />
+
+## 多态原理—HSDB查看虚方法表
+
+HSDB 查看代理类class
+
+HSDB：HotSpot Debugger Jvm自带工具，用于查看JVM运行时的状态
+
+使用jhsdb时，保证作为attach目标的进程JDK版本和jhsdb所在的JDK版本一致
+
+```java
+jhsdb hsdb 
+```
+
+**测试代码**
+
+```java
+abstract class A {
+    public void printMe() {
+        System.out.println("I love vim");
+    }
+
+    public abstract void sayHello();
+}
+
+class B extends A {
+    @Override
+    public void sayHello() {
+        System.out.println("hello, i am child B");
+    }
+}
+
+public class MyTest extends Object {
+    public static void main(String[] args) throws IOException {
+        A obj = new B();
+        A obj2 = new B();
+        System.out.println(obj);
+        System.in.read();
+    }
+}
+```
+
+通过class Brower查看类元信息的内存地址，再通过Inspector查看klass模型的信息内容。可以看到 vtable虚方法表的长度是7个，表示有7个函数，其中5个是继承自Object的方法，剩下两个一个是继承A类的printMe方法，另一个是B类自己定义的sayHello方法。如果想看到虚方法表在内存的地址，需要用到hsdb的控制台命令mem，使用该命令可以看到虚方法表中的实际的方法执行地址。
+
+![image-20240626115006724](img/JVM/image-20240626115006724.png)
+
+JVM中虚方法表是紧挨instanceKlass的，上图中B类的instanceKlass的起始地址是0x0000300001002c30，instanceKlass的长度需要通过 sizeof（instanceKlass）来获取，通过jdk源码获取 472=0x1D8（不同环境会有不同），所以vtable的偏移量地址是 0x0000300001002c30 + 0x1d8 =  0x0000300001002e08
+
+![image-20240626115741978](img/JVM/image-20240626115741978.png)
+
+通过 mem 0x0000300001002e08/7 查看往后的7个引用地址。可以看到B类的虚方法中前5个首先是指向Object中未被final修饰的方法，第六个方法重写了父类sayHello方法，指向自己，第七个方法指向父类A的printMe方法。
+
+这个为什么只有非final方法的指向，原因是这个虚方法表主要是为invokevirtual指令来确定在运行时期的真正方法调用的，也就是多态的真正调用方法。private、final static修饰的方法在类加载就能确定具体方法。
+
+![image-20240626115630007](img/JVM/image-20240626115630007.png)
+
+## 
+
 
 
 # 其他
 
-## 对象实例话
+## 对象实例化
 
 每一个构造方法都会对应一个\<init>方法，每个\<init>方法中都会包含类中定义的代码块，每次调用时都会触发代码块的调用。
 
@@ -370,6 +442,14 @@ if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次
 准备阶段为静态变量赋初值，初始化阶段完成静态变量初始化。
 
 
+
+## 同时编译父类和子类
+
+// -g 编译时会加上局部变量表
+
+javac -g Son.java Father.java
+
+javap -c -p -v -l  Son
 
 
 
@@ -383,4 +463,3 @@ https://www.cnblogs.com/wade-luffy/p/6058087.html
 
 
 
-5 1 10 6
