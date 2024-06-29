@@ -180,14 +180,39 @@ django-admin startproject mall
 切换到 manage.py 目录下启动项目
 
 ```python
- python manage.py runserver
+python manage.py runserver
+```
+
+
+
+创建项目下的子应用
+
+```sh
+mall/mall/apps git:master*  
+(mall) ❯ pwd                                  
+/Users/networkcavalry/Documents/PyCharmProjects/mall/mall/mall/apps
+
+
+mall/mall/apps git:master*  
+(mall) ❯ python ../../manage.py startapp users
+/Users/networkcavalry/Documents/PyCharmProjects/mall/mall/mall
+                                                                                                         
+mall/mall/apps git:master*  
+(mall) ❯ ls
+__init__.py users
 ```
 
 
 
 
 
+# 其他
 
+## 查看导包的路径
+
+```
+print(sys.path)
+```
 
 
 

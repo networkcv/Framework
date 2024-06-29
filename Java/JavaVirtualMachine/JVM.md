@@ -2,6 +2,8 @@
 
 ## 编译JDK
 
+一定要注意版本，要新都新
+
 https://juejin.cn/post/6969389200416178213
 
 https://www.jianshu.com/p/ee7e9176632c
@@ -11,6 +13,16 @@ https://www.jianshu.com/p/ee7e9176632c
 https://developer.apple.com/download/all/?q=command
 
 https://jdk.java.net/java-se-ri/22
+
+```java
+xcode-select  -v
+xcode-select version 2405.
+  
+xcode-select --print-path
+/Applications/Xcode.app/Contents/Developer
+```
+
+
 
 ```sh
 bash configure --with-debug-level=slowdebug --with-jvm-variants=server --enable-dtrace --disable-warnings-as-errors
@@ -33,7 +45,6 @@ make images
 
 ```sh
 java -classpath /Users/networkcavalry/Documents/GitHub/Framework/Java/JavaVirtualMachine/jvm/arthas/src/main/java  com.lwj.arthas.ArthasQuickStart2
-
 ```
 
 https://www.cnblogs.com/springmorning/p/17478964.html
