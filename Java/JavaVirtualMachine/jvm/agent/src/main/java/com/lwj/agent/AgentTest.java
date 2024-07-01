@@ -4,9 +4,6 @@ import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
@@ -91,15 +88,5 @@ public class AgentTest implements Instrumentation {
     @Override
     public void setNativeMethodPrefix(ClassFileTransformer transformer, String prefix) {
 
-    }
-
-    @Override
-    public void redefineModule(Module module, Set<Module> extraReads, Map<String, Set<Module>> extraExports, Map<String, Set<Module>> extraOpens, Set<Class<?>> extraUses, Map<Class<?>, List<Class<?>>> extraProvides) {
-
-    }
-
-    @Override
-    public boolean isModifiableModule(Module module) {
-        return false;
     }
 }

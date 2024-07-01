@@ -1,3 +1,9 @@
+invokedynamic
+
+https://www.cnblogs.com/wade-luffy/p/6058087.html
+
+
+
 # JVM源码
 
 ## 编译JDK
@@ -246,6 +252,24 @@ class B {
 
 # 字节码
 
+javac 编译java源文件
+
+javac -g 编译时会加上局部变量表
+
+同时编译父类和子类 javac -g Son.java Father.java
+
+javap -c -v -p -l 反编译查看字节码
+
+## 字段描述符
+
+![image-20240630000306665](img/JVM/image-20240630000306665.png)
+
+**方法描述符**（Method Descriptor）表示一个方法所需参数和返回值信息，表示形式为`( ParameterDescriptor* ) ReturnDescriptor`。 ParameterDescriptor 表示参数类型，ReturnDescriptor表示返回值信息，当没有返回值时用`V`表示。比如方法`Object foo(int i, double d, Thread t)`的描述符为`(IDLjava/lang/Thread;)Ljava/lang/Object;`
+
+![image-20240630000335063](img/JVM/image-20240630000335063.png)
+
+
+
 **Java 虚拟机规定义了 u1、u2、u4 三种数据结构来表示 1、2、4 字节无符号整数，**相同类型的若干条数据集合用表（table）的形式来存储。表是一个变长的结构，由代表长度的表头（n）和 紧随着的 n 个数据项组成。class 文件采用类似 C 语言的结构体来存储数据。
 
 ## 常量池
@@ -296,7 +320,7 @@ CONSTANT_Float_info {
 }
 ```
 
-<img src="img/JVM/16d5ec4797cc171a~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp" alt="图1-9 整型常量项结构" style="zoom:50%;" />
+![image-20240629193637559](img/JVM/image-20240629193637559.png)
 
 Java 语言规范还定义了 boolean、byte、short 和 char 类型的变量，但在常量池中都会被当做 CONSTANT_Integer_info 来处理。
 
@@ -336,11 +360,32 @@ CONSTANT_Utf8_info {
 
 如果要存储的字符串是"hello"，存储结构如下图所示
 
-![图1-13 UTF8 类型常量项结构](img/JVM/16d5ec47c7f49b65~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp)
+![image-20240629193722961](img/JVM/image-20240629193722961.png)
 
 ![image-20240624174324197](img/JVM/image-20240624174324197.png)
 
+## 类访问标记
 
+常量池之后存储的是访问标记（Access flags），用来标识一个类是是不是final、abstract 等，由两个字节表示总共可以有 16 个标记位可供使用，目前只使用了其中的 8 个。
+
+![image-20240630122957160](img/JVM/image-20240630122957160.png)
+
+具体的标记位含义如下：
+
+| Flag Name      | Value | Interpretation                         |
+| -------------- | ----- | -------------------------------------- |
+| ACC_PUBLIC     | 1     | 标识是否是 public                      |
+| ACC_FINAL      | 10    | 标识是否是 final                       |
+| ACC_SUPER      | 20    | 已经不用了                             |
+| ACC_INTERFACE  | 200   | 标识是类还是接口                       |
+| ACC_ABSTRACT   | 400   | 标识是否是 abstract                    |
+| ACC_SYNTHETIC  | 1000  | 编译器自动生成，不是用户源代码编译生成 |
+| ACC_ANNOTATION | 2000  | 标识是否是注解类                       |
+| ACC_ENUM       | 4000  | 标识是否是枚举类                       |
+
+比如在使用Lambda的时候，JVM会在运行时使用ASM技术，动态生成对应的匿名内部类。
+
+具体生成的过程可以参考invokeDynamic命令。
 
 
 
@@ -368,7 +413,7 @@ if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次
 
 
 
-## 静态绑定和动态绑定
+**静态绑定和动态绑定**
 
 在编译时时能确定目标方法叫做**静态绑定**，相反地，需要在运行时根据调用者的类型动态识别的叫**动态绑定**。
 
@@ -380,9 +425,248 @@ if_icmpge     21    // 将操作数栈顶的两个元素进行比较, 如果 次
 
 - invokeinterface 每个类文件都关联着一个「虚方法表」（virtual method table），这个表中包含了父类的方法和自己扩展的方法。为了在运行时快速确定调用的是父类方法或者当前类方法，B继承A类的时候，同样也会继承A的虚方法表，如果B重写了method2方法，同时也会替换虚方法表的函数引用，invokevirtual 可以直接根据固定索引快速定位要执行的方法。
 
-  而invokevirtual 调用 methodX 就不能直接从固定的虚方法表索引位置拿到对应的方法链接。invokeinterface 不得不搜索整个虚方法表来找到对应方法，效率上远不如 invokevirtual
+  示例如下：
 
-  <img src="img/JVM/1684c2a4fabfa6b7~tplv-t2oaga2asx-jj-mark:1512:0:0:0:q75.awebp" alt="-w699" style="zoom:50%;" />
+  ```java
+  // invokevirtual
+  class A {
+      public void method1() { }
+      public void method2() { }
+      public void method3() { }
+  }
+  
+  class B extends A {
+      public void method2() { } // overridden from BaseClass
+      public void method4() { }
+  }
+  
+  ```
+  
+  对应的虚方法表如下：
+  
+  ![image-20240629230204684](img/JVM/image-20240629230204684.png)
+  
+  而invokevirtual 调用 methodX 就不能直接从固定的虚方法表索引位置拿到对应的方法链接。invokeinterface 不得不搜索整个虚方法表来找到对应方法，效率上远不如 invokevirtual
+  
+  ```java
+  // invokeinterface
+  interface X {
+      void methodX()
+  }
+  class B extends A implements X {
+      public void method2() { } // overridden from BaseClass
+      public void method4() { }
+      public void methodX() { }
+  }
+  Class C implements X {
+      public void methodC() { }
+      public void methodX() { }
+  }
+  
+  ```
+  
+  ![image-20240629230255098](img/JVM/image-20240629230255098.png)
+
+**invokedynamic指令**
+
+首先补充一些前置知识。
+
+java的是强类型语言，编译的时候会检查入参的类型和返回值的类型，在方法调用的时候还会去检查调用的对象类和调用对象是否包含该方法名。
+
+MethodHandle
+
+方法句柄或者方法指针。它为了支持Java中把函数作为参数传递。它类似反射中的Method类。但比Method更灵活和轻量级。
+
+```java
+public class Foo {
+    public void print(String s) {
+        System.out.println("hello, " + s);
+    }
+    public static void main(String[] args) throws Throwable {
+        Foo foo = new Foo();
+
+        MethodType methodType = MethodType.methodType(void.class, String.class);
+        MethodHandle methodHandle = MethodHandles.lookup().findVirtual(Foo.class, "print", methodType);
+        methodHandle.invokeExact(foo, "world");
+    }
+}
+
+运行输出
+hello, world
+```
+
+
+
+invokedynamic指令在第一次调用的时候不知道具体调用哪个方法，会先调用一次 Bootstrap方法，该方法会返回一个CallSite对象。
+
+```java
+public static CallSite bootstrap(
+    Lookup caller, // the caller
+    String callType, // the type of the call
+    MethodType type, // the MethodType
+    String name, // the real method name
+    int flags // call flags
+    ) {
+}
+```
+
+其中就包含了真正要调用的MethodType。后续的调用会直接调用目标方法，不经过Bootstrap Method方法。
+
+![image-20240630001830214](img/JVM/image-20240630001830214.png)
+
+简化成伪代码：
+
+```java
+public static void main(String[] args) throws Throwable {
+    MethodHandles.Lookup lookup = MethodHandles.lookup();
+    MethodType mt = MethodType.methodType(Object.class,
+            Object.class, Object.class);
+    CallSite callSite =
+            IndyInterface.bootstrap(lookup, "invoke", mt, "add", 0);
+    MethodHandle mh = callSite.getTarget();
+    mh.invoke(obj, "hello", "world");
+}
+```
+
+
+
+invokeDynamic提供了一种调用方法的新方式，将动态方法的分派逻辑下放到了语言实现层。它告诉JVM可以延迟确认真正的目标方法。一开始执行的时候不知道具体的调用目标，只有第一次调用引导方法（Bootstrap Method）后，由这个引导方法决定哪个目标方法进行调用。而且这个指令是JVM层面的，只要能生成对应的指令，都可以在JVM上执行，不区分到底是什么编程语言。目前Java 虚拟机已经可以支持很多除Java *语言*以外的*语言*了，如Kotlin、Groovy、JRuby、Jython、Scala 等。
+
+
+
+## lambda背后的字节码原理
+
+```java
+public class InvokeDynamicTest {
+    public static void main(String[] args) {
+        Runnable r = () -> {
+            System.out.println("hello, lambda");
+        };
+        r.run();
+    }
+}
+```
+
+编译后的字节码指令中，除了main方法，还额外生成了lambda\$main$0方法，这个方法是 private static synthetic（编译器生成的），里边包含了我们定义的方法内容。再来看main方法，就lambda表达式声明的地方会生成一个 invokedynamic指令，同时还生成了对应的引导方法 Bootstrap Methods。
+
+![image-20240630134639626](img/JVM/image-20240630134639626.png)
+
+![image-20240630134625156](img/JVM/image-20240630134625156.png)
+
+```java
+BootstrapMethods:
+  0: #43 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:(Ljava/lang/invoke/MethodHandles$Lookup; Ljava/lang/String; Ljava/lang/invoke/MethodType; Ljava/lang/invoke/MethodType; Ljava/lang/invoke/MethodHandle; Ljava/lang/invoke/MethodType;) Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #39 ()V
+      #40 REF_invokeStatic com/lwj/bytecode/InvokeDynamicTest.lambda$main$0:()V
+      #39 ()V
+
+```
+
+第一次执行的invokedynamic指令时，会调用到引导方法，java.lang.invoke包下的LambdaMetafactory.metafactory方法，该方法返回一个动态调用对象CallSite，这个CallSite中的MethodHandle就是最终要执行的方法句柄或者说方法指针。
+
+```java
+ public static CallSite metafactory(
+    MethodHandles.Lookup caller,
+    String invokedName,
+    MethodType invokedType,
+    MethodType samMethodType,
+    MethodHandle implMethod,
+    MethodType instantiatedMethodType
+)
+ /**
+metafactory 各个参数含义如下：
+
+- caller：JVM 提供的查找上下文
+- invokedName：表示调用函数名，在本例中 invokedName 为 "run"
+- samMethodType：函数式接口定义的方法签名（参数类型和返回值类型），本例中为 run 方法的签名 "()void"
+- implMethod：编译时生成的 lambda 表达式对应的静态方法`invokestatic Test.lambda$main$0`
+- instantiatedMethodType：一般和 samMethodType 是一样或是它的一个特例，在本例中是 "()void"
+*/
+```
+
+LambdaMetafactory.metafactory方法，中的核心逻辑是 new InnerClassLambdaMetafactory，这里边会通过ASM生成对应的匿名内部类。
+
+```java
+  public static CallSite metafactory(MethodHandles.Lookup caller,
+                                       String interfaceMethodName,
+                                       MethodType factoryType,
+                                       MethodType interfaceMethodType,
+                                       MethodHandle implementation,
+                                       MethodType dynamicMethodType)
+            throws LambdaConversionException {
+        AbstractValidatingLambdaMetafactory mf;
+	    //核心方法
+        mf = new InnerClassLambdaMetafactory(Objects.requireNonNull(caller),
+                                             Objects.requireNonNull(factoryType),
+                                             Objects.requireNonNull(interfaceMethodName),
+                                             Objects.requireNonNull(interfaceMethodType),
+                                             Objects.requireNonNull(implementation),
+                                             Objects.requireNonNull(dynamicMethodType),
+                                             false,
+                                             EMPTY_CLASS_ARRAY,
+                                             EMPTY_MT_ARRAY);
+        mf.validateMetafactoryArgs();
+        return mf.buildCallSite();
+    }
+```
+
+通过打印的方式查看类名，可以看出这个类是InvokeDynamicTest的内部类，因为内部类才能调用外部类私有方法。
+
+```java
+Runnable r = ()->{
+    System.out.println("hello, lambda");
+};
+
+System.out.println(r.getClass().getName());
+
+//输出：
+com.lwj.bytecode.InvokeDynamicTest$$Lambda/0x0000180001003528
+```
+
+可以通过 `-Djdk.invoke.LambdaMetafactory.dumpProxyClassFiles` 参数将生成类dump出来，生成路径是java/DUMP_LAMBDA_PROXY_CLASS_FILES/com/lwj/bytecode/InvokeDynamicTest$$Lambda.0x000007f001000a10.class，直接idea查看反编译后的源码，可以看到run方法的具体实现中，直接去调用InvokeDynamicTest中的编译器生成的静态方法 lambda$main$0。
+
+```java
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
+package com.lwj.bytecode;
+
+// $FF: synthetic class
+final class InvokeDynamicTest$$Lambda implements Runnable {
+    private InvokeDynamicTest$$Lambda() {
+    }
+
+    public void run() {
+        InvokeDynamicTest.lambda$main$0();
+    }
+}
+
+```
+
+通过javap命令查看字节码文件，也可以看到具体的实现。com.lwj.bytecode.InvokeDynamicTest$$Lambda/0x0000180001003528
+
+由于ASM生成的字节码没有源文件，无法通过jclasslib查看字节码，所以通过javap命令来查看。
+
+```java
+ javap -c -p -v  InvokeDynamicTest\$\$Lambda.0x0000180001003528.class 
+```
+
+![image-20240630123513307](img/JVM/image-20240630123513307.png)
+
+
+
+总结一下，编译器会对lambda表达式的内容生成对应的私有静态方法，并且在调用的地方生成invokeDynamic指令和引导方法。在第一次执行指令时，会由引导方法中的 LambdaMetafactory.metafactory 工厂方法 通过ASM动态生成实现对应接口的匿名内部类，具体接口的实现逻辑则是回调了前边的私有静态方法（lambda定义类中编译器生成的），真正执行lambda时还是通过 invokeinterface指令，因为本质是还是生成了实现该接口的匿名内部类。
+
+关于 invokedynamic 补充说明：
+
+> invokedynamic 与之前四个 invoke 指令最大的不同就在于它把方法分派的逻辑从虚拟机层面下放到程序语言。 lambda 表达式采用的方式是不在编译期间就生成匿名内部类，而是提供了一个稳定的字节码二进制表示规范，对用户而言看到的只有 invokedynamic 这样一个非常简单的指令。用 invokedynamic 来实现就是把翻译的逻辑隐藏在 JDK 的实现中，后续想替换实现方式非常简单，只用修改 LambdaMetafactory.metafactory 里面的逻辑就可以了，这种方法把 lambda 翻译的策略由编译期间推迟到运行时。
+
+
+
+
 
 ## 多态原理—HSDB查看虚方法表
 
@@ -438,7 +722,125 @@ JVM中虚方法表是紧挨instanceKlass的，上图中B类的instanceKlass的�
 
 ![image-20240626115630007](img/JVM/image-20240626115630007.png)
 
-## 
+
+
+## i++ 和 ++i
+
+iinc 0 by 1 对局部变量表中 index为0 的变量增加 1
+
+```java
+public static int foo3() {
+      int x = 1;
+      x = x++;
+      return x;
+  }
+// output 1
+0 iconst_1
+1 istore_0
+2 iload_0
+3 iinc 0 by 1 
+6 istore_0
+7 iload_0
+8 ireturn
+```
+
+```java
+public static int foo4() {
+    int x = 1;
+    x = ++x;
+    return x;
+}
+// output 2
+0 iconst_1
+1 istore_0
+2 iinc 0 by 1
+5 iload_0
+6 istore_0
+7 iload_0
+8 ireturn
+```
+
+## try catch finally
+
+finally中的代码复制到所以可能函数退出的地方，比如try代码块和catch代码块中。
+
+## try with resource
+
+```java
+public static void foo() throws Exception {
+    AutoCloseable c = null;
+    Exception tmpException = null;
+    try {
+        c = dummy();
+        bar();
+    } catch (Exception e) {
+      //这里把业务异常保留了下来
+        tmpException = e;
+        throw e;
+    } finally {
+        if (c != null) {
+            if (tmpException != null) {
+                try {
+                    c.close();
+                } catch (Exception e) {
+                  //这里将close失败被压制的异常添加回来
+                    tmpException.addSuppressed(e);
+                }
+            } else {
+                c.close();
+            }
+        }
+    }
+}
+
+```
+
+
+
+## synchronized
+
+**对于代码块级的synchronized**
+
+字节码中使用 monitorenter来完成加锁，使用 monitorexit来完成解锁，无论方法是否正常返回，锁都会释放。
+
+因为编译器必须保证，无论同步代码块中的代码以何种方式结束（正常 return 或者异常退出），代码中每次调用 monitorenter 必须执行对应的 monitorexit 指令。为了保证这一点，编译器会自动生成一个异常处理器，这个异常处理器的目的就是为了同步代码块抛出异常时能执行 monitorexit。这也是字节码中，只有一个 monitorenter 却有两个 monitorexit 的原因。
+
+**方法级的synchronized**
+
+方法级的同步与上述有所不同，它是由常量池中方法的 ACC_SYNCHRONIZED 标志来隐式实现的。
+
+JVM 不会使用特殊的字节码来调用同步方法，当 JVM 解析方法的符号引用时，它会判断方法是不是同步的（检查方法 ACC_SYNCHRONIZED 是否被设置）。如果是，执行线程会先尝试获取锁。如果是实例方法，JVM 会尝试获取实例对象的锁，如果是类方法，JVM 会尝试获取类锁。类锁其实锁的类class对象。在同步方法完成以后，不管是正常返回还是异常返回，都会释放锁。
+
+验证类锁锁的是class对象：
+
+```java
+public class ClassSynchronizedTest {
+
+    public void test1() {
+        synchronized (ClassSynchronizedTest.class) {
+            try {
+                System.out.println(1);
+                TimeUnit.SECONDS.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static synchronized void test2() {
+        System.out.println(2);
+    }
+
+    public static void main(String[] args) {
+        new ClassSynchronizedTest().test1();
+        test2();
+    }
+}
+```
+
+
+
+## Java泛型
 
 
 
@@ -448,29 +850,4 @@ JVM中虚方法表是紧挨instanceKlass的，上图中B类的instanceKlass的�
 
 每一个构造方法都会对应一个\<init>方法，每个\<init>方法中都会包含类中定义的代码块，每次调用时都会触发代码块的调用。
 
-
-
 准备阶段为静态变量赋初值，初始化阶段完成静态变量初始化。
-
-
-
-## 同时编译父类和子类
-
-// -g 编译时会加上局部变量表
-
-javac -g Son.java Father.java
-
-javap -c -p -v -l  Son
-
-
-
-
-
-
-
-JDK7 支持动态类型语言，新增了 invokedynamic 指令。
-
-https://www.cnblogs.com/wade-luffy/p/6058087.html
-
-
-
