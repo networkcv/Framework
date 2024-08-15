@@ -51,6 +51,8 @@ make images
 
 ```sh
 java -classpath /Users/networkcavalry/Documents/GitHub/Framework/Java/JavaVirtualMachine/jvm/arthas/src/main/java  com.lwj.arthas.ArthasQuickStart2
+java -cp . com.lwj.arthas.ArthasQuickStart2
+java -c . com.lwj.arthas.ArthasQuickStart2
 ```
 
 https://www.cnblogs.com/springmorning/p/17478964.html
@@ -840,7 +842,7 @@ public class ClassSynchronizedTest {
 
 
 
-## Java泛型
+
 
 
 

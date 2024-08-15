@@ -328,6 +328,22 @@ xargs 可以接收管道输出的参数，并且作为另外一个命令的参�
  ls | grep test | xargs find
 ```
 
+## xargs 标准输入转为命令行参数
+
+通常搭配管道一起使用
+
+```shell
+echo "hello world" | echo 
+# 不会有输出
+```
+
+```shell
+$ echo "hello world" | xargs echo
+# hello world
+```
+
+[xargs 教程](https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html)
+
 
 
 ## ln 链接

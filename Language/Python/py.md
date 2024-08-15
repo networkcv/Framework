@@ -1,3 +1,66 @@
+# 常用包
+
+## retrying
+
+https://blog.csdn.net/weixin_45418194/article/details/121115575
+
+`retrying` 是一个 Python 包，用于提供一个装饰器（以及一个重试控制机制），允许你将其应用于任何函数或方法上，使得在遇到特定的异常或者返回条件不满足时自动重试。使用 `retrying` 包中的 `retry` 函数可以帮助简化代码中处理瞬时错误或不稳定操作（如网络请求）的逻辑。
+
+当你使用 `@retry` 装饰器装饰一个函数时，可以指定多个参数来控制重试行为，包括：
+
+- `stop_max_attempt_number`: 重试的最大次数。
+
+- `stop_max_delay`: 最大的重试延迟时间（毫秒），超过这个时间后不再重试。
+
+- `wait_fixed`: 两次重试之间的固定等待时间（毫秒）。
+
+- `wait_random_min` 和 `wait_random_max`: 两次重试之间的随机等待时间的最小值和最大值（毫秒）。
+
+- `retry_on_exception`: 一个函数，当它返回 `True` 时，会在抛出的异常上重试，根据函数抛出的异常判断是否重试。
+
+  ```python
+  def retry_if_io_error(exception):
+      return isinstance(exception, IOError)
+    
+  @retry(retry_on_exception=retry_if_io_error)
+  def might_io_error():
+      raise IOError(print("永远重试，无需等待。"))
+  ```
+
+- `retry_on_result`: 一个函数，当目标函数返回值使得该函数返回 `True` 时进行重试，根据函数的结果来判断是否重试。
+
+  ```python
+  def retry_if_result_none(result):
+      """如果我们应该重试，则返回True（在本例中，结果为None），否则返回False"""
+      return result is None
+  
+  
+  @retry(retry_on_result=retry_if_result_none)
+  def might_return_none():
+      print("如果返回值为None，则永远重试忽略异常而不等待")
+      return None
+  ```
+
+例如，假设你有一个网络请求的函数，由于网络波动，你希望在遇到连接错误时自动重试，但最多重试3次，每次重试之间等待2秒：
+
+```python
+from retrying import retry
+import requests
+ 
+@retry(stop_max_attempt_number=3, wait_fixed=2000)
+def fetch_data(url):
+    response = requests.get(url)
+    response.raise_for_status()  # 如果响应码不是 200，会抛出异常
+    return response.json()
+ 
+# 使用这个函数，它会在失败时尝试最多3次，每次尝试之间等待2秒
+data = fetch_data("https://example.com/api/data")
+```
+
+在这个例子中，如果 `requests.get(url)` 因为网络问题抛出异常（比如 `requests.exceptions.ConnectionError`），`fetch_data` 函数会自动重试，直到尝试了3次或者成功获取数据为止
+
+
+
 # python 虚拟环境
 
 为了避免污染系统环境下的python，在开发项目时，会在项目的根目录下使用python虚拟环境。
