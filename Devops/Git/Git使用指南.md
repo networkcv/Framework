@@ -616,6 +616,16 @@ Your branch is based on 'origin/master', but the upstream is gone.
 
   pull命令其实就是先fetch然后再merge。merge之后我们也可以进行rebase使其版本变化显示为一条直线。
 
+# Git常用场景
+
+## 统计代码量
+
+```
+git log --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
+```
+
+
+
 # 其他
 
 ## 探秘.Git目录

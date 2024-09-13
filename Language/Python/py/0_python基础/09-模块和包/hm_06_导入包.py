@@ -16,5 +16,5 @@ from 包名 import *
 模块名.目标
 """
 from mypackage import *
-my_module1.info_print1()
 
+my_module1.info_print1()

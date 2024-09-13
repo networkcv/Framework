@@ -1,3 +1,75 @@
+# 包和模块
+
+在 Python 中，`from ... import ...` 语句用于从模块或包中导入特定的类、函数或变量。这种导入方式允许你直接使用导入的组件，而不需要通过模块或包的名称来引用。
+
+以下是 `from ... import ...` 语句的一些用法：
+
+## 导入单个组件
+
+你可以从模块中导入一个特定的函数或类，并直接使用它。
+
+```python
+from math import sqrt
+
+result = sqrt(16)  # 使用导入的 sqrt 函数
+```
+
+## 导入多个组件
+
+你可以使用括号来从模块中导入多个组件。
+
+```python
+from math import sqrt, pow, ceil
+
+result = sqrt(16)
+power = pow(2, 3)
+rounded = ceil(3.7)  # 使用导入的 pow 和 ceil 函数
+```
+
+## 导入所有组件（不推荐）
+
+你可以使用星号（*）来导入模块中的所有组件。这种做法通常不推荐，因为它会污染命名空间，使得代码难以理解和维护。 
+
+```python
+# 需要math包的init中定义  __all__ = ['my_module1']
+from math import *
+
+sqrt(16)  # 直接使用 sqrt
+pow(2, 3)  # 直接使用 pow
+```
+
+## 重命名导入的组件
+
+你可以使用 `as` 关键字给导入的组件重命名，这在解决命名冲突或简化命名时很有用。
+
+```python
+from math import sqrt as square_root
+
+result = square_root(16)  # 使用重命名后的 square_root 函数
+```
+
+## 从包中导入模块
+
+你可以从包中导入模块，然后使用模块中的组件。
+
+```python
+from mypackage import module1
+
+module1.foo()  # 使用导入的 module1 中的 foo 函数
+```
+
+## 从包中导入特定组件
+
+你也可以直接从包中导入特定的函数或类。
+
+```python
+from mypackage.module1 import foo
+
+foo()  # 直接使用导入的 foo 函数
+```
+
+使用 `from ... import ...` 语句时，确保你导入的组件是你需要的，避免导入不必要的内容，这样可以提高代码的清晰度和性能。
+
 # 常用包
 
 ## retrying
@@ -78,8 +150,8 @@ pipenv --venv
 ```
 
 ```python
-# 在当前目录创建 python 3.8.8 的虚拟环境
-pipenv --python 3.8.8 
+# 在当前目录创建 python 3.12.4 的虚拟环境
+pipenv --python 3.12.4 
 
 # 激活虚拟环境，激活后 在当前目录下的 python 和 pip 命令都会指向虚拟环境中对应的命令
 pipenv shell 
@@ -264,6 +336,8 @@ mall/mall/apps git:master*
 (mall) ❯ ls
 __init__.py users
 ```
+
+
 
 
 

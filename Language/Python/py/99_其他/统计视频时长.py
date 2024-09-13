@@ -33,6 +33,6 @@ def travel_dir_get_viedo_count(cur_path):
 # path="/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【02】DRF框架" 12.36 hour
 # path="/Users/networkcavalry/Study/Python/黑马Python /3-python高级/【03】商城后台" 15 hour
 # path="/Users/networkcavalry/Study/Python/python实现数据库" 40.58 hour
-path = ""
+path = "/Users/networkcavalry/Study/Python/python实现数据库"
 travel_dir_get_viedo_count(path)
 print(f"Total duration of all videos in the folder: {round(total_duration / 60 / 60, 2)} hour")
