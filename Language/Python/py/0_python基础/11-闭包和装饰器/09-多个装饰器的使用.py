@@ -31,6 +31,22 @@ def content():
     return "人生苦短，我用python!"
 
 
+# result = content()
+# print(result)
+
+# 定义装饰器
+def make_a(func):
+    print("make_a装饰器执行了")
+
+    def inner():
+        # 在内部函数对已有函数进行装饰
+        result = "<a>" + func() + "</a>"
+        return result
+
+    return inner
+
+
 # <p>人生苦短，我用python!</p>
-result = content()
-print(result)
+
+content = make_a(content)  # make_a(make_div(make_p(content)))
+print(content())

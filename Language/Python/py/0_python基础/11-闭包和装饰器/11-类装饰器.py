@@ -7,7 +7,11 @@ class MyDecorator(object):
     def __call__(self, *args, **kwargs):
         # 对已有函数进行封装
         print("课已讲完")
-        self.__func()
+        self.__func(*args, **kwargs)
+
+
+# decorator = MyDecorator(lambda x: print(x))
+# print(decorator(1))
 
 
 @MyDecorator  # @MyDecorator => show = MyDecorator(show)

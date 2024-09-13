@@ -4,7 +4,7 @@ def func_out(num1):
     def func_inner(num2):
         # 这里本意想要修改外部num1的值，实际上是在内部函数定义了一个局部变量num1
         # nonlocal num1
-        num1 = 10
+        num1 = 10  # Shadows name 'num1' from outer scope 遮盖了外部作用域的num1变量
         # 内部函数使用了外部函数的变量(num1)
         result = num1 + num2
         print("结果是:", result)
