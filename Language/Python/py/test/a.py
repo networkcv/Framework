@@ -10,3 +10,7 @@ def algorithm(n: int) -> str:
 
 
 print(algorithm(1))
+
+
+
+print(5//1.9)
