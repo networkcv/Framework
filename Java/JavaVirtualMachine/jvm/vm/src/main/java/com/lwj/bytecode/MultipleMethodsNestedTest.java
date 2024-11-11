@@ -10,13 +10,9 @@ package com.lwj.bytecode;
 public class MultipleMethodsNestedTest {
 
     private int fun1() {
-        try {
-
-            int a = 1;
-        } catch (Exception e) {
-            return 1;
-        }
-        return fun2();
+        int a = 1;
+        int i = fun2();
+        return 2;
     }
 
     private int fun2() {
