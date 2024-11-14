@@ -1,45 +1,28 @@
-## JVM 问题排查工具
+## 大量IO也可能会造成CPU负载高
 
-jps 查看java 进程
+非常频繁的IO 导致了非常频繁的中断信号，cpu处理信号需要保护和恢复现场，想等于频繁上下文切换，可能会造成CPU负载高，但是使用率低。
 
-jstack 查看方法调用栈
+计算机硬件上使用DMA来访问磁盘等IO，也就是请求发出后，CPU就不再管了，直到DMA处理器完成任务，再通过中断告诉CPU完成了。所以，单独的一个IO时间，对CPU的占用是很少的，阻塞了就更不会占用CPU了，因为程序都不继续运行了，CPU时间交给其它线程和进程了。虽然IO不会占用大量的CPU时间，但是非常频繁的IO还是会非常浪费CPU时间的，所以面对大量IO的任务，有时候是需要算法来合并IO，或者通过cache来缓解IO压力的。
 
-jcmd 替代 jmap 可以查看堆（GC.heap_info） 导出堆（GC.heap_dump），查看java调用栈（Thread.print），执行GC（ GC.run ），
 
-```sh
-$ jcmd 96004 help
-96004:
-The following commands are available:
-VM.unlock_commercial_features
-JFR.configure
-JFR.stop
-JFR.start
-JFR.dump
-JFR.check
-VM.native_memory
-ManagementAgent.stop
-ManagementAgent.start_local
-ManagementAgent.start
-VM.classloader_stats
-GC.rotate_log
-Thread.print
-GC.class_stats
-GC.class_histogram
-GC.heap_dump
-GC.finalizer_info
-GC.heap_info
-GC.run_finalization
-GC.run
-VM.uptime
-VM.dynlibs
-VM.flags
-VM.system_properties
-VM.command_line
-VM.version
-help
+
+
+
+
+
+## 理解Linux load average的误区
+
+uptime和top等命令都可以看到load average指标，从左至右三个数字分别表示1分钟、5分钟、15分钟的load average：
+
+```
+ uptime 10:16:25 up 3 days, 19:23, 2 users, load average: 0.00, 0.01, 0.05
 ```
 
+Load average的概念源自UNIX系统，虽然各家的公式不尽相同，但都是用于衡量正在使用CPU的进程数量和正在等待CPU的进程数量，一句话就是runnable processes的数量。所以load average可以作为CPU瓶颈的参考指标，如果大于CPU的数量，说明CPU可能不够用了。
 
+但是，Linux上不是这样的！
+
+Linux上的load average除了包括正在使用CPU的进程数量和正在等待CPU的进程数量之外，还包括uninterruptible sleep的进程数量。通常等待IO设备、等待网络的时候，进程会处于uninterruptible sleep状态。Linux设计者的逻辑是，uninterruptible sleep应该都是很短暂的，很快就会恢复运行，所以被等同于runnable。然而uninterruptible sleep即使再短暂也是sleep，何况现实世界中uninterruptible sleep未必很短暂，大量的、或长时间的uninterruptible sleep通常意味着IO设备遇到了瓶颈。众所周知，sleep状态的进程是不需要CPU的，即使所有的CPU都空闲，正在sleep的进程也是运行不了的，所以sleep进程的数量绝对不适合用作衡量CPU负载的指标，Linux把uninterruptible sleep进程算进load average的做法直接颠覆了load average的本来意义。所以在Linux系统上，load average这个指标基本失去了作用，因为你不知道它代表什么意思，当看到load average很高的时候，你不知道是runnable进程太多还是uninterruptible sleep进程太多，也就无法判断是CPU不够用还是IO设备有瓶颈。
 
 
 
@@ -76,32 +59,6 @@ DATA
 2、真正的该程序要求的数据空间，是真正在运行中要使用的。
 
 
-
-## 大量IO也可能会造成CPU负载高
-
-非常频繁的IO 导致了非常频繁的中断信号，cpu处理信号需要保护和恢复现场，想等于频繁上下文切换，可能会造成CPU负载高，但是使用率低。
-
-计算机硬件上使用DMA来访问磁盘等IO，也就是请求发出后，CPU就不再管了，直到DMA处理器完成任务，再通过中断告诉CPU完成了。所以，单独的一个IO时间，对CPU的占用是很少的，阻塞了就更不会占用CPU了，因为程序都不继续运行了，CPU时间交给其它线程和进程了。虽然IO不会占用大量的CPU时间，但是非常频繁的IO还是会非常浪费CPU时间的，所以面对大量IO的任务，有时候是需要算法来合并IO，或者通过cache来缓解IO压力的。
-
-
-
-
-
-
-
-## 理解Linux load average的误区
-
-uptime和top等命令都可以看到load average指标，从左至右三个数字分别表示1分钟、5分钟、15分钟的load average：
-
-```
- uptime 10:16:25 up 3 days, 19:23, 2 users, load average: 0.00, 0.01, 0.05
-```
-
-Load average的概念源自UNIX系统，虽然各家的公式不尽相同，但都是用于衡量正在使用CPU的进程数量和正在等待CPU的进程数量，一句话就是runnable processes的数量。所以load average可以作为CPU瓶颈的参考指标，如果大于CPU的数量，说明CPU可能不够用了。
-
-但是，Linux上不是这样的！
-
-Linux上的load average除了包括正在使用CPU的进程数量和正在等待CPU的进程数量之外，还包括uninterruptible sleep的进程数量。通常等待IO设备、等待网络的时候，进程会处于uninterruptible sleep状态。Linux设计者的逻辑是，uninterruptible sleep应该都是很短暂的，很快就会恢复运行，所以被等同于runnable。然而uninterruptible sleep即使再短暂也是sleep，何况现实世界中uninterruptible sleep未必很短暂，大量的、或长时间的uninterruptible sleep通常意味着IO设备遇到了瓶颈。众所周知，sleep状态的进程是不需要CPU的，即使所有的CPU都空闲，正在sleep的进程也是运行不了的，所以sleep进程的数量绝对不适合用作衡量CPU负载的指标，Linux把uninterruptible sleep进程算进load average的做法直接颠覆了load average的本来意义。所以在Linux系统上，load average这个指标基本失去了作用，因为你不知道它代表什么意思，当看到load average很高的时候，你不知道是runnable进程太多还是uninterruptible sleep进程太多，也就无法判断是CPU不够用还是IO设备有瓶颈。
 
 
 

@@ -4,13 +4,43 @@
 
 https://fr3nky.uk/2024/02/02/linux/
 
+# A
+
+## apt-get
+
+**apt-get** Advanced Package Tool，包管理工具，用于Debian、Ubuntu 。类似的还有：
+
+**yum**  Yellowdog Updater Modified，用于Red Hat、CentOS
+
+**dnf** Dandified YUM，用于替代 yum
+
+**brew**  Homebrew，用于macOS
+
+
+
+## automake
+
+https://www.laruence.com/2009/11/18/1154.html
+
+
+
+
+
+
+
 # B
 
 ## brew
 
-Homebrew  是 macOS中好用的包管理器，可以用来安装mac软件。
+Homebrew  是 macOS中最好用的包管理器，可以用来安装mac软件。
 
 
+
+```sh
+brew search tomcat
+
+brew install tomcat
+```
 
 
 
@@ -334,7 +364,7 @@ mkdir -p /a/b 可以创建多级文件夹
 
 ## orb
 
-orbStack 虚拟机的进入工具
+OrbStack 是一款专为 macOS 设计的快速、轻量级且易于操作的 Docker 容器与 Linux 机器管理工具。它提供了一种替代传统的 Docker Desktop 和 WSL（Windows Subsystem for Linux）的方式，通过一个易于使用的应用程序集成了强大的功能，致力于提升开发效率。
 
 ```sh
 orb #进入默认机器
@@ -582,6 +612,12 @@ nc -vz -w 2 192.168.1.104 3306
 
 
 ## top  查看系统资源占用情况
+
+macOS和Linux系统中都包含该命令，且展示数据有所区分。
+
+### Linux
+
+### macOS
 
 top不是显示cpu占用情况工具，而是linux系统资源的占用情况。
 
