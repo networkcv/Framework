@@ -1,3 +1,5 @@
+# Java序列化
+
 # getResourceAsStream
 
 在java项目中会经常用到getResourceAsStream这个函数获取一些配置文件，但是怎样正确使用这个函数呢？

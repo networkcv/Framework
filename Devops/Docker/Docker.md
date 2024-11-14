@@ -503,7 +503,7 @@ docker info
 | Docker网络模式  | 配置                       | 说明                                                         |
 | --------------- | -------------------------- | ------------------------------------------------------------ |
 | bridge模式      | –net=bridge                | （默认为该模式）。此模式会为每一个容器分 配、设置IP等， 并将容器连接到一个docker0虚拟网桥，通过 docker0网桥 以及Iptables nat表配置与宿主机通信。 |
-| host模式        | –net=host                  | 容器和宿主机共享Network namespace。 容器将不会虚拟出自己的网卡，配置自己的IP 等， 而是使用宿主机的IP和端口。 |
+| host模式        | --net=host                 | 容器和宿主机共享Network namespace。 容器将不会虚拟出自己的网卡，配置自己的IP 等， 而是使用宿主机的IP和端口。 |
 | none模式        | –net=none                  | 容器有独立的Network namespace，并没有对 其进行任何网络设置， 如分配veth pair 和网桥连接，配置IP等。 该模式关闭了容器的网络功能。 |
 | container模 式  | – net=container:NAME_or_ID | 容器和另外一个容器共享Network namespace。 kubernetes中的pod就是多个容器共享一个 Network namespace。 创建的容器不会创建自己的网卡，配置自己的 IP， 而是和一个指定的容器共享IP、端口范围。 |
 | Macvlan network | 无                         | 容器具备Mac地址，使其显示为网络上的物理 设备                 |

@@ -172,6 +172,17 @@ byte res = (byte) ((byte) 127 + (byte) 1); //这里先用int类型来保存128�
 System.out.println(res);	//-128 
 ```
 
+同样，在表示范围的最小值再进行-1，也会发生溢出。byte表示范围是从-128 到 127，可以把这表示范围看成一个环，最大值和最小值相连的环。
+
+```java
+byte a = -128;
+byte b = 1;
+byte res = (byte) (a - b);
+System.out.println(res); //127
+```
+
+
+
 ## [字符编码](./md/think of Java：字符编码.md)
 
 [原码、反码、补码](https://zhuanlan.zhihu.com/p/105917577)
@@ -865,7 +876,7 @@ class D1 extends D {
 
 ## List
 
-### **ArrayList**
+**ArrayList**
 
 - [ArrayList 源码分析](./md/think of Java：ArrayList 源码分析.md)
 
@@ -875,11 +886,11 @@ class D1 extends D {
   int newCapacity = oldCapacity + (oldCapacity >> 1);
   ```
 
-### Vector
+**Vector**
 
 - Vector是 Java 早期提供的线程安全的动态数组，使用 synchronized 关键字进行同步，除了这一点，其他的实现逻辑基本同 ArrayList 一致，虽然 synchronized 关键字在后续的版本中做了很多优化，但毕竟同步的是由额外开销的，所以在选择上需要慎重。
 
-### LinkedList
+**LinkedList**
 
 - [LinkedList源码分析](./md/think of Java：LinkedList源码分析.md)	**TODO**
 
@@ -894,15 +905,15 @@ class D1 extends D {
 
 Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 就像把 Map 中的 keys 单独作为一个数据结构来使用。
 
-### HashSet
+**HashSet**
 
 利用 哈希算法，将 Dummy value（哑值）保存到对应的key中，如果 哈希散列正常，可以提供常数时间的添加、删除、包含等操作，但不保证有序，具体原因可以参考 对HashMap的介绍。
 
-### LinkedHashSet
+**LinkedHashSet**
 
 继承自 HashSet，内部构建了一个记录插入顺序的双向链表，因此可以按照插入顺序进行 遍历。同时也保证了尝试时间的插入、删除、包含等操作。
 
-### TreeSet
+**TreeSet**
 
 底层通过 TreeMap 实现，支持自然顺序访问，但是添加、删除、包含等操作相对低效 log（N）。
 
@@ -910,7 +921,7 @@ Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 
 
 ![image-20200415101645618](./md/img/think of java/image-20200415101645618.png)
 
-### HashMap
+**HashMap**
 
 - HashMap是基于拉链法实现的一个散列表，内部由数组、链表和红黑树实现。
 
@@ -918,25 +929,25 @@ Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 
 - HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
 - [HashMap源码分析](./md/think of Java：HashMap 源码分析.md)
 
-### Hashtable
+**Hashtable**
 
 - Hashtable是遗留类，常用功能与HashMap类似，不同的是它承自Dictionary类，并且是线程安全的，任一时间只有一个线程能写Hashtable，并发性不如ConcurrentHashMap，不允许null键和值。
 - ConcurrentHashMap引入了分段锁。Hashtable不建议在新代码中使用，不需要线程安全的场合可以用HashMap替换，需要线程安全的场合可以用 ConcurrentHashMap 替换。
 
-### LinkedHashMap
+**LinkedHashMap**
 
 -  LinkedHashMap 继承自 HashMap，所以它的底层仍然是基于拉链式散列结构即由数组和链表或红黑树组成。另外，LinkedHashMap 在上面结构的基础上，增加了一条双向链表，使得上面的结构可以保持键值对的插入顺序。同时通过对链表进行相应的操作，实现了访问顺序相关逻辑。
 -  LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
 - [LinkedHashMap源码分析](./md/think of Java：LinkedHashMap源码分析.md)  **TODO**
 
-### TreeMap
+**TreeMap**
 
 - 基于红黑树(red-black tree)数据结构实现, 按 key 排序.TreeMap实现SortedMap接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用Iterator遍历TreeMap时，得到的记录是排过序的。             
 - 由于底层是基于红黑树的实现，所以get、put、remove之类的操作都是 log（N）时间复杂度。
 - 如果需要使用排序的Map，建议使用TreeMap。在使用TreeMap时，key必须实现Comparable接口或者在构造TreeMap传入自定义的Comparator，否则会在运行时抛出java.lang.ClassCastException类型的异常。我们平时可以使用String类作为key的原因是，String 已经实现了Comparble接口。
 - 这里再提一下，有序和排序是要区分一下的，LinkedHashMap是有序的，它通过链表记录了插入的顺序，而TreeMap的有序是指排序，被插入的key，会进行比较，然后被放到对应的位置，使整个集合始终保持一个有序的状态。
 
-### Map小结
+**Map小结**
 
 对于上述四种Map类型的类，要求映射中的key是不可变对象。不可变对象是该对象在创建后它的哈希值不会被改变。如果对象的哈希值发生变化，Map对象很可能就定位不到映射的位置了。而String类的不可变性 ，以及其缓存了hash值，因此我们通常使用String作为容器存放的key。
 
@@ -944,7 +955,7 @@ Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 
 
 该类为集合的工具类。为我们提供了一些便于操作集合的方法。
 
-### 同步 线程不安全容器
+**同步 线程不安全容器**
 
 ```java
 public static <T> Collection<T> synchronizedCollection(Collection<T> c) 
@@ -952,7 +963,7 @@ public static <T> List<T> synchronizedList(List<T> list)
 public static <T> Set<T> synchronizedSet(Set<T> s) 
 ```
 
-### 添加一组元素
+**添加一组元素**
 
 - Arrays.asList(T... a)
 
@@ -974,7 +985,7 @@ System.out.println(integers2.getClass());
 //class java.util.ArrayList
 ```
 
-### 对有序集合元素进行排序
+**对有序集合元素进行排序**
 
 ```java
 public static <T extends Comparable<? super T>> void sort(List<T> list) 
@@ -1026,7 +1037,7 @@ while (iterator.hasNext()){
 
 ## Iterator和Iterable
 
-### Iterator
+**Iterator**
 
 Iterator 是一个迭代器接口，定义了两个要实现的方法 `hashNext()` 和 `next()`。
 
@@ -1034,7 +1045,7 @@ Iterator 是一个迭代器接口，定义了两个要实现的方法 `hashNext(
 
 List接口下还支持更强大的迭代器 `ListIterator`  可以双向移动。
 
-### Iterable
+**Iterable**
 
 Iterable是JDK5引入的接口，该接口包含一个能够产生Iterator的iterator()方法。`foreach`  底层调用的就是该方法。
 
@@ -1067,7 +1078,7 @@ public class Test1 implements Iterable<String> {
 }
 ```
 
-### 为什么foreach遍历的时候不能删除元素？
+**为什么foreach遍历的时候不能删除元素？**
 
 在我们使用 `foreach` 的时候其实调用的是目标对象的 `iterator()` 方法来获取迭代器进行遍历。
 
@@ -1107,7 +1118,7 @@ public class Test1 implements Iterable<String> {
         }        
 ```
 
-### **那如何在遍历集合时删除元素？**
+那如何在遍历集合时删除元素？
 
 - 使用for循环而不是foreach。
 
@@ -1161,7 +1172,7 @@ public class Test1 implements Iterable<String> {
 
 # [12.异常处理](./md/think of Java：异常处理.md)
 
-# [13. String](./md/think of Java：字符串.md)
+# [13.字符串](./md/think of Java：字符串.md)
 
 
 
@@ -1243,7 +1254,7 @@ class1.isAssignableFrom(class2);
 
 ## 动态代理
 
-### Java语言中的反射机制
+**Java语言中的反射机制**
 
 编程语言可以根据语言类型信息是在运行期检查，还是在编译期检查，来分为静态类型和动态类型。
 
@@ -1253,7 +1264,7 @@ Java 语言是静态的强类型语言，但因为提供了类似反射等机制
 
 **反射机制** 是Java语言的一种基础功能，赋予程序在运行时自省的能力。通过反射机制我们可以直接操作类或对象，比如获取某个对象的类定义，获取类的属性和方法，调用方法或者构造对象，甚至可以在运行时修改类的定义。
 
-### 动态代理及应用场景
+**动态代理及应用场景**
 
 **动态代理** 则是一种方**便运行时动态构建代理、动态处理代持方法调用的机制**。很多场景都是利用该机制，比如包装RPC调用、面向切面的编程AOP。
 
@@ -1269,7 +1280,7 @@ Java 语言是静态的强类型语言，但因为提供了类似反射等机制
 
   AOP通过动态代理机制可以让开发者从这些繁琐的事项中抽身出来，大幅度提高了代码的抽象程度和复用度。
 
-### 静态代理和动态代理的区别
+**静态代理和动态代理的区别**
 
 静态代理：
 
@@ -1339,7 +1350,7 @@ public class Client {
 
 
 
-### 动态代理实现的技术选型
+**动态代理实现的技术选型**
 
 实现 动态代理 这一机制的方式有很多，如 JDK 自身提供的动态代理（就是利用了反射机制），还有如更高性能的字节码操作机制，类似 ASM、cglib（基于ASM）、Javassist。
 
@@ -1370,9 +1381,9 @@ public class Client {
 
 # 17.Java核心类
 
-## 17.1 Object
+## Object
 
-#### 为什么重写equals还要重写hashcode
+**为什么重写equals还要重写hashcode**
 
 ​    参考：https://blog.csdn.net/javazejian/article/details/51348320
 ​        equals方法是Object类的基本方法，用比较两个对象引用地址的方式来检测两个对象是否相同，
@@ -1397,13 +1408,13 @@ Java API中有如下规定:
 
 
 
-## 17.2 包装类
+## 包装类
 
 我们都知道Java是面向对象的，可以说 “万事万物皆对象” ，但基本类型（byte、short、int、long、char、boolean、float、double）除外，但它们的包装类依旧是对象。
 
 例如 Integer 是 int 的包装类型，在其内部持有一个 int 类型的字段来存储数据，并且提供了基本操作，如数学运算、int和字符串的转换、获取对应的hashCode等。并在JDK 5中，引入了自动拆箱和自动装箱功能，极大的简化了相关编程。
 
-### 17.2.1 包装类出现的缘由
+**17.2.1 包装类出现的缘由**
 
 包装类的出现，其实是为了解决基本类型的一些不足，如：
 
@@ -1411,7 +1422,7 @@ Java API中有如下规定:
 
 - 无法高效高效表达数据，如基本类型不能赋null值，这可能会造成字段无法表达出对应的情况，如`int score` 来表示考试成绩，当 `score = 0`时，无法区分是具体的分值为0还是缺考，但`Integer score` 可以，当  `score=0` 时代表成绩为0，当 `score = null` 时，代表缺考。
 
-### 17.2.2 基本API
+**17.2.2 基本API**
 
 ```java
 // 将int转为Integer
@@ -1426,7 +1437,7 @@ public static Integer valueOf(String s)
     
 ```
 
-### 17.2.3 包装类的缓存
+**17.2.3 包装类的缓存**
 
 对字符串的缓存有专门的常量池，而包装类对常用的数值也进行缓存，这里以 Integer 为例，其默认缓存 -128 ～ 127 之间的值，可以通过JVM参数调整最大值，其内部通过一个静态内部类 IntegerCache 来实现。
 
@@ -1455,7 +1466,7 @@ private static class IntegerCache {
 }
 ```
 
-### 17.2.4 自动拆箱、装箱
+**17.2.4 自动拆箱、装箱**
 
 这里还需要理解一下自动拆箱、装箱。
 
@@ -1494,7 +1505,7 @@ System.out.println(i3==i4);   //false
 
 这种缓存机制不止被用在Integer中，其他的一些包装类也使用了该机制。Boolean 缓存了 true/false 对应的实例，其他的数值包装类缓存的范围也是 -128 ～127。
 
-### 17.2.5 使用包装类的一些建议
+**17.2.5 使用包装类的一些建议**
 
 虽然包装类帮助我们解决了基本类型的不足，**但它不能完全的替代基本类型，建议避免无意中的装箱、拆箱行为。**
 
@@ -1504,7 +1515,7 @@ System.out.println(i3==i4);   //false
 
 **但在实际开发中，我们大可不必这么做，还是应该以效率为先，以可靠为先，以易扩展为先，以易理解易维护为先。**
 
-### 17.2.6 原始类型的线程安全
+**17.2.6 原始类型的线程安全**
 
 原始数据类型的变量存在着线程安全问题，需要使用一些手段如使用synchronized进行同步或使用volatile保证其可见性，才能保证其线程安全。
 
@@ -1958,9 +1969,7 @@ class BFilter extends Filter {
 
 
 
-# 23.Log
-
-### [log框架](./md/think of Java：Log.md)
+# [23.log框架](./md/think of Java：Log.md)
 
 # 其他
 
@@ -2048,17 +2057,3 @@ Class clazz3 = Class.forName("java.lang.String");
 ```
 
 
-
-# 最后
-
-从大二接触Java至今，近3年多的时间，一直学习Java相关的知识，工作中也在使用Java，只是时至今日才有幸读完这本书，感受颇深。之前匆匆的学完Java基础，就去学Java Web及SSH、SSM框架，后来也学习了Java虚拟机相关的知识，现在回过头来再看书中的内容，作者其实早已将Java基础、虚拟机相关及程序设计方面的内容编排在一起，呈现给我们。
-
-
-
-**致谢**
-
-感谢《Java编程思想》的作者及译者。
-
-感谢廖雪峰老师通俗易懂的 [Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)。
-
-# 
