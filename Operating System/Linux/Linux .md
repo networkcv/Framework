@@ -1,3 +1,5 @@
+# 问题排查
+
 ## 大量IO也可能会造成CPU负载高
 
 非常频繁的IO 导致了非常频繁的中断信号，cpu处理信号需要保护和恢复现场，想等于频繁上下文切换，可能会造成CPU负载高，但是使用率低。
@@ -135,6 +137,24 @@ brew search 软件名，如brew search wget //搜索软件
 
 
 
+
+
+# [终端和shell](https://blog.csdn.net/Amentos/article/details/129290846)
+
+**终端**
+
+终端，指的是与计算机系统相连的一种输入、输出设备，通常离计算机较远。
+
+平时使用的鼠标、键盘、麦克风是输入终端，显示器、扬声器是输出终端。只不过 terminal 这个终端是一个虚拟终端，它也能提供输入和输出。
+
+**shell**
+
+shell 意为“壳”，与内核的核对应。
+
+可以理解为操作计算机内核的一种程序语言，它会解释执行，我们通过终端输入的指令。我们输入的命令，可能就是对应操作内核的方法，命令的参数就像是方法的参数。
+
+> shell 是一个命令行解释器，顾名思义就是机器外面的一层壳，用于人机交互，只要是人与电脑之间交互的接口，就可以称为 shell。表现为其作用是用户输入一条命令，shell 就立即解释执行一条。不局限于系统、语言等概念、操作方式和表现方式等。 比如我们平时在黑框框里输入命令，叫 command-line interface (CLI)；在屏幕上点点点，叫graphical user interface (GUI)
+
 # bash_profile 和 zshrc 文件的区别？
 
 .bash_profile 中修改环境变量只对当前窗口有效，而且需要 source ~/.bash_profile才能使用
@@ -155,9 +175,7 @@ brew search 软件名，如brew search wget //搜索软件
 
 一个程序，是界面上打开的黑框框本身，比如 xterm、kvt 等。shell 运行于其中。
 
-## shell 概念
 
-shell 是一个命令行解释器，顾名思义就是机器外面的一层壳，用于人机交互，只要是人与电脑之间交互的接口，就可以称为 shell。表现为其作用是用户输入一条命令，shell 就立即解释执行一条。不局限于系统、语言等概念、操作方式和表现方式等。 比如我们平时在黑框框里输入命令，叫 command-line interface (CLI)；在屏幕上点点点，叫graphical user interface (GUI)
 
 ## Interactive 和 Non-interactive
 

@@ -6,9 +6,9 @@ https://fr3nky.uk/2024/02/02/linux/
 
 # A
 
-## apt-get
+## apt
 
-**apt-get** Advanced Package Tool，包管理工具，用于Debian、Ubuntu 。类似的还有：
+**apt / apt-get** Advanced Package Tool，包管理工具，用于Debian、Ubuntu 。类似的还有：
 
 **yum**  Yellowdog Updater Modified，用于Red Hat、CentOS
 
@@ -362,20 +362,62 @@ mkdir -p /a/b 可以创建多级文件夹
 
 # O
 
-## orb
+## [orb](https://docs.orbstack.dev/)  macOS的容器管理工具
 
 OrbStack 是一款专为 macOS 设计的快速、轻量级且易于操作的 Docker 容器与 Linux 机器管理工具。它提供了一种替代传统的 Docker Desktop 和 WSL（Windows Subsystem for Linux）的方式，通过一个易于使用的应用程序集成了强大的功能，致力于提升开发效率。
+
+通过docker desktop 启动的docker 引擎 和 通过orb 启动启动的docker引擎是有区别的。orb 会在docker的基础上额外提供Linux机器管理的工具，这个linux虚拟机其实是orb中的一个自启动的k8s容器，可以通过 docker  ps命令查看。
 
 ```sh
 orb #进入默认机器
 orb -m [machine_name] #进入指定机器
+orb -m [machine_name] -u root #用root身份进入指定机器
 ```
 
 
 
 # P
 
-ps
+## ps
+
+**基本用法**
+
+- `ps`：不带任何参数，显示当前终端的进程列表。
+- `ps --help`：显示帮助信息。
+
+**选项**
+
+- `-a`：显示所有终端的进程，除了会话领导进程。
+- `e`：显示所有进程。
+- `f`：全格式显示，包括命令行参数。
+- `u`：以用户为主的格式显示进程信息。
+- `x`：显示没有控制终端的进程。
+- `l`：长格式显示，包括更多详细信息。
+
+**输出字段解释**
+
+- `PID`：进程ID。
+- `TTY`：终端类型，表示进程是在哪个终端上运行的。
+- `TIME`：CPU时间，进程占用的CPU时间。
+- `CMD`：命令名，执行的命令。
+
+**组合选项**
+
+- `ps aux`：显示所有进程的详细信息。
+  - `a`：显示所有终端的进程。
+  - `u`：以用户为主的格式显示进程信息。
+  - `x`：显示没有控制终端的进程。
+- `ps -ef`：以全格式显示所有进程。
+  - `-e`：显示所有进程。
+  - `f`：全格式显示。
+
+**示例**
+
+- `ps aux | grep nginx`：显示所有nginx进程的详细信息，并过滤出包含"nginx"的行。
+- `ps -ef | grep root`：显示所有由root用户启动的进程。
+- `ps -u username`：显示指定用户启动的所有进程。
+- `ps -p PID`：显示指定PID的进程信息。
+- `ps -ef | awk '{print $8, $9}'`：显示所有进程的命令名和命令行参数。
 
 
 
@@ -613,7 +655,7 @@ nc -vz -w 2 192.168.1.104 3306
 
 ## top  查看系统资源占用情况
 
-macOS和Linux系统中都包含该命令，且展示数据有所区分。
+macOS和Linux系统中都包含该命令，但展示数据有所区分，因此分成两部分。
 
 ### Linux
 
