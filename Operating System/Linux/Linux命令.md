@@ -36,10 +36,65 @@ Homebrew  是 macOS中最好用的包管理器，可以用来安装mac软件。
 
 
 
-```sh
-brew search tomcat
+### brew search
 
-brew install tomcat
+```sh
+brew search lsof 
+```
+
+### brew install
+
+```sh
+brew install lsof 
+```
+
+**直接下载brew包含的多版本**
+
+```sh
+brew search jdk@
+==> Formulae
+openjdk@11       openjdk@17 ✔     openjdk@21 ✔     openjdk@23 ✔     openjdk@8     
+
+==> Casks
+graalvm-jdk@17                    microsoft-openjdk@11              microsoft-openjdk@21              oracle-jdk@21
+graalvm-jdk@21                    microsoft-openjdk@17              oracle-jdk@17
+```
+
+```sh
+brew install openjdk@11
+```
+
+**使用rb链接下载历史版本的应用**
+
+1. ```sh
+   #查看下载来源 From: https://github.com/Homebrew/homebrew-core/blob/HEAD/Formula/l/lsof.rb
+   brew info lsof 
+   ```
+
+2. 到对应github中查看历史版本的rb文件
+
+   ```sh
+   # 例如https://raw.githubusercontent.com/Homebrew/homebrewore/b0e4376fc8e13dd9ef25ee64c47e9d864402e9cb/Formula/lsof.rb
+   ```
+
+3. 下载rb文件
+
+   ```sh
+   curl -O https://raw.githubusercontent.com/Homebrew/homebrewore/b0e4376fc8e13dd9ef25ee64c47e9d864402e9cb/Formula/lsof.rb
+   ```
+
+4. 在下载目录指定版本安装
+
+   ```sh
+   brew install lsof.rb
+   ```
+
+   
+
+### brew uninstall
+
+```sh
+brew uninstall lsof 
 ```
 
 
@@ -110,7 +165,354 @@ Linux/Unix 的文件调用权限分为三级 : 文件所有者（Owner）、用�
 - 字母法格式: chmod 不同角色设置的权限 文件
 - 数字法格式: chmod 不同角色的权限值 文件名
 
+## cp 文件复制
 
+当然，这里提供一些 `cp` 命令的示例，展示如何在不同场景下使用它：
+
+**示例 1: 复制单个文件**
+
+假设我们有一个名为 `example.txt` 的文件，我们想复制它到当前目录下的 `backup.txt`：
+```sh
+cp example.txt backup.txt
+```
+执行后，当前目录下将有两个文件：`example.txt` 和 `backup.txt`，它们的内容相同。
+
+**示例 2: 复制多个文件到同一目录**
+
+我们有多个文本文件，想要将它们全部复制到 `documents` 目录中：
+```sh
+cp *.txt documents/
+```
+这个命令会将当前目录下所有 `.txt` 文件复制到 `documents` 目录中。
+
+**示例 3: 递归复制目录**
+
+我们有一个名为 `old_project` 的目录，想要复制整个目录到名为 `new_project` 的新目录：
+```sh
+cp -r old_project new_project
+```
+执行后，`new_project` 目录将包含 `old_project` 目录的所有内容。
+
+**示例 4: 保留文件属性复制**
+
+我们想要复制 `image.png` 并保留其原有的修改时间和权限：
+```sh
+cp -p image.png /path/to/destination/image.png
+```
+这将复制 `image.png` 并保留其原有的属性。
+
+**示例 5: 强制覆盖文件**
+
+我们想要复制 `report.docx` 到 `/home/user/documents` 目录，并且不管目标目录中是否已存在同名文件，都直接覆盖：
+```sh
+cp -f report.docx /home/user/documents/
+```
+
+**示例 6: 显示复制进度**
+
+我们想要复制一个较大的视频文件，并看到复制过程中的详细信息：
+```sh
+cp -v video.mp4 /path/to/destination/video.mp4
+```
+这将显示复制过程中的详细信息，包括文件名和复制状态。
+
+**示例 7: 复制并删除原文件**
+
+我们想要将 `script.sh` 移动到 `/usr/local/bin` 目录，实际上是复制然后删除原文件：
+```sh
+cp --remove-destination script.sh /usr/local/bin/script.sh
+```
+这将把 `script.sh` 复制到 `/usr/local/bin` 目录，并删除原文件。
+
+这些示例展示了 `cp` 命令在不同情况下的使用方式，帮助您更有效地管理文件和目录。
+
+
+
+## curl 访问Web服务器
+
+client URL工具
+
+https://www.ruanyifeng.com/blog/2019/09/curl-reference.html
+
+发送GET请求，访问URI
+
+```sh
+curl https://www.baidu.com
+```
+
+### -A
+
+`-A ` 参数指定客户端的代理标头信息，即`User-Agent`。本质是一个HTTP 请求头部字段，用于告诉服务器客户端的调用信息，如**浏览器类型**、**浏览器版本**、**操作系统**、**设备信息**、**引擎和版本** 等，如果使用curl 调用的话，默认用户代理字符串是`curl/curl命令的版本号`。
+
+> ```bash
+> $ curl -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36' https://google.com
+> ```
+
+上面命令将`User-Agent`改成 Chrome 浏览器。
+
+> ```bash
+> $ curl -A '' https://google.com
+> ```
+
+上面命令会移除`User-Agent`标头。
+
+也可以通过`-H`参数直接指定标头，更改`User-Agent`。
+
+> ```bash
+> $ curl -H 'User-Agent: php/1.0' https://google.com
+> ```
+
+### **-b**
+
+`-b`参数用来向服务器发送 Cookie。
+
+> ```bash
+> $ curl -b 'foo=bar' https://google.com
+> ```
+
+上面命令会生成一个标头`Cookie: foo=bar`，向服务器发送一个名为`foo`、值为`bar`的 Cookie。
+
+> ```bash
+> $ curl -b 'foo1=bar;foo2=bar2' https://google.com
+> ```
+
+上面命令发送两个 Cookie。
+
+> ```bash
+> $ curl -b cookies.txt https://www.google.com
+> ```
+
+上面命令读取本地文件`cookies.txt`，里面是服务器设置的 Cookie（参见`-c`参数），将其发送到服务器。
+
+### **-c**
+
+`-c`参数将服务器设置的 Cookie 写入一个文件。
+
+> ```bash
+> $ curl -c cookies.txt https://www.google.com
+> ```
+
+上面命令将服务器的 HTTP 回应所设置 Cookie 写入文本文件`cookies.txt`。
+
+### **-d**
+
+`-d`参数用于发送 POST 请求的数据体。
+
+> ```bash
+> $ curl -d'login=emma＆password=123'-X POST https://google.com/login
+> # 或者
+> $ curl -d 'login=emma' -d 'password=123' -X POST  https://google.com/login
+> ```
+
+使用`-d`参数以后，HTTP 请求会自动加上标头`Content-Type : application/x-www-form-urlencoded`。并且会自动将请求转为 POST 方法，因此可以省略`-X POST`。
+
+`-d`参数可以读取本地文本文件的数据，向服务器发送。
+
+> ```bash
+> $ curl -d '@data.txt' https://google.com/login
+> ```
+
+上面命令读取`data.txt`文件的内容，作为数据体向服务器发送。
+
+`--data-urlencode`参数等同于`-d`，发送 POST 请求的数据体，区别在于会自动将发送的数据进行 URL 编码。
+
+也可以结果-G来发送编码后的GET请求体。
+
+> ```bash
+> curl --data-urlencode 'comment=hello world' https://google.com/login
+> ```
+
+上面代码中，发送的数据`hello world`之间有一个空格，需要进行 URL 编码。
+
+### **-e**
+
+`-e`参数用来设置 HTTP 的标头`Referer`，表示请求的来源。
+
+> ```bash
+> curl -e 'https://google.com?q=example' https://www.example.com
+> ```
+
+上面命令将`Referer`标头设为`https://google.com?q=example`。
+
+`-H`参数可以通过直接添加标头`Referer`，达到同样效果。
+
+> ```bash
+> curl -H 'Referer: https://google.com?q=example' https://www.example.com
+> ```
+
+### **-F**
+
+`-F`参数用来向服务器上传二进制文件。
+
+> ```bash
+>  curl -F 'file=@photo.png' https://google.com/profile
+> ```
+
+上面命令会给 HTTP 请求加上标头`Content-Type: multipart/form-data`，然后将文件`photo.png`作为`file`字段上传。
+
+`-F`参数可以指定 MIME 类型。
+
+> ```bash
+>  curl -F 'file=@photo.png;type=image/png' https://google.com/profile
+> ```
+
+上面命令指定 MIME 类型为`image/png`，否则 curl 会把 MIME 类型设为`application/octet-stream`。
+
+`-F`参数也可以指定文件名。
+
+> ```bash
+>  curl -F 'file=@photo.png;filename=me.png' https://google.com/profile
+> ```
+
+上面命令中，原始文件名为`photo.png`，但是服务器接收到的文件名为`me.png`。
+
+### **-G**
+
+`-G`参数用来构造 URL 的查询字符串。
+
+> ```bash
+>  curl -G -d 'q=kitties' -d 'count=20' https://google.com/search
+> ```
+
+上面命令会发出一个 GET 请求，实际请求的 URL 为`https://google.com/search?q=kitties&count=20`。如果省略`-G`，会发出一个 POST 请求。
+
+如果数据需要 URL 编码，可以结合`--data--urlencode`参数。
+
+> ```bash
+> curl -G --data-urlencode 'comment=hello world' https://www.example.com
+> ```
+
+示例：
+
+![image-20241125174145754](img/Linux命令/image-20241125174145754.png)
+
+ url中的中文“你 好”进行了url编码后变成了 %E4%BD%A0 %20 %E5%A5%BD
+
+```sh
+curl 'localhost:8089/api/test/get?id=%E4%BD%A0%20%E5%A5%BD'
+```
+
+在我们输入的时候，我们希望进行url编码，就是使用`--data-urlencode` ，但是使用后默认发送POST请求，需要我们加-G 命令指定为GET请求。
+
+```sh
+curl -G --data-urlencode 'id=你好' 'localhost:8089/api/test/get'
+```
+
+
+
+### **-H**
+
+`-H`参数添加 HTTP 请求的标头。
+
+> ```bash
+>  curl -H 'Accept-Language: en-US' https://google.com
+> ```
+
+上面命令添加 HTTP 标头`Accept-Language: en-US`。
+
+> ```bash
+>  curl -H 'Accept-Language: en-US' -H 'Secret-Message: xyzzy' https://google.com
+> ```
+
+上面命令添加两个 HTTP 标头。
+
+> ```bash
+>  curl -d '{"login": "emma", "pass": "123"}' -H 'Content-Type: application/json' https://google.com/login
+> ```
+
+上面命令添加 HTTP 请求的标头是`Content-Type: application/json`，然后用`-d`参数发送 JSON 数据。
+
+### **-i**
+
+`-i`参数打印出服务器回应的 HTTP 标头。
+
+> ```bash
+>  curl -i https://www.baidu.com
+> ```
+
+上面命令收到服务器回应后，先输出服务器回应的标头，然后空一行，再输出网页的源码。
+
+**-I**
+
+`-I`参数向服务器发出 HEAD 请求，然会将服务器返回的 HTTP 标头打印出来。
+
+> ```bash
+>  curl -I https://www.baidu.com
+> ```
+
+上面命令输出服务器对 HEAD 请求的回应。
+
+`--head`参数等同于`-I`。
+
+> ```bash
+>  curl --head https://www.baidu.com
+> ```
+
+### **-k**
+
+`-k`参数指定跳过 SSL 检测。
+
+> ```bash
+>  curl -k https://www.baidu.com
+> ```
+
+上面命令不会检查服务器的 SSL 证书是否正确。
+
+### **-L**
+
+`-L`参数会让 HTTP 请求跟随服务器的重定向。curl 默认不跟随重定向。
+
+> ```bash
+>  curl -L -d 'tweet=hi' https://api.twitter.com/tweet
+> ```
+
+### **--limit-rate**
+
+`--limit-rate`用来限制 HTTP 请求和回应的带宽，模拟慢网速的环境。
+
+> ```bash
+>  curl --limit-rate 200k https://google.com
+> ```
+
+上面命令将带宽限制在每秒 200K 字节
+
+### **-o**
+
+`-o` 小写o 参数将服务器的回应保存成文件，等同于`wget`命令。
+
+```sh
+curl -o baidu.html https://www.baidu.com
+```
+
+上面命令将`www.baidu.com`保存成`baidu.html`。
+
+**-O**
+
+`-O` 大写O 参数将服务器回应保存成文件，并将 URL 的最后部分当作文件名。
+
+```sh
+curl -O https://www.baidu.com/foo/bar.html
+```
+
+上面命令将服务器回应保存成文件，文件名为`bar.html`。
+
+### **-v**
+
+`-v`参数输出通信的整个过程，用于调试。
+
+```sh
+curl -v https://www.baidu.com
+```
+
+### **-X**
+
+`-X`参数指定 HTTP 请求的方法。
+
+```sh
+curl -X POST https://www.baidu.com
+```
+
+上面命令对`https://www.baidu.com`发出 POST 请求。
 
 
 
@@ -122,6 +524,27 @@ Linux/Unix 的文件调用权限分为三级 : 文件所有者（Owner）、用�
 diff a.txt b.txt 
 
 diff a.txt b.txt -y
+```
+
+
+
+# E
+
+## echo  查看变量
+
+```sh
+echo $USER
+```
+
+
+
+## export  设置环境变量
+
+export 设置环境变量 会当前会话中可用，并且可以被子进程继承。这意味着当你在终端会话中导出一个环境变量后，任何从该会话启动的程序都能访问到这个变量
+
+```sh
+#查看所有环境变量
+export 
 ```
 
 
@@ -276,7 +699,7 @@ https://wangchujiang.com/linux-command/c/ifconfig.html
 
 
 
-## lsof 查看端口
+## lsof 查看打开文件
 
 Linux 查看端口占用情况可以使用 **lsof** 和 **netstat** 命令。
 
@@ -851,7 +1274,7 @@ vi 常用命令
 
 ## which 查找命令
 
-查看命令所在的位置
+查找并显示可执行文件的路径
 
 ```sh
 which docker
