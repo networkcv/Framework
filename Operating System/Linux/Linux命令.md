@@ -534,6 +534,8 @@ diff a.txt b.txt -y
 
 ```sh
 echo $USER
+覆盖写   echo  a	>		文件名
+追加写   echo	a >>	文件名
 ```
 
 

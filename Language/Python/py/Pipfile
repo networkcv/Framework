@@ -13,6 +13,7 @@ chardet = "*"
 retrying = "*"
 sly = "*"
 icecream = "*"
+etcd3 = "*"
 
 [dev-packages]
 
