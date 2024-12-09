@@ -1451,7 +1451,7 @@ insert  into `tbuser`(`userid`,`username`,`password`,`userroles`,`nickname`) val
 
 
 
-## 目标二：Dockerfile自定义mysql镜像
+## 目标二：Dockerfile自定义mysql
 
 - 优化镜像时区问题 
 - 在容器启动时，直接导入lagou.sql数据库

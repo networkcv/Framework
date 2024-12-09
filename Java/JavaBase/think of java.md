@@ -193,6 +193,8 @@ System.out.println(res); //127
 
 **补码**：计算机求相反数的编码，补码=反码+1。负数在计算机中使用补码进行存储。
 
+java使用的是Unicode而不是ASCII字符集，所以标识符中的字母不仅是英文，也可以是"$" 或者 ”_“，还包括汉字（每个汉字占两个字节），但不建议使用汉字。
+
 # 3.操作符
 
 ## ==  与 ！=
@@ -814,7 +816,7 @@ class D1 extends D {
           };
   ```
 
-### 成员内部类和静态成员内部类
+**成员内部类和静态成员内部类**
 
 - 成员内部类可以无条件访问外部类的所有成员属性和成员方法（包括private和静态成员）。
 - 如果要访问外部类的同名成员，可以通过OuterClassName.this.成员变量(成员方法) 访问。
@@ -824,17 +826,17 @@ class D1 extends D {
 - 只有静态内部类才能定义静态成员，静态方法无法使用非静态变量。
 - 普通的内部类对象隐式地保持了一个指向外部类对象的引用。
 
-### 局部内部类
+**局部内部类**
 
 - 局部内部类就像是方法里面的一个局部变量一样，不能被权限修饰符和static修饰，但可以被abstract和final修饰
 
-### 匿名内部类
+**匿名内部类**
 
 - 通过new表达式返回一个被 自动向上转型为实现类或者接口的引用。
 -  和局部内部类一样，没有通过 `class` 关键字来定义类，因此也 **不能直接使用** 权限修饰符来修饰，但是匿名内部类返回的是引用，而引用可以定义在方法中作为局部变量，也可以定义在类中作为成员变量，当作为成员变量时，那么便可以通过权限修饰符修饰引用以达到间接修饰匿名内部类。
 - 因为没有名称，所以没有显式的构造方法，但是可以通过定义在类中的构造代码块`{}` 来进行构造。
 
-### 为什么 局部内部类 和 匿名内部类 只能访问 final 局部变量？
+**为什么 局部内部类 和 匿名内部类 只能访问 final 局部变量？**
 
 这里需要注意的是 **final 局部变量** ，访问成员变量则不需要 final修饰。
 
@@ -842,7 +844,7 @@ class D1 extends D {
 
 >  在JDK8之前，局部内部类和匿名内部类 访问的局部变量需要手动用 `final` 关键字进行修饰，但在JDK8及之后，如果我们不添加，则编译器会隐式地帮我们添加。
 
-### 为什么需要内部类？
+**为什么需要内部类？**
 
 内部类可以继承多个具体或抽象的类的能力，使多重继承的解决方案变得完整。接口的多实现解决了部分问题，而内部类机制有效地实现了“多重继承”。比如一种接口需要表现出不同的行为，比如实现跑步的接口，为我们添加的跑步的行为，但如果分为正着跑和倒着跑两种实现，直接实现跑步接口就无法支持了，此时可以使用内部类实现两种不同的跑步方式。或者说要继承多个抽象或具体的类，而不是接口，这样只有内部类才能完成。
 
@@ -1557,11 +1559,50 @@ public class BaseTypeThreadUnSafe {
 
 
 
+**自动装箱和拆箱**
+
+基本类型和包装类型可以自动转换。自动装箱和自动拆箱只发生在编译阶段，目的是为了少写代码。
+
+```java
+Integer n = 100; // 编译器自动使用 static Integer.valueOf(int)
+int x = n; // 编译器自动使用	integer.intValue()
+```
+
+拆箱的时候使用的是Integer对象的 IntValue() 方法，但如果Integer n只是一个引用的话，拆箱就会出现空指针异常。
+
+```java
+Integer n = null;
+int i = n;	//会在运行期报空指针异常
+```
+
+这些包装类都是被 `final` 修饰的不可变类，在比较Integer的时候要使用 `equals()` 而不是 `==`。
+
+```java
+Integer n0 = 127;
+Integer n1 = Integer.valueOf(127);
+System.out.println(n0==n1);	//true
+Integer n2 = Integer.valueOf(127);
+Integer n3 = Integer.valueOf(128);
+Integer n4 = Integer.valueOf(128);
+System.out.println(n1==n2);	//true
+System.out.println(n3==n4);	//false
+Integer n5 = new Integer(127);
+System.out.println(n1==n5); //false
+```
+
+`n0==n1` 为true，是因为自动装箱，相当于调用了Integer.valueOf()方法。
+
+`n1==n2` 为true，`n3==n4` 为false 的原因是编译器对127以内的数字进行了缓存优化。
+
+`n1==n5 ` 为 false 是因为，通过new 关键字总是创建新的 Integer 实例。
+
+
+
 ## Random
 
 用来生产随机数，在创建 Random 对象时，可以传入一个`seed(种子)` ，对于特定的种子总是会生成相同的随机数列，可以调用方法 `nextInt(int bound)` 获取，结果会从 `[0,bound)` 里取，包左不包右。
 
-# 18.[Java I/O](./md/think of Java：Java IO.md)
+# [18.Java I/O](./md/think of Java：Java IO.md)
 
 # 19.枚举类型
 
@@ -1640,7 +1681,7 @@ Java使用`enum`定义枚举类型，它被编译器编译为`final class Xxx ex
 
 # 20.注解
 
-## 20.1 注解的作用
+## 注解的作用
 
 从JVM的角度看，注解本身对代码逻辑没有任何影响，如何使用注解完全由工具决定。
 
@@ -1665,7 +1706,7 @@ Java使用`enum`定义枚举类型，它被编译器编译为`final class Xxx ex
 
 如果参数名称是`value`，且只有一个参数，那么可以省略参数名称。
 
-## 20.2 自定义注解
+## 自定义注解
 
 使用 `@interface` 来定义注解。
 
@@ -1738,7 +1779,7 @@ public @interface Check {
 
 仅针对 `class` 的继承，对 `interface` 的实现无效。
 
-## 20.3 处理注解
+## 处理注解
 
 因为注解定义后也是一种`class`，所有的注解都继承自`java.lang.annotation.Annotation`，因此，读取注解，需要使用反射API。
 
@@ -1780,280 +1821,17 @@ sayMethod.isAnnotationPresent(Check.class)
 
      
 
-# 21.[Java正则表达式](./md/think of Java：正则表达式.md)
+# [21.Java正则表达式](./md/think of Java：正则表达式.md)
 
-[Java Pattern类和Matcher类的使用](http://c.biancheng.net/view/5814.html)
-
-# 22.设计模式相关
-
-## 策略模式
-
-能够根据所传递的参数对象的不同而有不同的行为
-
-```java
-public interface Operator {
-    int process(int i1,int i2);
-}
-public class Addition implements Operator {
-    @Override
-    public int process(int i1, int i2) {
-        return i1 + i2;
-    }
-}
-public class Subtraction implements Operator {
-    @Override
-    public int process(int i1, int i2) {
-        return i1-i2;
-    }
-}
-public class Test1 {
-    public static int process(Operator operator, int i1, int i2) {
-        return operator.process(i1, i2);
-    }
-    public static void main(String[] args) {
-        System.out.println(process(new Addition(), 2, 1));
-        System.out.println(process(new Subtraction(), 2, 1));
-        //Output
-        // 3
-        // 1
-    }
-}
-```
+Java 中的正则匹配  [Pattern类和Matcher类的使用](http://c.biancheng.net/view/5814.html)
 
 
 
-## 适配器模式
-
-适配器模式其实用的代理思想，有一个已有的类作为参数传入到它没有实现的接口中，创建一个实现该接口的类，同时，该类中要么继承已有类，要么进行组合（持有已有类的引用）。
-
-```java
-public class Multiply {
-    public int multiply(int i1, int i2) {
-        return i1 * i2;
-    }
-}
-public interface Operator {
-    int process(int i1, int i2);
-}
-public class Test1 {
-    public static int process(Operator operator, int i1, int i2) {
-        return operator.process(i1, i2);
-    }
-
-    public static void main(String[] args) {
-//        process(new Multiply(),1,2);  //Multiply没有实现Operator接口，所以无法作为参数传入。
-        //下面采用适配器模式来进行适配
-        Operator multiplyAdapter1 = new MultiplyAdapter1();
-        System.out.println(process(multiplyAdapter1, 2, 3));
-        Operator multiplyAdapter2 = new MultiplyAdapter2(new Multiply());
-        System.out.println(process(multiplyAdapter2, 2, 3));
-    }
-}
-public class MultiplyAdapter1 extends Multiply implements Operator  {
-    @Override
-    public int process(int i1, int i2) {
-        return multiply(i1,i2);
-    }
-}
-public class MultiplyAdapter2 implements Operator {
-    Multiply multiply;
-
-    public MultiplyAdapter2(Multiply multiply) {
-        this.multiply = multiply;
-    }
-
-    @Override
-    public int process(int i1, int i2) {
-        return multiply.multiply(i1, i2);
-    }
-}
-```
-
-这个简单的例子只是为了说明适配器模式大致的原理，真正在用的时候，已有接口和已有类的方法是不同的，可能接口中的方法有三个参数，而你的已有类中只有两个参数。
-
-## 迭代器模式
-
-```java
-public class Test1 implements Iterable<String> {
-
-    private String[] arr = "abcdef".split("");
-
-    @Override
-    public Iterator<String> iterator() {
-        return new Iterator<String>() {
-            private int index=0;
-            @Override
-            public boolean hasNext() {
-                return index<arr.length;
-            }
-
-            @Override
-            public String next() {
-                return arr[index++];
-            }
-        };
-    }
-
-    public static void main(String[] args){
-        for (String  s:new Test1()){
-            System.out.println(s);
-        }
-    }
-}
-```
-
-## 工厂方法模式
-
-```java
-public class Part {
-    @Override
-    public String toString() {
-        return getClass().getSimpleName();
-    }
-
-    static List<Class<? extends Part>> partFactories = new ArrayList<>();
-
-    static {
-        partFactories.add(AFilter.class);
-        partFactories.add(BFilter.class);
-    }
-
-    private static Random rand = new Random(47);
-
-    public static Part createRandom() {
-        int n = rand.nextInt(partFactories.size());
-        try {
-            return partFactories.get(n).newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        for (int i = 0; i < 10; i++) {
-            System.out.println(Part.createRandom());
-        }
-    }
-}
-
-interface Factory<T> {
-    T create();
-}
-
-class Filter extends Part {
-}
-
-class AFilter extends Filter {
-    public static class Factory implements _97_设计模式._03_工厂模式.demo14.Factory {
-        @Override
-        public Object create() {
-            return new AFilter();
-        }
-    }
-}
-
-class BFilter extends Filter {
-    public static class Factory implements _97_设计模式._03_工厂模式.demo14.Factory {
-        @Override
-        public Object create() {
-            return new BFilter();
-        }
-    }
-}
-```
-
-## 代理模式
-
-跟踪RealObject中的方法调用，如日志的记录，又或者是统计方法调用的开销。
+# [22.设计模式相关](../../Design/DesignPattern/设计模式.md)
 
 
 
 # [23.log框架](./md/think of Java：Log.md)
 
-# 其他
-
-java使用的是Unicode而不是ASCII字符集，所以标识符中的字母不仅是英文，也可以是"$" 或者 ”_“，还包括汉字（每个汉字占两个字节），但不建议使用汉字。
-
-方法名和参数列表合起来被称为 **方法签名**。
-
-`System.getProperties().list(System.out);` 可以提供环境信息
-
-## 静态分派和动态分派
-
-不需要运行就只能知道调用的是哪个方法的调用就是静态分派，（在IDE中用Ctrl+鼠标左键可以直接点进去的），而需要运行时才能知道的调用就是动态分派（在IDE中用Ctrl+鼠标左键会出现其实现方法列表）。
-
-那么动态绑定是如何实现的？这里需要某种机制，可以在运行时判断对象的实际类型（而不是传入的父类类型），从而调用恰当的方法，如果子类重写了该方法，那么调用子类的重写方法，否则调用父类的方法。
-
-## Log相关
-
-之前使用Commons Logging日志框架和Log4j来实现日志打印。
-
-但由于Log4j中打印日志需要字符串拼接。
-
-```java
-log.info("Set score " + score + " for Person " + p.getName() + " ok.");
-```
-
-所以现在流行的日志框架SLF4J，搭配Logback来做日志实现。
-
-打印日志就变成了：
-
-```java
-logger.info("Set score {} for Person {} ok.", score, p.getName());
-```
-
-以这着占位符的方式，使用起来更加便捷。
-
-日志文件的配置可以参考：https://www.liaoxuefeng.com/wiki/1252599548343744/1264739155914176
-
-## 自动装箱和拆箱
-
-基本类型和包装类型可以自动转换。自动装箱和自动拆箱只发生在编译阶段，目的是为了少写代码。
-
-```java
-Integer n = 100; // 编译器自动使用 static Integer.valueOf(int)
-int x = n; // 编译器自动使用	integer.intValue()
-```
-
-拆箱的时候使用的是Integer对象的 IntValue() 方法，但如果Integer n只是一个引用的话，拆箱就会出现空指针异常。
-
-```java
-Integer n = null;
-int i = n;	//会在运行期报空指针异常
-```
-
-这些包装类都是被 `final` 修饰的不可变类，在比较Integer的时候要使用 `equals()` 而不是 `==`。
-
-```java
-Integer n0 = 127;
-Integer n1 = Integer.valueOf(127);
-System.out.println(n0==n1);	//true
-Integer n2 = Integer.valueOf(127);
-Integer n3 = Integer.valueOf(128);
-Integer n4 = Integer.valueOf(128);
-System.out.println(n1==n2);	//true
-System.out.println(n3==n4);	//false
-Integer n5 = new Integer(127);
-System.out.println(n1==n5); //false
-```
-
-`n0==n1` 为true，是因为自动装箱，相当于调用了Integer.valueOf()方法。
-
-`n1==n2` 为true，`n3==n4` 为false 的原因是编译器对127以内的数字进行了缓存优化。
-
-`n1==n5 ` 为 false 是因为，通过new 关键字总是创建新的 Integer 实例。
-
-## 反射
-
-通过Class实例来获取相关类信息的方法称为反射。
-
-获取Class实例的三种方法：
-
-```java
-Class clazz = String.class;
-Class clazz2 = "String".getClass();
-Class clazz3 = Class.forName("java.lang.String");
-```
 
 

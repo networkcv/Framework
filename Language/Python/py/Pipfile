@@ -12,6 +12,7 @@ nltk = "*"
 chardet = "*"
 retrying = "*"
 sly = "*"
+icecream = "*"
 
 [dev-packages]
 
