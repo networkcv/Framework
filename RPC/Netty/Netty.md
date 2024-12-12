@@ -214,7 +214,7 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
 
 
 
-#### **Reactor模式小结：**
+#### Reactor模式小结
 
 - 单Reactor单线程，前台接待员和服务员是同一个人，全程为顾客服务
 - 单Reactor多线程，一个前台接待员，多个服务生，接待员只负责接待
@@ -275,35 +275,11 @@ Netty 是一个 **异步** 的、**基于事件驱动** 、底层通过包装 **
    - 处理任务队列的任务，即 runAllTasks
 8. 每个Worker NioEventLoop 处理业务时，会使用 Pipeline（管道），pipeline 与 channel 是相互引用的关系，即通过pipeline 可以获取到对应通道，也可以通过channel获取到pipeline ，同时 管道中维护里很多的处理器。
 
-### Netty入门实例 - TCP服务
-
-1. 实例要求：使用IDEA 创建Netty项目
-2. Netty 服务器在 6668 端口监听，客户端能发送消息给服务器 "hello, 服务器~"
-3. 服务器可以回复消息给客户端 "hello, 客户端~"
-4. 目的：对Netty 线程模型 有一个初步认识, 便于理解Netty 模型理论
-
-代码链接：
-
-```
-
-
-```
 
 
 
 
-
-**任务队列中的** **Task** **有** **3** **种典型使用场景**
-
-1. 用户程序自定义的普通任务，存放在TaskQueue
-2. 用户自定义定时任务 ，存放在ScheduleTaskQueue
-3. 非当前 Reactor 线程调用 Channel 的各种方法
-
-例如在**推送系统**的业务线程里面，根据**用户的标识**，找到对应的 **Channel** **引用**，然后调用 Write 类方法向该用户推送消息，就会进入到这种场景。最终的 Write 会提交到任务队列中后被**异步消费**
-
-
-
-**方案再说明**：
+### Netty组件介绍
 
 1. Netty 抽象出两组**线程池**，BossGroup 专门负责接收客户端连接，WorkerGroup 专门负责网络读写操作。
 2. NioEventLoop 表示一个不断循环执行处理任务的线程，每个 NioEventLoop 都有一个 selector，用于监听绑定在其上的 socket 网络通道。
@@ -688,42 +664,6 @@ downstream事件包括
 2. DelimiterBasedFrameDecoder：使用自定义的特殊字符作为消息的分隔符。
 3. HttpObjectDecoder：一个HTTP数据的解码器
 4. LengthFieldBasedFrameDecoder：通过指定长度来标识整包消息，这样就可以自动的处理黏包和半包消息。
-
-### Log4j整合到Netty
-
-1. 添加maven依赖
-
-```
-	    <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.25</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.25</version>
-            <scope>test</scope>
-        </dependency>
-
-```
-
-2.配置log4j.properties
-
-![image-20200305001146323](img/image-20200305001146323.png)
-
-
 
 ### TCP 粘包拆包原理
 
