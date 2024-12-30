@@ -287,6 +287,8 @@ public  interface ZuulFallbackProvider {
 
 ## Kong
 
+[学习资源](https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2018/09/29/nginx-openresty-kong.html)
+
 Kong 是 Mash ape 公司的开源项目，它是一个在 Nginx 中运行的 Lua 应用程序，并且可以通过 Lua-Nginx 模块实现扩展。
 
 > - Nginx 是模块化设计的反向代理软件，C语言开发；
@@ -320,6 +322,14 @@ Kong 主要有三个组件：
 Zuul 是 Spring Cloud 全家桶中的微服务 API 网关。所有从设备或网站来的请求都会经过 Zuul 到达后端的 Netflix 应用程序。
 
 作为一个边界性质的应用程序，Zuul 提供了动态路由、监控、弹性负载和安全功能。包括 Zuul1 和 Zuul2 两个版本。
+
+
+
+## Apache APISIX
+
+https://apisix.apache.org/zh/docs/apisix/getting-started/README/
+
+
 
 介绍了几个开源 API 网关的基本信息以后，我们从几个维度对他们进行比较：
 

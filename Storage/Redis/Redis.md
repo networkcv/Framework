@@ -1649,6 +1649,10 @@ Redis事务可以保证命令原子化执行，而Pipeline不保证原子性。
 
 最后也要说明的是，Redis事务、Pipeline都只能作用于单个节点。集群环境下，执行Redis命令时，会根据key计算出一个槽位（slot）,然后根据槽位重定向到特定的节点上执行操作。批量执行命令的操作可能会使用到多个Redis节点，即多个连接，目前还无法支持。
 
+# Reids 大Key 排查处理
+
+https://blog.csdn.net/qq_63815371/article/details/137602525
+
 # 其他
 
 ## [动态链接库](https://zhuanlan.zhihu.com/p/130871341)

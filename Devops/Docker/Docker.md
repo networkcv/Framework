@@ -2,6 +2,8 @@
 
 [https://hub.docker.com/](https://hub.docker.com/)
 
+[不要轻易使用 Alpine 镜像来构建 Docker 镜像](https://cloud.tencent.com/developer/article/1632733)
+
 ## docker与传统虚拟化区别
 
 | 特性     | 容器               | 虚拟机     |

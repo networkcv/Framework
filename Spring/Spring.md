@@ -1,5 +1,3 @@
-
-
 # [Spring文档点这里](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#spring-core)
 
 # [Spring源码思维导图](https://www.processon.com/view/link/5f5075c763768959e2d109df#outline)
@@ -1871,6 +1869,33 @@ T instance = (T) BeanUtils.instantiateClass(constructor, args);
 ```
 
 # 十、TODO
+
+## xml文件的解析
+
+xml 文件解析的本质还是为了生成 spring 的 BeanDefinition，然后由 Spring 最终创建对应的对象。
+
+像dubbo.xsd是用来约束dubbo相关配置文件中的标签和对应属性的，
+
+provider.xml示例
+
+```
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+       
+    <dubbo:application name="demo-provider"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:protocol name="dubbo" port="20890"/>
+    <bean id="demoService" class="org.apache.dubbo.samples.basic.impl.DemoServiceImpl"/>
+    <dubbo:service interface="org.apache.dubbo.samples.basic.api.DemoService" ref="demoService"/>
+</beans>
+```
+
+
+
+
 
 2.spring 提供了哪些配置方式？
 

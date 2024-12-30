@@ -112,6 +112,28 @@ Dubbo 不绑定特定的通信协议，即 Dubbo 服务间可通过多种 RPC �
 
 
 
+# 配置文件
+
+dubbo  可以使用xml文件进行配置，xsd文件是来约束 schema文件配置内容的
+
+**provider.xml 示例**
+
+```
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+    <dubbo:application name="demo-provider"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:protocol name="dubbo" port="20890"/>
+    <bean id="demoService" class="org.apache.dubbo.samples.basic.impl.DemoServiceImpl"/>
+    <dubbo:service interface="org.apache.dubbo.samples.basic.api.DemoService" ref="demoService"/>
+</beans>
+```
+
+
+
 # SPI
 
 ## TelnetHandler
@@ -464,3 +486,52 @@ SpringExtensionFactory的作用在于dubbo的SPI机制中的依赖注入，当�
 
 
 ## [dubbo SPI @Adaptive注解使用方法与原理解析 简单易懂](https://blog.csdn.net/qq_41960425/article/details/109348241?spm=1001.2101.3001.6650.3&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-3-109348241-blog-120812534.pc_relevant_default&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-3-109348241-blog-120812534.pc_relevant_default&utm_relevant_index=4)
+
+
+
+# Dubbo 服务暴露流程
+
+## URL
+
+Dubbo 用 URL 作为配置总线，贯穿整个体系，源码中 URL 的身影无处不在。
+
+URL 格式：`protocol://username:password@host:port/path?key=value&key=value` 
+
+URL 具体的参数如下：
+
+- protocol：指的是 dubbo 中的各种协议，如：dubbo thrift http
+- username/password：用户名/密码
+- host/port：主机/端口
+- path：接口的名称
+- parameters：参数键值对
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

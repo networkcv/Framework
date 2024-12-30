@@ -701,6 +701,8 @@ https://wangchujiang.com/linux-command/c/ifconfig.html
 
 
 
+## ls
+
 ## lsof 查看打开文件
 
 Linux 查看端口占用情况可以使用 **lsof** 和 **netstat** 命令。
@@ -828,9 +830,7 @@ mkdir -p /a/b 可以创建多级文件夹
 
 ## netstat 网络端口查询工具
 
-### Linux
 
-### macOS
 
 
 
@@ -852,7 +852,9 @@ orb -m [machine_name] -u root #用root身份进入指定机器
 
 # P
 
-## ps
+## ps 查看进程状态
+
+process status
 
 **基本用法**
 
