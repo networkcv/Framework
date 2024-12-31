@@ -1868,21 +1868,23 @@ Class<?> instanceClass = ClassUtils.forName(name, classLoader);
 T instance = (T) BeanUtils.instantiateClass(constructor, args);
 ```
 
-# 十、TODO
-
-## xml文件的解析
+## Spring中XML的扩展解析
 
 xml 文件解析的本质还是为了生成 spring 的 BeanDefinition，然后由 Spring 最终创建对应的对象。
 
-像dubbo.xsd是用来约束dubbo相关配置文件中的标签和对应属性的，
+我们可以使用如下步骤来自定义xml的扩展解析逻辑：
 
-provider.xml示例
+### 1.定义xsd文件	
 
-```
+像 `META-INF/dubbo.xsd` 是用来约束dubbo相关配置文件中的标签和对应属性的，以provider.xml示例，其中引入了dubbo.xsd，这个xml在使用dubbo.xsd中定义的相关标签时会进行约束检查
+
+**provider.xml**
+
+```xml
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
        xmlns="http://www.springframework.org/schema/beans"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 	http://www.springframework.org/schema/beans/spring-beans.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
        
     <dubbo:application name="demo-provider"/>
@@ -1893,9 +1895,118 @@ provider.xml示例
 </beans>
 ```
 
+**dubbo.xsd**
+
+注意这里的targetNamespace是的命名空间名称，上边的xml中使用的元素 `dubbo:application` ，就是命名空间名：元素名。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns="http://dubbo.apache.org/schema/dubbo"
+            targetNamespace="http://dubbo.apache.org/schema/dubbo">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans"
+                schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+		
+  ...
+     <xsd:element name="application" type="applicationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The application config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ApplicationConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+  ...
+</xsd:schema>
+```
 
 
 
+### 2.配置 META-INF/spring.schemas
+
+用来定位xsd文件的位置，META-INF/spring.schemas 这个文件在引入的 dubbo 的 jar 包中，通过该配置告诉 Spring 如果有别的xml文件中引用了`xsi:schemaLocation= http://dubbo.apache.org/schema/dubbo/dubbo.xsd` 可以在这里找到dubbo.xsd。
+
+```xml
+http\://dubbo.apache.org/schema/dubbo/dubbo.xsd=META-INF/dubbo.xsd
+http\://code.alibabatech.com/schema/dubbo/dubbo.xsd=META-INF/compat/dubbo.xsd
+```
+
+### 3.配置 META-INF/spring.handlers 映射
+
+META-INF/spring.handlers 这个文件也是存在于 dubbo 的 jar 包中。
+
+```xml
+http\://dubbo.apache.org/schema/dubbo=org.apache.dubbo.config.spring.schema.DubboNamespaceHandler
+http\://code.alibabatech.com/schema/dubbo=org.apache.dubbo.config.spring.schema.DubboNamespaceHandler
+```
+
+这里定义了具体的命名空间处理器，像**DubboNamespaceHandler**，主要实现了 **NamespaceHandlerSupport** 的 init 方法，将一个个具体的**BeanDefinitionParser**进行注册。
+
+```java
+//org.apache.dubbo.config.spring.schema.DubboNamespaceHandler
+public class DubboNamespaceHandler extends NamespaceHandlerSupport implements ConfigurableSourceBeanMetadataElement {
+
+    static {
+        Version.checkDuplicate(DubboNamespaceHandler.class);
+    }
+
+    @Override
+    public void init() {
+        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class));
+        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class));
+        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class));
+        registerBeanDefinitionParser("config-center", new DubboBeanDefinitionParser(ConfigCenterBean.class));
+        registerBeanDefinitionParser("metadata-report", new DubboBeanDefinitionParser(MetadataReportConfig.class));
+        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class));
+        registerBeanDefinitionParser("metrics", new DubboBeanDefinitionParser(MetricsConfig.class));
+        registerBeanDefinitionParser("ssl", new DubboBeanDefinitionParser(SslConfig.class));
+        registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class));
+        registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class));
+        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class));
+        registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class));
+        registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class));
+        registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
+    }
+  ....
+}
+```
+
+**DubboBeanDefinitionParser** 是一个dubbo的通用Bean定义解析器，在构造的时候根据不同的配置类完成不同xml元素的解析。核心还是 org.springframework.beans.factory.xml.BeanDefinitionParser#parse 的方法。这里省略掉一些细节。
+
+```java
+//org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser
+public class DubboBeanDefinitionParser implements BeanDefinitionParser {
+		...
+    public DubboBeanDefinitionParser(Class<?> beanClass) {
+        this.beanClass = beanClass;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RootBeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean registered) {
+        RootBeanDefinition beanDefinition = new RootBeanDefinition();
+        beanDefinition.setBeanClass(beanClass);
+        beanDefinition.setLazyInit(false);
+      	....
+        if (registered) {
+          //最终会在这里将解析出的BeanDefinition进行注册
+            parserContext.getRegistry().registerBeanDefinition(beanName, beanDefinition);
+        }
+        return beanDefinition;
+    }
+```
+
+到此xml扩展解析的内容就完成了。
+
+
+
+# 十、TODO
 
 2.spring 提供了哪些配置方式？
 
