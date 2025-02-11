@@ -54,7 +54,6 @@ package com.lwj.algo.leetcode.editor.cn;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 class TwoSum {
     public static void main(String[] args) {
@@ -67,16 +66,14 @@ class TwoSum {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int[] twoSum(int[] nums, int target) {
-            //期望的数字，对应索引下标
             Map<Integer, Integer> map = new HashMap<>();
             for (int i = 0; i < nums.length; i++) {
-                int num = nums[i];
-                int expect = target - num;
-                Integer idx = map.get(expect);
-                if (Objects.isNull(idx)) {
-                    map.put(num, i);
+                int except = target - nums[i];
+                Integer exceptIndex = map.get(except);
+                if (exceptIndex != null) {
+                    return new int[]{exceptIndex, i};
                 } else {
-                    return new int[]{idx, i};
+                    map.put(nums[i], i);
                 }
             }
             return new int[]{-1, -1};
