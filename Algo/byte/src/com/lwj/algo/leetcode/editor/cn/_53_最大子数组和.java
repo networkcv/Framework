@@ -57,6 +57,20 @@ class MaximumSubarray {
     class Solution {
 
         public int maxSubArray(int[] nums) {
+            int[] dp = new int[nums.length];
+            //dp[i]表示从0到i之间的最大子序列和
+            dp[0] = nums[0];
+            for (int i = 1; i < nums.length; i++) {
+                dp[i] = Math.max(dp[i - 1] + nums[i], nums[i]);
+            }
+            int res = dp[0];
+            for (int i : dp) {
+                res = Math.max(res, i);
+            }
+            return res;
+        }
+
+        public int maxSubArray0(int[] nums) {
             //dp[i]表示以nums[i]结尾的连续子数组的最大和
             //整个数组的最大和结果不一定是在最后一个元素，也可能是在中间的区间
             int res = nums[0];
