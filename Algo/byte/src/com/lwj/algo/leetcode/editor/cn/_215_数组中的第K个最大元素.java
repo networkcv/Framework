@@ -40,7 +40,7 @@ import java.util.PriorityQueue;
 class KthLargestElementInAnArray {
     public static void main(String[] args) {
         Solution solution = new KthLargestElementInAnArray().new Solution();
-        System.out.println(solution.findKthLargest(new int[]{3, 2, 1, 5, 6, 4}, 2));
+        System.out.println(solution);
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
