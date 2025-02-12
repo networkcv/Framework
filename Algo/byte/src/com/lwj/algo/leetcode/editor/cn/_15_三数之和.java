@@ -1,8 +1,5 @@
 package com.lwj.algo.leetcode.editor.cn;
 
-import com.google.common.collect.Lists;
-import com.lwj.algo.leetcode.editor.cn.utils.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +75,14 @@ class ThreeSum {
             for (int i = 0; i < len; i++) {
                 //确保最外层数字不会重复遍历
                 if (i > 0 && nums[i] == nums[i - 1]) {
+                    continue;
+                }
+                //优化点1 最小的三个数都大于0，那后边的数肯定加起来都大于0，这里可以直接退出循环
+                if (nums[i] + nums[i + 1] + nums[i + 2] > 0) {
+                    break;
+                }
+                //优化点2 当前数加上最大的两个数都小于0，那说明当前nums[i]不存在满足条件三元组
+                if (nums[i] + nums[len - 1] + nums[len - 2] < 0) {
                     continue;
                 }
                 int l = i + 1;
