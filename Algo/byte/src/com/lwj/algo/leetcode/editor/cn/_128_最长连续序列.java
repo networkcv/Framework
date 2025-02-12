@@ -1,6 +1,8 @@
 package com.lwj.algo.leetcode.editor.cn;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
@@ -46,6 +48,34 @@ class LongestConsecutiveSequence {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+        //空间换时间
+        public int longestConsecutive1(int[] nums) {
+            HashMap<Integer, AtomicInteger> map = new HashMap<>();
+            for (int num : nums) {
+                map.put(num, new AtomicInteger(1));
+            }
+            AtomicInteger res = new AtomicInteger();
+            map.keySet().forEach(num -> {
+                if (map.get(num) == null || map.get(num).get() == 0) {
+                    return;
+                }
+                int count = 1;
+                AtomicInteger data;
+                int pre = num - 1;
+                while ((data = map.get(pre--)) != null && data.get() != 0) {
+                    count++;
+                    data.set(0);
+                }
+                int next = num + 1;
+                while ((data = map.get(next++)) != null && data.get() != 0) {
+                    count++;
+                    data.set(0);
+                }
+                res.set(Math.max(res.get(), count));
+            });
+            return res.get();
+        }
+
         //暴力法
         public int longestConsecutive(int[] nums) {
             int len = nums.length;
