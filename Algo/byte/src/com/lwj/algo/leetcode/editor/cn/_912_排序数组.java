@@ -51,7 +51,8 @@ class SortAnArray {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int[] sortArray(int[] nums) {
-            quickSort(nums, 0, nums.length - 1);
+//            quickSort(nums, 0, nums.length - 1);
+            quickSort2(nums, 0, nums.length - 1);
             return nums;
         }
 
@@ -90,6 +91,13 @@ class SortAnArray {
             }
             swap(nums, l, lt);
             return new int[]{lt, gt};
+        }
+
+        private void quickSort2(int[] nums, int l, int r) {
+            if (l >= r) return;
+            int pivotIndex = partition0(nums, l, r);
+            quickSort(nums, l, pivotIndex - 1);
+            quickSort(nums, pivotIndex + 1, r);
         }
 
         //随机切分点快排
