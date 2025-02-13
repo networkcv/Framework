@@ -1,6 +1,7 @@
 package com.lwj.algo.leetcode.editor.cn;
 
 import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
+import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
 
 /**
  * 给你单链表的头指针 head 和两个整数 left 和 right ，其中 left <= right 。请你反转从位置 left 到位置 right 的链表节
@@ -44,7 +45,8 @@ import com.lwj.algo.leetcode.editor.cn.utils.ListNode;
 class ReverseLinkedListIi {
     public static void main(String[] args) {
         Solution solution = new ReverseLinkedListIi().new Solution();
-        System.out.println(solution);
+        ListNode listNode = ListNodeUtils.buildByArray(1, 2, 3, 4, 5);
+        System.out.println(solution.reverseBetween(listNode, 2, 4));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -61,8 +63,63 @@ class ReverseLinkedListIi {
      */
     class Solution {
 
-        //反转链表指定区间节点
+        // 2025/2/13
         public ListNode reverseBetween(ListNode head, int left, int right) {
+            int i = 0;
+            ListNode dummy = new ListNode();
+            dummy.next = head;
+            ListNode po = dummy;
+            while (i++ < left - 1) {
+                po = po.next;
+            }
+            i = 0;
+            ListNode pre = po;
+            ListNode cur = po.next;
+            while (i++ < (right - left + 1)) {
+                ListNode next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            po.next.next = cur;
+            po.next = pre;
+            return dummy.next;
+        }
+
+        // 2025/2/13
+        //head = [1,2,3,4,5], left = 2, right = 4 输出：[1,4,3,2,5]
+        public ListNode reverseBetween1(ListNode head, int left, int right) {
+            ListNode dummy = new ListNode();
+            ListNode pre = dummy;
+            dummy.next = head;
+            ListNode cur = head;
+            int count = 1;
+            //此处可以优化
+            while (count < left) {
+                count++;
+                ListNode next = cur.next;
+                pre = cur;
+                cur = next;
+            }
+            //这里边保留反转前pre的指向 这里pre指向的是1，1这个节点指向2
+            ListNode po = pre;
+            while (count < right + 1) {
+                count++;
+                ListNode next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            //反转结束之后 cur指向5 pre指向4，
+            po.next.next = cur;
+            po.next = pre;
+            return dummy.next;
+        }
+
+
+        //历史
+        //反转链表指定区间节点
+        public ListNode reverseBetween0(ListNode head, int left, int right) {
             if (left == 1) {
                 //反转前k个，其实范围就是1～k
                 return reverse(head, right);

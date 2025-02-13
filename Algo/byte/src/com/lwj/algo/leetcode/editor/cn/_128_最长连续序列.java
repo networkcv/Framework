@@ -76,7 +76,7 @@ class LongestConsecutiveSequence {
             return res.get();
         }
 
-        //暴力法
+        //暴力法 先排序 再遍历计数
         public int longestConsecutive(int[] nums) {
             int len = nums.length;
             if (len < 2) {
