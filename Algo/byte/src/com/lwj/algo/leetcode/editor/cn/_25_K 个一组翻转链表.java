@@ -69,7 +69,7 @@ class ReverseNodesInKGroup {
      * }
      */
     class Solution {
-        //2025/2/13
+        //2025/2/13  计数遍历
         //参考 https://www.bilibili.com/video/BV1sd4y1x7KN/?spm_id_from=333.788.player.switch&vd_source=1c3ddffa7c4adab111124a27aaa320a6
         public ListNode reverseKGroup(ListNode head, int k) {
             ListNode tmp = head;
@@ -101,10 +101,9 @@ class ReverseNodesInKGroup {
                 p0 = nextP0;
             }
             return dummy.next;
-
         }
 
-        //2022/7/27
+        //2022/7/27 递归反转链表
         public ListNode reverseKGroup1(ListNode head, int k) {
             if (head == null) {
                 return null;

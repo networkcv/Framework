@@ -126,7 +126,7 @@ class ReverseLinkedListIi {
             }
             //假设left =2 right=k，如果我们把head节点去掉了，那left=2的那个节点 就是变成了新的头节点，
             //那么left也就是变成了1，就变成了反转1～k节点的问题了。
-            head.next = reverseBetween(head.next, left - 1, right - 1);
+            head.next = reverseBetween0(head.next, left - 1, right - 1);
             return head;
         }
 
