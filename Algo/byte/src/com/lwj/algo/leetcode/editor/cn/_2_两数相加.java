@@ -52,7 +52,7 @@ class AddTwoNumbers {
                 curNode = curNode.next;
                 l1 = l1.next;
             }
-            if(remainder ==1){
+            if (remainder == 1) {
                 curNode.next = new ListNode(1);
             }
 
