@@ -40,7 +40,6 @@
  * <p>
  * 👍 7359, 👎 0bug 反馈 | 使用指南 | 更多配套插件
  */
-
 package com.lwj.algo.leetcode.editor.cn;
 
 class MedianOfTwoSortedArrays {
@@ -97,6 +96,9 @@ class MedianOfTwoSortedArrays {
             if (k == 1) {
                 return Math.min(nums1[l1], nums2[l2]);
             }
+            // k=3
+            // 2 4
+            // 1 3 5
             int idx1 = l1 + Math.min(len1, k / 2) - 1;
             int idx2 = l2 + Math.min(len2, k / 2) - 1;
             if (nums1[idx1] < nums2[idx2]) {

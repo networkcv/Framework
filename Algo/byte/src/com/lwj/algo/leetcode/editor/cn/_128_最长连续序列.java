@@ -48,7 +48,7 @@ class LongestConsecutiveSequence {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-        //空间换时间
+        //空间换时间 遍历的时候从当前元素相两遍遍历，通过hash表来维护是否被访问
         public int longestConsecutive1(int[] nums) {
             HashMap<Integer, AtomicInteger> map = new HashMap<>();
             for (int num : nums) {
