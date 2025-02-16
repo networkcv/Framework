@@ -43,7 +43,7 @@ import java.util.Arrays;
 class ThreeSumClosest {
     public static void main(String[] args) {
         Solution solution = new ThreeSumClosest().new Solution();
-        System.out.println(solution);
+        System.out.println(solution.threeSumClosest(new int[]{-1, 2, 1, -4}, 1));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -54,6 +54,7 @@ class ThreeSumClosest {
             int sum = nums[0] + nums[1] + nums[2];
             int res = sum;
             for (int i = 0; i < len; i++) {
+                if (i > 0 && nums[i] == nums[i - 1]) continue;
                 int l = i + 1, r = len - 1;
                 while (l < r) {
                     sum = nums[i] + nums[l] + nums[r];

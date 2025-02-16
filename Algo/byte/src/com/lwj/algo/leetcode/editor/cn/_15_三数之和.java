@@ -62,7 +62,8 @@ import java.util.List;
 class ThreeSum {
     public static void main(String[] args) {
         Solution solution = new ThreeSum().new Solution();
-        System.out.println(solution.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));
+//        System.out.println(solution.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));
+        System.out.println(solution.threeSum(new int[]{-1, 0, 1}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -72,7 +73,7 @@ class ThreeSum {
             Arrays.sort(nums);
             List<List<Integer>> res = new ArrayList<>();
             int len = nums.length;
-            for (int i = 0; i < len; i++) {
+            for (int i = 0; i < len - 2; i++) {
                 //确保最外层数字不会重复遍历
                 if (i > 0 && nums[i] == nums[i - 1]) {
                     continue;
@@ -93,9 +94,8 @@ class ThreeSum {
                         res.add(Arrays.asList(nums[i], nums[l], nums[r]));
                         int v = nums[l];
                         //确保中间的数字和之前不一致，这样最终结果肯定和之前的不一致
-                        while (l < r && nums[l] == v) {
-                            l++;
-                        }
+                        for (l++; l < r && nums[l] == nums[l - 1]; l++) ;
+                        for (r--; l < r && nums[r] == nums[r + 1]; r--) ;
                     } else if (sum < 0) {
                         l++;
                     } else {
