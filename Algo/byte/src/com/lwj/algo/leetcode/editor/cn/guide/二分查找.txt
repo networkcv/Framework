@@ -1,0 +1,24 @@
+1.在排序数组中查找元素的第一个和最后一个位置:
+>= target   <=>    下边方法实现了
+>  target   <=>    >=(target+1)
+<  target   <=>    (>=targe)-1
+<= target   <=>    (>target)-1
+
+//找到第一个大于等于target的元素
+private int lower_bound(int[] nums, int target) {
+    int l = 0, r = nums.length - 1;
+    while (l <= r) {
+        int mid = (l + r) / 2;
+        //表示比小于target放在左区间，大于等于target的放在右区间，由于while循环结束时l是大于r的，
+        //所以此时l会指向小于target区间右边一个位置的元素，也就是大于等于target的第一个元素
+        //而r会指向大于等于target区间左边一个位置的元素，也就是小于target的第一个元素
+        if (nums[mid] < target) {
+            l = mid + 1;
+        } else {
+            r = mid - 1;
+        }
+    }
+    return l;
+}
+
+
