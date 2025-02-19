@@ -20,5 +20,10 @@ private int lower_bound(int[] nums, int target) {
     }
     return l;
 }
-
-
+2.寻找峰值:
+3.寻找旋转排序数组中的最小值:
+4.搜索旋转排序数组:
+可能会出现下边两种情况的数组，isRight方法用来判断 midNum在target右边的情况时返回true
+     /           /
+    /           /
+   /              /

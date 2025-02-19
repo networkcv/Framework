@@ -61,12 +61,28 @@ package com.lwj.algo.leetcode.editor.cn;
 class FindMinimumInRotatedSortedArray {
     public static void main(String[] args) {
         Solution solution = new FindMinimumInRotatedSortedArray().new Solution();
-        System.out.println(solution.findMin(new int[]{4, 5, 6, 7, 0, 1, 2}));
+//        System.out.println(solution.findMin(new int[]{4, 5, 6, 7, 0, 1, 2}));
+        System.out.println(solution.findMin(new int[]{1}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int findMin(int[] nums) {
+            int len = nums.length;
+            int last = nums[len - 1];
+            int l = 0, r = len - 2;
+            while (l <= r) {
+                int mid = l + (r - l) / 2;
+                if (nums[mid] < last) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
+            }
+            return nums[l];
+        }
+
+        public int findMin0(int[] nums) {
             //左边区间表示最小值左侧，右边区间表示最小值及最小值右侧，nums[len-1] 一定是在右边区间
             int l = 0, r = nums.length - 2;
             while (l <= r) {
