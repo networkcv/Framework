@@ -9,7 +9,16 @@
 这道题会涉及一个数据归纳法推导一个公式结论，就是快指针和慢指针相交的位置时，有一个新指针指向head节点，然后和慢指针同时向后遍历，两个指针一定会相交在环的入口
 参考：https://www.bilibili.com/video/BV1KG4y1G7cu/?vd_source=1c3ddffa7c4adab111124a27aaa320a6
 
-143. 重排链表 https://leetcode.cn/problems/reorder-list/solution/mei-xiang-ming-bai-yi-ge-shi-pin-jiang-t-u66q/
+143. 重排链表
+先寻找链表中点，然后反转后半链表，接着把两个链表交叉合并，注意这里的while条件判断，一定是用反转的那个链表的头节点，
+            while (head2.next != null) {
+                ListNode next = head.next;
+                ListNode next2 = head2.next;
+                head2.next = next;
+                head.next = head2;
+                head = next;
+                head2 = next2;
+            }
 
 234. 回文链表
 https://leetcode.cn/problems/palindrome-linked-list/
