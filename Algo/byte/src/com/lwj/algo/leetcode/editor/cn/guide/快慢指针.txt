@@ -1,9 +1,19 @@
-876.链表的中间结点: 快慢双指针，快指针每次走两步，慢指针每次走一步，快指针的结束条件是q==null||q.next==null，刚好走到最后一个节点，
+876.链表的中间结点
+快慢双指针，快指针每次走两步，慢指针每次走一步，快指针的结束条件是q==null||q.next==null，奇数链表遍历后q指向最后一个元素，偶数链表遍历后q指向null
 此时慢指针刚好走了链表的一半，如果链表是奇数，则慢指针处于中间节点，如1，2，3，慢指针指向2；如果链表是偶数，则慢指针处于中间靠后节点，如1，2，3，4，慢指针指向3
-141. 环形链表 https://leetcode.cn/problems/linked-list-cycle/solution/mei-xiang-ming-bai-yi-ge-shi-pin-jiang-t-c4sw/
-142. 环形链表 II https://leetcode.cn/problems/linked-list-cycle-ii/solution/mei-xiang-ming-bai-yi-ge-shi-pin-jiang-t-nvsq/
+
+141. 环形链表
+在快慢指针遍历链表的同时，如果是环形链表，则在环中两个指针一定会相交
+
+142. 环形链表 II
+
 143. 重排链表 https://leetcode.cn/problems/reorder-list/solution/mei-xiang-ming-bai-yi-ge-shi-pin-jiang-t-u66q/
 
-课后作业：
-234. 回文链表 https://leetcode.cn/problems/palindrome-linked-list/
+234. 回文链表
+https://leetcode.cn/problems/palindrome-linked-list/
+思路一：先复制链表，再反转整个链表，再进行比较
+思路二：寻找中点，反转后半段，再进行比较
+思路三：快慢指针遍历到中点，然后把前半段元素压入，要考虑奇数链表的中间元素压栈，然后出栈比对元素
+思路四：模仿双指针实现回文判断,巧妙使用递归压栈，从后往前遍历
+
 2130. 链表最大孪生和 https://leetcode.cn/problems/maximum-twin-sum-of-a-linked-list/
