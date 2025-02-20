@@ -6,6 +6,8 @@
 在快慢指针遍历链表的同时，如果是环形链表，则在环中两个指针一定会相交
 
 142. 环形链表 II
+这道题会涉及一个数据归纳法推导一个公式结论，就是快指针和慢指针相交的位置时，有一个新指针指向head节点，然后和慢指针同时向后遍历，两个指针一定会相交在环的入口
+参考：https://www.bilibili.com/video/BV1KG4y1G7cu/?vd_source=1c3ddffa7c4adab111124a27aaa320a6
 
 143. 重排链表 https://leetcode.cn/problems/reorder-list/solution/mei-xiang-ming-bai-yi-ge-shi-pin-jiang-t-u66q/
 
