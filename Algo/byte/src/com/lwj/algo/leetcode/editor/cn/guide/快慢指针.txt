@@ -10,7 +10,9 @@
 参考：https://www.bilibili.com/video/BV1KG4y1G7cu/?vd_source=1c3ddffa7c4adab111124a27aaa320a6
 
 143. 重排链表
-先寻找链表中点，然后反转后半链表，接着把两个链表交叉合并，注意这里的while条件判断，一定是用反转的那个链表的头节点，
+先寻找链表中点，然后反转后半链表，接着把两个链表交叉合并，注意这里的while条件判断，一定是用反转的那个链表的头节点，而且遍历最后一个元素时退出循环，
+不然如果奇数链表的话两边个链表的最后一个元素都是中间元素，也就是head和head2都指向中间元素，那么在执行head.next=head2时，就是当前元素的next指向当前元素，会指向自身成环。
+如果是偶数链表的话，head2是从中间靠后一个节点开始翻转链表的，如123456，head是 1->2->3->4  head2是 6->5->4 也会导致循环，所以这个head2.next是关键
             while (head2.next != null) {
                 ListNode next = head.next;
                 ListNode next2 = head2.next;

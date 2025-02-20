@@ -89,7 +89,7 @@ class ReorderList {
             }
             ListNode head2 = pre;
             if (head2 == null) return;
-            while (head2 != null) {
+            while (head2.next != null) {
                 ListNode next = head.next;
                 ListNode next2 = head2.next;
                 head2.next = next;
@@ -97,6 +97,8 @@ class ReorderList {
                 head = next;
                 head2 = next2;
             }
+//        head1ui 1->2->3->4
+//        head2是 6->5->4
 
         }
     }
