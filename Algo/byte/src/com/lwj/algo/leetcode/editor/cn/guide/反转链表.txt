@@ -1,0 +1,8 @@
+206.反转链表:不用定义dummy节点，定义pre和cur节点，循环开始时，next指针指向cur.next，先保存cur.next，然后让cur.next指向pre，完成反转。
+接下来为下一轮遍历做准备，将pre指向cur，再将cur指向next，最终结束循环时，pre指向的是最后一个元素，cur指向的是null。
+92
+25
+
+24
+445
+2816
