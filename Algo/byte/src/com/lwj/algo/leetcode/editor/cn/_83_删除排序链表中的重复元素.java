@@ -58,6 +58,19 @@ class RemoveDuplicatesFromSortedList {
         //重复元素只保留一个
         public ListNode deleteDuplicates(ListNode head) {
             ListNode cur = head;
+            //遍历到最后一个元素
+            while (cur != null) {
+                int val = cur.val;
+                while (cur.next != null && val == cur.next.val) {
+                    cur.next = cur.next.next;
+                }
+                cur = cur.next;
+            }
+            return head;
+        }
+
+        public ListNode deleteDuplicates0(ListNode head) {
+            ListNode cur = head;
             while (cur != null) {
                 ListNode next = cur.next;
                 while (next != null && next.val == cur.val) {

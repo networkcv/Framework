@@ -8,6 +8,8 @@ node.next = node.next.next;
 也就是判断条件是 while (q.next != null)，因为被删除元素也可能是最后一个元素,此时慢指针指向要删除节点的前一个元素，通过 s.next=s.next.next 删除目标节点
 
 83. 删除排序链表中的重复元素
+由于不会操作头节点，不用定义哨兵节点,遍历元素，如果当前节点的值等于后面元素的值，就进入内循环，将当前元素的下一个节点指向下下个元素。
+
 https://leetcode.cn/problems/remove-duplicates-from-sorted-list/solution/ru-he-qu-zhong-yi-ge-shi-pin-jiang-tou-p-98g7/
 82. 删除排序链表中的重复元素
 II https://leetcode.cn/problems/remove-duplicates-from-sorted-list-ii/solution/ru-he-qu-zhong-yi-ge-shi-pin-jiang-tou-p-2ddn/
