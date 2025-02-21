@@ -63,8 +63,32 @@ class ReverseLinkedListIi {
      */
     class Solution {
 
-        // 2025/2/13
+        // 2025/2/21
         public ListNode reverseBetween(ListNode head, int left, int right) {
+            ListNode dummy = new ListNode();
+            dummy.next = head;
+            int i = 0;
+            //开始反转的前一个节点
+            ListNode po = dummy;
+            while (i++ < left - 1) {
+                po = po.next;
+            }
+            int n = right - left + 1;
+            ListNode pre = null;
+            ListNode cur = po.next;
+            while (n-- > 0) {
+                ListNode next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            po.next.next = cur;
+            po.next = pre;
+            return dummy.next;
+        }
+
+        // 2025/2/13
+        public ListNode reverseBetween2(ListNode head, int left, int right) {
             int i = 0;
             ListNode dummy = new ListNode();
             dummy.next = head;

@@ -45,25 +45,28 @@ class FindPeakElement {
     public static void main(String[] args) {
         Solution solution = new FindPeakElement().new Solution();
 //        System.out.println(solution.findPeakElement(new int[]{1, 2, 3, 1}));
-        System.out.println(solution.findPeakElement(new int[]{1}));
+//        System.out.println(solution.findPeakElement(new int[]{1, 2, 3}));
+//        System.out.println(solution.findPeakElement(new int[]{3, 1, 4}));
+        System.out.println(solution.findPeakElement(new int[]{1, 2, 3}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int findPeakElement(int[] nums) {
             int l = 0, r = nums.length - 2;
+            //左区间表示峰顶左侧元素，右区间表示峰顶及峰顶右侧元素
             while (l <= r) {
-                int mid = (r + l) / 2;
-                if (nums[mid] >= nums[mid + 1]) {
-                    r = mid - 1;
-                } else {
+                int mid = (l + r) / 2;
+                if (nums[mid] < nums[mid + 1]) {
                     l = mid + 1;
+                } else {
+                    r = mid - 1;
                 }
             }
-            return l == nums.length ? 0 : l;
+            return l;
         }
 
-        public int findPeakElement0(int[] nums) {
+        public int findPeakElement1(int[] nums) {
             for (int i = 1; i < nums.length - 1; i++) {
                 if (nums[i] > nums[i - 1] && nums[i] > nums[i + 1]) {
                     return i;

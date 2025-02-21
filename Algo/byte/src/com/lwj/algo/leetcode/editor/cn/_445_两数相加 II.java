@@ -81,9 +81,12 @@ class AddTwoNumbersIi {
      * }
      */
     class Solution {
-        // 2025/2/13  两个链表反转，然后两个链表相加，再把结果反转返回 todo
+        // 2025/2/13  两个链表反转，然后两个链表相加，再把结果反转返回
         public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
-            return reverse(twoSum(reverse(l1), reverse(l2)));
+            ListNode r1 = reverse(l1);
+            ListNode r2 = reverse(l2);
+            ListNode sum = twoSum(r1, r2);
+            return reverse(sum);
         }
 
         //反转链表 1 2
@@ -99,10 +102,11 @@ class AddTwoNumbersIi {
             return pre;
         }
 
-        //两个链表相加
+        //两个链表相加 // 3427 465 = 7087
         public ListNode twoSum(ListNode l1, ListNode l2) {
             int carry = 0;
-            ListNode head = null;
+            ListNode dummpy = new ListNode(0);
+            ListNode head = dummpy;
             while (l1 != null || l2 != null || carry != 0) {
                 int sum = carry;
                 if (l1 != null) {
@@ -116,10 +120,10 @@ class AddTwoNumbersIi {
                 //head 1
                 ListNode cur = new ListNode(sum % 10);
                 carry = sum / 10;
-                cur.next = head;
+                head.next = cur;
                 head = cur;
             }
-            return head;
+            return dummpy.next;
         }
 
 

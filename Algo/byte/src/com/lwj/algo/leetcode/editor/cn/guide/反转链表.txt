@@ -1,8 +1,13 @@
-206.反转链表:不用定义dummy节点，定义pre和cur节点，循环开始时，next指针指向cur.next，先保存cur.next，然后让cur.next指向pre，完成反转。
+206.反转链表
+不用定义dummy节点，定义pre和cur节点，循环开始时，next指针指向cur.next，先保存cur.next，然后让cur.next指向pre，完成反转。
 接下来为下一轮遍历做准备，将pre指向cur，再将cur指向next，最终结束循环时，pre指向的是最后一个元素，cur指向的是null。
-92
-25
 
-24
-445
-2816
+92
+反转链表 II
+
+25
+K 个一组翻转链表
+
+24. 两两交换链表中的节点 https://leetcode.cn/problems/swap-nodes-in-pairs/solution/tu-jie-die-dai-di-gui-yi-zhang-tu-miao-d-51ap
+445. 两数相加 II https://leetcode.cn/problems/add-two-numbers-ii/solution/fan-zhuan-lian-biao-liang-shu-xiang-jia-okw6q
+2816. 翻倍以链表形式表示的数字 https://leetcode.cn/problems/double-a-number-represented-as-a-linked-list/solution/o1-kong-jian-zuo-fa-kan-cheng-shi-head-y-1dco/
