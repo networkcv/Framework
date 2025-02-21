@@ -10,9 +10,8 @@ node.next = node.next.next;
 83. 删除排序链表中的重复元素
 由于不会操作头节点，不用定义哨兵节点,遍历元素，如果当前节点的值等于后面元素的值，就进入内循环，将当前元素的下一个节点指向下下个元素。
 
-https://leetcode.cn/problems/remove-duplicates-from-sorted-list/solution/ru-he-qu-zhong-yi-ge-shi-pin-jiang-tou-p-98g7/
-82. 删除排序链表中的重复元素
-II https://leetcode.cn/problems/remove-duplicates-from-sorted-list-ii/solution/ru-he-qu-zhong-yi-ge-shi-pin-jiang-tou-p-2ddn/
+82. 删除排序链表中的重复元素 II
+需要定义哨兵节点，遍历并记录当前节点元素值a，判断当前节点和后续节点的值是否相同，相同的话删除标记为true，删除值和a相同的所有节点
 
 203. 移除链表元素
 https://leetcode.cn/problems/remove-linked-list-elements/

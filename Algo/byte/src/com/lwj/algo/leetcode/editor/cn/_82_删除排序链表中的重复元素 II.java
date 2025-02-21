@@ -40,7 +40,8 @@ class RemoveDuplicatesFromSortedListIi {
     public static void main(String[] args) {
         Solution solution = new RemoveDuplicatesFromSortedListIi().new Solution();
 //        System.out.println(solution.deleteDuplicates(ListNodeUtils.build(11)));
-        System.out.println(solution.deleteDuplicates(ListNodeUtils.buildByArray(1, 2, 3, 3, 4, 4, 5)));
+//        System.out.println(solution.deleteDuplicates(ListNodeUtils.buildByArray(1, 2, 3, 3, 4, 4, 5)));
+        System.out.println(solution.deleteDuplicates(ListNodeUtils.build(11)));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -56,7 +57,32 @@ class RemoveDuplicatesFromSortedListIi {
      * }
      */
     class Solution {
+
+        //出现重复的元素全部删除
         public ListNode deleteDuplicates(ListNode head) {
+            if (head == null || head.next == null) return head;
+            ListNode dummy = new ListNode();
+            dummy.next = head;
+            ListNode pre = dummy;
+            ListNode cur = head;
+            while (cur != null && cur.next != null) {
+                int val = cur.val;
+                boolean delFlag = cur.val == cur.next.val;
+                if (delFlag) {
+                    //遍历一个删除一个
+                    while (cur != null && cur.val == val) {
+                        pre.next = cur.next;
+                        cur = cur.next;
+                    }
+                } else {
+                    pre = cur;
+                    cur = cur.next;
+                }
+            }
+            return dummy.next;
+        }
+
+        public ListNode deleteDuplicates0(ListNode head) {
             ListNode dummy = new ListNode();
             dummy.next = head;
             ListNode pre = dummy;
@@ -64,6 +90,7 @@ class RemoveDuplicatesFromSortedListIi {
             while (cur != null) {
                 ListNode next = cur.next;
                 boolean delFlag = next != null && cur.val == cur.next.val;
+                //遍历到不是重复元素值的位置，一次性删除
                 while (next != null && next.val == cur.val) {
                     next = next.next;
                 }
