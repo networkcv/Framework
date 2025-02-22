@@ -10,5 +10,24 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 
 129. 求根节点到叶节点数字之和
 定义一个外部队列，递归遍历到叶子节点时保存元素，未到叶子节点的话拼接当前节点字符串传到下一层
+
 1448. 统计二叉树中好节点的数目 https://leetcode.cn/problems/count-good-nodes-in-binary-tree/
 987. 二叉树的垂序遍历 https://leetcode.cn/problems/vertical-order-traversal-of-a-binary-tree/
+
+100. 相同的树
+
+
+101. 对称二叉树 https://leetcode.cn/problems/symmetric-tree/solution/ru-he-ling-huo-yun-yong-di-gui-lai-kan-s-6dq5/
+110. 平衡二叉树 https://leetcode.cn/problems/balanced-binary-tree/solution/ru-he-ling-huo-yun-yong-di-gui-lai-kan-s-c3wj/
+199. 二叉树的右视图 https://leetcode.cn/problems/binary-tree-right-side-view/solution/ru-he-ling-huo-yun-yong-di-gui-lai-kan-s-r1nc/
+
+课后作业：
+965. 单值二叉树 https://leetcode.cn/problems/univalued-binary-tree/
+951. 翻转等价二叉树 https://leetcode.cn/problems/flip-equivalent-binary-trees/
+226. 翻转二叉树 https://leetcode.cn/problems/invert-binary-tree/
+617. 合并二叉树 https://leetcode.cn/problems/merge-two-binary-trees/
+2331. 计算布尔二叉树的值 https://leetcode.cn/problems/evaluate-boolean-binary-tree/
+508. 出现次数最多的子树元素和 https://leetcode.cn/problems/most-frequent-subtree-sum/
+1026. 节点与其祖先之间的最大差值 https://leetcode.cn/problems/maximum-difference-between-node-and-ancestor/
+1372. 二叉树中的最长交错路径 https://leetcode.cn/problems/longest-zigzag-path-in-a-binary-tree/
+1080. 根到叶路径上的不足节点 https://leetcode.cn/problems/insufficient-nodes-in-root-to-leaf-paths/

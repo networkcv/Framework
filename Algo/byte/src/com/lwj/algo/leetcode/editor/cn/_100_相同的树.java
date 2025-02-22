@@ -1,3 +1,7 @@
+package com.lwj.algo.leetcode.editor.cn;
+
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
+
 //<p>给你两棵二叉树的根节点 <code>p</code> 和 <code>q</code> ，编写一个函数来检验这两棵树是否相同。</p>
 //
 //<p>如果两个树在结构上相同，并且节点具有相同的值，则认为它们是相同的。</p>
@@ -34,16 +38,13 @@
 // <li><code>-10<sup>4</sup> &lt;= Node.val &lt;= 10<sup>4</sup></code></li> 
 //</ul>
 //
-//<div><div>Related Topics</div><div><li>树</li><li>深度优先搜索</li><li>广度优先搜索</li><li>二叉树</li></div></div><br><div><li>👍 889</li><li>👎 0</li></div>
-
-package com.lwj.algo.leetcode.editor.cn;
-
-import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
-
+//<div><div>Related Topics</div><div><li>树</li><li>深度优先搜索</li><li>广度优先搜索</li><li>二叉树</li></div></div><br><div><li>👍 1207</li><li>👎 0</li></div>
 class SameTree {
     public static void main(String[] args) {
         Solution solution = new SameTree().new Solution();
+        System.out.println(solution);
     }
+
     //leetcode submit region begin(Prohibit modification and deletion)
 
     /**
@@ -63,21 +64,10 @@ class SameTree {
      */
     class Solution {
         public boolean isSameTree(TreeNode p, TreeNode q) {
-            return recursive(p, q);
-        }
-
-        //判断两颗树是否相同
-        private boolean recursive(TreeNode p, TreeNode q) {
-            if (p == null && q == null) {
-                return true;
-            }
-            if (p == null || q == null) {
-                return false;
-            }
-            if (p.val != q.val) {
-                return false;
-            }
-            return recursive(p.left, q.left) && recursive(p.right, q.right);
+            if (p == null && q == null) return true;
+            else if (p == null || q == null) return false;
+            if (p.val != q.val) return false;
+            return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)
