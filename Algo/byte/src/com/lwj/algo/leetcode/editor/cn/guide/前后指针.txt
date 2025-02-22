@@ -14,7 +14,7 @@ node.next = node.next.next;
 需要定义哨兵节点，遍历并记录当前节点元素值a，判断当前节点和后续节点的值是否相同，相同的话删除标记为true，删除值和a相同的所有节点
 
 203. 移除链表元素
-https://leetcode.cn/problems/remove-linked-list-elements/
+
 3217. 从链表中移除在数组中存在的节点
 https://leetcode.cn/problems/delete-nodes-from-linked-list-present-in-array/
 2487. 从链表中移除节点
