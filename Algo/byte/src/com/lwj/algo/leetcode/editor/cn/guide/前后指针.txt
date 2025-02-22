@@ -14,10 +14,14 @@ node.next = node.next.next;
 需要定义哨兵节点，遍历并记录当前节点元素值a，判断当前节点和后续节点的值是否相同，相同的话删除标记为true，删除值和a相同的所有节点
 
 203. 移除链表元素
-
 3217. 从链表中移除在数组中存在的节点
-https://leetcode.cn/problems/delete-nodes-from-linked-list-present-in-array/
+
 2487. 从链表中移除节点
-https://leetcode.cn/problems/remove-nodes-from-linked-list/
+三种思路
+思路一：暴力遍历，最差O(N^2)的时间复杂度，遍历每个链表节点时，向后遍历
+思路二：通过反转链表，这样反向遍历链表，记录当前最大值，如果后遍历的数比之前出的数字小则删除当前节点，保证最终返回的是一个递减链表，时间复杂度O(N),空间复杂度O(N)，
+思路三：递归法，递归的边界是最后一个节点，因为最后一个节一定是会满足条件返回的，同时递归函数返回最大值
+
+
 1669. 合并两个链表
 https://leetcode.cn/problems/merge-in-between-linked-lists/
