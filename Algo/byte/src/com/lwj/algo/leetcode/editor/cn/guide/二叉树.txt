@@ -3,9 +3,12 @@
 if (root == null) return 0;//边界条件
 return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 
-课后作业：
-111. 二叉树的最小深度 https://leetcode.cn/problems/minimum-depth-of-binary-tree/
-112. 路径总和 https://leetcode.cn/problems/path-sum/
-129. 求根节点到叶节点数字之和 https://leetcode.cn/problems/sum-root-to-leaf-numbers/
+111. 二叉树的最小深度
+
+112. 路径总和
+将每次的层高通过参数传下去，如果是叶子节点判断是否满足target条件
+
+129. 求根节点到叶节点数字之和
+定义一个外部队列，递归遍历到叶子节点时保存元素，未到叶子节点的话拼接当前节点字符串传到下一层
 1448. 统计二叉树中好节点的数目 https://leetcode.cn/problems/count-good-nodes-in-binary-tree/
 987. 二叉树的垂序遍历 https://leetcode.cn/problems/vertical-order-traversal-of-a-binary-tree/

@@ -60,9 +60,24 @@ class MaximumDepthOfBinaryTree {
      * }
      * }
      */
+
     class Solution {
+        public int i = 0;
 
         public int maxDepth(TreeNode root) {
+            maxDepth(root, i);
+            return i;
+        }
+
+        public void maxDepth(TreeNode root, int maxDepth) {
+            if (root == null)
+                return;
+            i = Math.max(i, maxDepth + 1);
+            maxDepth(root.left, maxDepth + 1);
+            maxDepth(root.right, maxDepth + 1);
+        }
+
+        public int maxDepth1(TreeNode root) {
             if (root == null) return 0;
             return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
         }
