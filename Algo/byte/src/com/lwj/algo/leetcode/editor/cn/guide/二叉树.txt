@@ -66,6 +66,7 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 
 
 236. 二叉树的最近公共祖先
+一个节点的祖先是当前节点及其所有父节点
 其中c和d可以合并
 1.当前节点是空节点:返回当前节点
 2.当前节点是p:返回当前节点
@@ -76,7 +77,8 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
         d 左右子树都没有找到：返回空节点
 
 
-235. 二叉搜索树的最近公共祖先 https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/solutions/2023873/zui-jin-gong-gong-zu-xian-yi-ge-shi-pin-8h2zc/
+235. 二叉搜索树的最近公共祖先
+如果两个节点都大于当前节点，或者都小于当前节点，只需要递归一侧的子树就好了，如果一左一右，那直接返回当前节点是公共祖先
 
 课后作业：
 1123. 最深叶节点的最近公共祖先 https://leetcode.cn/problems/lowest-common-ancestor-of-deepest-leaves/
