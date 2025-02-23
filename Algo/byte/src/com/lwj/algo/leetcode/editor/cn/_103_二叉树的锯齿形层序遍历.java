@@ -94,7 +94,6 @@ class BinaryTreeZigzagLevelOrderTraversal {
                 isOdd = true;
             }
             zigzagLevelOrder0();
-
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

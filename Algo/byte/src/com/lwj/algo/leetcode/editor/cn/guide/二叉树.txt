@@ -90,7 +90,9 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 103. 二叉树的锯齿形层序遍历
 bfs遍历的时候，定义一个全局的boolean变量表示单双层，双层的话把当前层的元素反转一下
 
-513. 找树左下角的值 https://leetcode.cn/problems/find-bottom-left-tree-value/solution/bfs-wei-shi-yao-yao-yong-dui-lie-yi-ge-s-f34y/
+513. 找树左下角的值
+方法一：当遍历完当前层级的所有元素后，queue如果是空的话，说明当前层级是叶子节点，那么当前层级的一个元素就是左下角值
+方法二：每层按照从右向左的顺便遍历元素，tmpNode指向遍历的元素，当遍历结束时，tmpNode就指向左下角的值
 
 课后作业：
 107. 二叉树的层序遍历 II https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/
