@@ -67,7 +67,46 @@ class ValidateBinarySearchTree {
      * }
      */
     class Solution {
+
+
         public boolean isValidBST(TreeNode root) {
+            long[] res = isValidBSTReturn(root);
+            return res[0] == 1;
+        }
+
+        //这个long数字包含3个值，第一个值表示当前节点是否是一个二叉搜索树，1为是，0为否
+        //第二个值表示当前节点所在的子树范围中最小的值
+        //第三个值表示当前节点所在的子树范围中最大的值
+        public long[] isValidBSTReturn(TreeNode root) {
+            if (root == null) return new long[]{1, Long.MAX_VALUE, Long.MIN_VALUE};
+            long[] intl = isValidBSTReturn(root.left);
+            long[] intr = isValidBSTReturn(root.right);
+            if (intl[0] == 0 || intr[0] == 0) {
+                return new long[]{0, 0, 0};
+            }
+            int val = root.val;
+            //注意这里，如果子节点为空，这里返回的是正负无穷，需要和当前节点比较大小后再返回
+            if (intl[2] < val && val < intr[1]) {
+                return new long[]{1, Math.min(intl[1], val), Math.max(intr[2], val)};
+            }
+            return new long[]{0, 0, 0};
+        }
+
+        //中序遍历
+        Long pre = Long.MIN_VALUE;
+
+        public boolean isValidBST1(TreeNode root) {
+            if (root == null) return true;
+            if (!isValidBST1(root.left)) {
+                return false;
+            }
+            if (root.val <= pre) return false;
+            pre = (long) root.val;
+            return isValidBST1(root.right);
+        }
+
+        // 先序遍历
+        public boolean isValidBST0(TreeNode root) {
             return isValidBST0(root, Long.MIN_VALUE, Long.MAX_VALUE);
         }
 
