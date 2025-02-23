@@ -52,7 +52,8 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 700. 二叉搜索树中的搜索
 合理利用二叉搜索树的性质，整个树中序遍历的时候是一个有序递增数组
 
-938. 二叉搜索树的范围和 https://leetcode.cn/problems/range-sum-of-bst/
+938. 二叉搜索树的范围和
+
 530. 二叉搜索树的最小绝对差 https://leetcode.cn/problems/minimum-absolute-difference-in-bst/
 2476. 二叉搜索树最近节点查询 https://leetcode.cn/problems/closest-nodes-queries-in-a-binary-search-tree/
 501. 二叉搜索树中的众数 https://leetcode.cn/problems/find-mode-in-binary-search-tree/
@@ -62,3 +63,21 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 106. 从中序与后序遍历序列构造二叉树 https://leetcode.cn/problems/construct-binary-tree-from-inorder-and-postorder-traversal/
 889. 根据前序和后序遍历构造二叉树 https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-postorder-traversal/
 1110. 删点成林 https://leetcode.cn/problems/delete-nodes-and-return-forest/
+
+
+236. 二叉树的最近公共祖先
+其中c和d可以合并
+1.当前节点是空节点:返回当前节点
+2.当前节点是p:返回当前节点
+3.当前节点是q:返回当前节点
+4.其他： a 左右子树都找到：返回当前节点
+        b 只有左子树找到：返回递归左子树的结果其他
+        c 只有右子树找到：返回递归右子树的结果
+        d 左右子树都没有找到：返回空节点
+
+
+235. 二叉搜索树的最近公共祖先 https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/solutions/2023873/zui-jin-gong-gong-zu-xian-yi-ge-shi-pin-8h2zc/
+
+课后作业：
+1123. 最深叶节点的最近公共祖先 https://leetcode.cn/problems/lowest-common-ancestor-of-deepest-leaves/
+2096. 从二叉树一个节点到另一个节点每一步的方向 https://leetcode.cn/problems/step-by-step-directions-from-a-binary-tree-node-to-another/
