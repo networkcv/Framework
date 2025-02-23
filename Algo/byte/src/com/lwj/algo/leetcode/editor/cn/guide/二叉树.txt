@@ -83,3 +83,24 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 课后作业：
 1123. 最深叶节点的最近公共祖先 https://leetcode.cn/problems/lowest-common-ancestor-of-deepest-leaves/
 2096. 从二叉树一个节点到另一个节点每一步的方向 https://leetcode.cn/problems/step-by-step-directions-from-a-binary-tree-node-to-another/
+
+102. 二叉树的层序遍历
+借助队列，或者两个数组cur跟next数组
+
+103. 二叉树的锯齿形层序遍历
+bfs遍历的时候，定义一个全局的boolean变量表示单双层，双层的话把当前层的元素反转一下
+
+513. 找树左下角的值 https://leetcode.cn/problems/find-bottom-left-tree-value/solution/bfs-wei-shi-yao-yao-yong-dui-lie-yi-ge-s-f34y/
+
+课后作业：
+107. 二叉树的层序遍历 II https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/
+104. 二叉树的最大深度 https://leetcode.cn/problems/maximum-depth-of-binary-tree/
+111. 二叉树的最小深度 https://leetcode.cn/problems/minimum-depth-of-binary-tree/
+2583. 二叉树中的第 K 大层和 https://leetcode.cn/problems/kth-largest-sum-in-a-binary-tree/
+199. 二叉树的右视图 https://leetcode.cn/problems/binary-tree-right-side-view/
+116. 填充每个节点的下一个右侧节点指针 https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/
+117. 填充每个节点的下一个右侧节点指针 II https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/
+1302. 层数最深叶子节点的和 https://leetcode.cn/problems/deepest-leaves-sum/
+1609. 奇偶树 https://leetcode.cn/problems/even-odd-tree/
+2415. 反转二叉树的奇数层 https://leetcode.cn/problems/reverse-odd-levels-of-binary-tree/
+2641. 二叉树的堂兄弟节点 II https://leetcode.cn/problems/cousins-in-binary-tree-ii/
