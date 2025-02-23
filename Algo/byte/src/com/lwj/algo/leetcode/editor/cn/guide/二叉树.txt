@@ -49,7 +49,9 @@ return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 后序遍历：先遍历左右子树，再比较当前节点的是否合理，左子树返回的时候要返回最大值，确保当前节点大于左子树最大值。右子树返回最小值，确保当前节点小于右子树最小值
 
 课后作业：
-700. 二叉搜索树中的搜索 https://leetcode.cn/problems/search-in-a-binary-search-tree/
+700. 二叉搜索树中的搜索
+合理利用二叉搜索树的性质，整个树中序遍历的时候是一个有序递增数组
+
 938. 二叉搜索树的范围和 https://leetcode.cn/problems/range-sum-of-bst/
 530. 二叉搜索树的最小绝对差 https://leetcode.cn/problems/minimum-absolute-difference-in-bst/
 2476. 二叉搜索树最近节点查询 https://leetcode.cn/problems/closest-nodes-queries-in-a-binary-search-tree/
