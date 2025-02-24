@@ -1,11 +1,13 @@
 回溯算法其实是一种暴力枚举的算法。可以细分为 子集型回溯、组合型回溯、排列型回溯。
 子集型回溯：每个元素只有两种状态，选或者不选，比如集合右两个元素，第一个元素选或者不选，第二个元素选或者不选，
+组合型回溯：相比子集型回溯，可以做一些优化
 
 回溯三问：
 1.当前操作？
 2.子问题？
 3.下一个子问题？
 
+子集型回溯：
 17. 电话号码的字母组合
 以这个为例,用一个path数组记录路径上的字母
 1.当前操作？枚举path[i]要填入的字母
@@ -17,6 +19,7 @@
 1.当前操作？枚举第i个数选/不选
 2.子问题？从下标>=i的数字中构造子集
 3.下一个子问题？从下标>=i+1的数字中构造子集
+
 站在答案的视角，每次必选一个元素，每成功选择一个元素就往res中添加一个结果，同时为了防止重复，对于选择元素的要求需要大于上一个元素的下标。
 1.当前操作？枚举一个下标j>=i的数字，加入path
 2.子问题？从下标>=i的数字中构造子集
@@ -39,4 +42,17 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 2698. 求一个整数的惩罚数 https://leetcode.cn/problems/find-the-punishment-number-of-an-integer/
 306. 累加数 https://leetcode.cn/problems/additive-number/
 93. 复原 IP 地址 https://leetcode.cn/problems/restore-ip-addresses/
+
+组合型回溯：
+减枝
+77. 组合 https://leetcode.cn/problems/combinations/solutions/2071017/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-65lh/
+216. 组合总和 III https://leetcode.cn/problems/combination-sum-iii/solutions/2071013/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-feme/
+22. 括号生成 https://leetcode.cn/problems/generate-parentheses/solutions/2071015/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-wcdw/
+
+课后作业：
+按照视频中的要求，用另一种写法完成上面三题。
+301. 删除无效的括号 https://leetcode.cn/problems/remove-invalid-parentheses/
+39. 组合总和 https://leetcode.cn/problems/combination-sum/
+
+排列型回溯：
 
