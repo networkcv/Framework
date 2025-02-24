@@ -70,8 +70,25 @@ class CombinationSumIii {
          * @param n k个数之和为n
          */
         public List<List<Integer>> combinationSum3(int k, int n) {
-            dfs(9, k, n);
+//            dfs(9, k, n);
+            dfs1(9, k, n);
             return res;
+        }
+
+        /**
+         * 选择视角
+         */
+        private void dfs1(int i, int k, int t) {
+            int need = k - path.size();
+            if (t < 0 || need > i) return;
+            if (t == 0 && need == 0) {
+                res.add(new ArrayList<>(path));
+                return;
+            }
+            dfs(i - 1, k, t);
+            path.add(i);
+            dfs(i - 1, k, t - i);
+            path.removeLast();
         }
 
         /**
@@ -81,6 +98,7 @@ class CombinationSumIii {
          */
         private void dfs(int i, int k, int t) {
             int need = k - path.size();
+            //剪枝
             if (need > i || t < 0) {
                 return;
             }
