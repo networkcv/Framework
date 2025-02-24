@@ -45,12 +45,30 @@ class Subsets {
         List<List<Integer>> res = new ArrayList<>();
         List<Integer> path = new ArrayList<>();
 
+
         public List<List<Integer>> subsets(int[] nums) {
-            dfs(0, nums);
+//            dfs(0, nums);
+            dfs2(0, nums);
             return res;
         }
 
         /**
+         * 以答案视角
+         */
+        public void dfs2(int i, int[] nums) {
+            res.add(new ArrayList<>(path));
+            if (i == nums.length) return;
+
+            for (int j = i; j < nums.length; j++) {
+                path.add(nums[j]);
+                dfs2(j + 1, nums);
+                path.remove(path.size() - 1);
+            }
+        }
+
+        /**
+         * 以输入视角
+         *
          * @param i    表示当前对第i个下标的元素进行选择
          * @param nums nums
          */
