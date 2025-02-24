@@ -50,8 +50,12 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 当判断剩余可选数字时，倒叙遍历的表达式要比正序遍历简单
 倒叙：当前遍历的元素是i，那么当前剩余可选数字也是i
 正序：当前遍历的元素是i，那么当前剩余可选数字等于 n（总数）-i（当前已遍历元素）+1
+时间复杂度=符合要求的叶子节点个数C(n,k)乘以根节点的叶子节点的路径长度k=k*C(n,k)
+空间复杂度=O(k)
 
-216. 组合总和 III https://leetcode.cn/problems/combination-sum-iii/solutions/2071013/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-feme/
+216. 组合总和
+III https://leetcode.cn/problems/combination-sum-iii/solutions/2071013/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-feme/
+
 22. 括号生成 https://leetcode.cn/problems/generate-parentheses/solutions/2071015/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-wcdw/
 
 课后作业：
