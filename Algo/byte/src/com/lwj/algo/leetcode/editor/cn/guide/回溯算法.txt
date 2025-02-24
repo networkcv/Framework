@@ -22,8 +22,11 @@
 2.子问题？从下标>=i的数字中构造子集
 3.下一个子问题？从下标>=j+1的数字中构造子集
 
-
-131. 分割回文串 https://leetcode.cn/problems/palindrome-partitioning/solutions/2059414/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-fues/
+131. 分割回文串
+用答案视角来做，枚举第一个逗号出现的位置（或者没有）
+1.当前操作？ 选择回文串s[i..j]，加入path
+2.子问题？从下标>=i的位置构造回文分割
+3.下一个子问题？从下标>=j+1的位置构造回文分割
 
 课后作业：
 257. 二叉树的所有路径 https://leetcode.cn/problems/binary-tree-paths/ 回溯+复习前面学的二叉树递归

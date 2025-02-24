@@ -82,7 +82,7 @@ class Subsets {
             //选
             path.add(nums[i]);
             dfs(i + 1, nums);
-            //这一步很重要，因为公用了一个path，所以在递归结束的时候移除当前添加的节点
+            //这一步很重要，因为共用了一个path，所以在递归结束的时候移除当前添加的节点
             path.remove(path.size() - 1);
         }
     }
