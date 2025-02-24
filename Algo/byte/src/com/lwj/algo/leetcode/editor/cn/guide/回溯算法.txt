@@ -1,6 +1,6 @@
-回溯算法其实是一种暴力枚举的算法。可以细分为 子集型回溯、组合型回溯、排列型回溯。
+回溯算法其实是一种暴力枚举的算法。可以细分为 子集型回溯、组合型回溯、排列型回溯。解题思路从输入角度看是选或者不选，从答案的角度看则是枚举选哪个。
 子集型回溯：每个元素只有两种状态，选或者不选，比如集合右两个元素，第一个元素选或者不选，第二个元素选或者不选，
-组合型回溯：相比子集型回溯，可以做一些优化
+组合型回溯：相比子集型回溯，可以做一些剪枝优化
 
 回溯三问：
 1.当前操作？
@@ -31,6 +31,9 @@
 2.子问题？从下标>=i的位置构造回文分割
 3.下一个子问题？从下标>=j+1的位置构造回文分割
 
+输入的视角，将"aab"看成 "a，a，b，"，每次i表示逗号的位置索引，也就是分割的位置，这里有个特殊的是b后边这个逗号的分割是必选的
+
+
 课后作业：
 257. 二叉树的所有路径 https://leetcode.cn/problems/binary-tree-paths/ 回溯+复习前面学的二叉树递归
 113. 路径总和 II https://leetcode.cn/problems/path-sum-ii/ 回溯+复习前面学的二叉树递归
@@ -53,10 +56,11 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 时间复杂度=符合要求的叶子节点个数C(n,k)乘以根节点的叶子节点的路径长度k=k*C(n,k)
 空间复杂度=O(k)
 
-216. 组合总和
-III https://leetcode.cn/problems/combination-sum-iii/solutions/2071013/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-feme/
+216. 组合总和 III
 
-22. 括号生成 https://leetcode.cn/problems/generate-parentheses/solutions/2071015/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-wcdw/
+
+22. 括号生成
+输入视角：n对括号的组合，可以转换为2n个位置选n个位置来设置左括号
 
 课后作业：
 按照视频中的要求，用另一种写法完成上面三题。
