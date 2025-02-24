@@ -1,0 +1,35 @@
+回溯算法其实是一种暴力枚举的算法。可以细分为 子集型回溯、组合型回溯、排列型回溯。
+子集型回溯：每个元素只有两种状态，选或者不选，比如集合右两个元素，第一个元素选或者不选，第二个元素选或者不选，
+
+回溯三问：
+1.当前操作？
+2.子问题？
+3.下一个子问题？
+
+17. 电话号码的字母组合
+以这个为例,用一个path数组记录路径上的字母
+1.当前操作？枚举path[i]要填入的字母
+2.子问题？构造字符串>=i的部分
+3.下一个子问题？构造字符串>=i+1的部分
+
+78. 子集
+站在输入的视角，每个元素可以在子集中也可以不在子集中，每个节点都表示当前及祖先选择（选/不选）的结果，每两个节点之间的连线表示选择的动作，那么最终叶子节点就是答案
+1.当前操作？枚举第i个数选/不选
+2.子问题？从下标>=i的数字中构造子集
+3.下一个子问题？从下标>=i+1的数字中构造子集
+
+
+131. 分割回文串 https://leetcode.cn/problems/palindrome-partitioning/solutions/2059414/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-fues/
+
+课后作业：
+257. 二叉树的所有路径 https://leetcode.cn/problems/binary-tree-paths/ 回溯+复习前面学的二叉树递归
+113. 路径总和 II https://leetcode.cn/problems/path-sum-ii/ 回溯+复习前面学的二叉树递归
+784. 字母大小写全排列 https://leetcode.cn/problems/letter-case-permutation/
+LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
+2397. 被列覆盖的最多行数 https://leetcode.cn/problems/maximum-rows-covered-by-columns/
+1239. 串联字符串的最大长度 https://leetcode.cn/problems/maximum-length-of-a-concatenated-string-with-unique-characters/
+2212. 射箭比赛中的最大得分 https://leetcode.cn/problems/maximum-points-in-an-archery-competition/
+2698. 求一个整数的惩罚数 https://leetcode.cn/problems/find-the-punishment-number-of-an-integer/
+306. 累加数 https://leetcode.cn/problems/additive-number/
+93. 复原 IP 地址 https://leetcode.cn/problems/restore-ip-addresses/
+
