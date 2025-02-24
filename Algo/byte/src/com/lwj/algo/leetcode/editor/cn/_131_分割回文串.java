@@ -1,6 +1,7 @@
 package com.lwj.algo.leetcode.editor.cn;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 //<p>给你一个字符串 <code>s</code>，请你将<em> </em><code>s</code><em> </em>分割成一些子串，使每个子串都是 <strong><span data-keyword="palindrome-string">回文串</span></strong> 。返回 <code>s</code> 所有可能的分割方案。</p>
@@ -40,10 +41,11 @@ class PalindromePartitioning {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         List<List<String>> res = new ArrayList<>();
-        List<String> path = new ArrayList<>();
+        LinkedList<String> path = new LinkedList<>();
 
         public List<List<String>> partition(String s) {
-            dfs(0, s);
+//            dfs(0, s);
+            dfs1(0, 0, s);
             return res;
         }
 
@@ -68,6 +70,29 @@ class PalindromePartitioning {
                     dfs(j + 1, s);
                     path.remove(path.size() - 1);
                 }
+            }
+        }
+
+        /**
+         * 输入视角
+         *
+         * @param start 索引开始位置
+         * @param i     当前分割位置
+         * @param s     字符串
+         */
+        public void dfs1(int start, int i, String s) {
+            if (i == s.length()) {
+                res.add(new ArrayList<>(path));
+                return;
+            }
+            if (i < s.length() - 1) {
+                dfs1(start, i + 1, s);
+            }
+            String subStr = s.substring(start, i + 1);
+            if (check(subStr)) {
+                path.add(subStr);
+                dfs1(i + 1, i + 1, s);
+                path.removeLast();
             }
         }
     }
