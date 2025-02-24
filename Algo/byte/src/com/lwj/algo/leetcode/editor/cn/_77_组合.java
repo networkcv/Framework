@@ -57,8 +57,30 @@ class Combinations {
             this.n = n;
             this.k = k;
 //            dfs(1, n, k);
-            dfs0(n);
+//            dfs0(n);
+            dfs1(n);
             return res;
+        }
+
+        /**
+         * 答案视角 倒序
+         *
+         * @param i 当前遍历元素
+         */
+        public void dfs1(int i) {
+            int need = k - path.size();
+            if (need == 0) {
+                res.add(new ArrayList<>(path));
+                return;
+            }
+            if (need > i) {
+                return;
+            }
+            for (int j = i; j > 0; j--) {
+                path.add(j);
+                dfs1(j - 1);
+                path.removeLast();
+            }
         }
 
         /**

@@ -44,8 +44,13 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 93. 复原 IP 地址 https://leetcode.cn/problems/restore-ip-addresses/
 
 组合型回溯：
-减枝
-77. 组合 https://leetcode.cn/problems/combinations/solutions/2071017/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-65lh/
+在回溯的基础上进行减枝优化
+77. 组合
+当剩余可选的数字<还至少需要的数字 后续的情况就不用递归了，一定是不满足条件的，这个就是剪枝
+当判断剩余可选数字时，倒叙遍历的表达式要比正序遍历简单
+倒叙：当前遍历的元素是i，那么当前剩余可选数字也是i
+正序：当前遍历的元素是i，那么当前剩余可选数字等于 n（总数）-i（当前已遍历元素）+1
+
 216. 组合总和 III https://leetcode.cn/problems/combination-sum-iii/solutions/2071013/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-feme/
 22. 括号生成 https://leetcode.cn/problems/generate-parentheses/solutions/2071015/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-wcdw/
 
