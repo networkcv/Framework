@@ -54,7 +54,8 @@ class Permutations {
 
         public List<List<Integer>> permute(int[] nums) {
             this.nums = nums;
-            dfs(0);
+//            dfs(0);
+            dfs();
             return res;
         }
 
@@ -72,6 +73,23 @@ class Permutations {
                 if (!path.contains(num)) {
                     path.add(num);
                     dfs(i + 1);
+                    path.removeLast();
+                }
+            }
+        }
+
+        /**
+         * 不用记录遍历元素也可以
+         */
+        public void dfs() {
+            if (path.size() == nums.length) {
+                res.add(new ArrayList<>(path));
+                return;
+            }
+            for (int num : nums) {
+                if (!path.contains(num)) {
+                    path.add(num);
+                    dfs();
                     path.removeLast();
                 }
             }
