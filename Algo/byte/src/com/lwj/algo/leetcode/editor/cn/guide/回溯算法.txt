@@ -62,10 +62,15 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 22. 括号生成
 输入视角：n对括号的组合，可以转换为2n个位置选n个位置来设置左括号
 
-课后作业：
-按照视频中的要求，用另一种写法完成上面三题。
-301. 删除无效的括号 https://leetcode.cn/problems/remove-invalid-parentheses/
-39. 组合总和 https://leetcode.cn/problems/combination-sum/
+39. 组合总和
+
+301. 删除无效的括号
+输入视角：dfs定义是遍历每个元素位置，判断是否删除
+先分别求出至少要删除的左括号数量和右括号数量，方便后续给选择（删除当前位置）的情况剪枝
+剪枝情况：if (left + right > s.length() - i) return;//剩余字符数量无法凑够删除数量，直接return
+上边这个判断是包含了当i==length的情况，如果一直都不选，那么总会有 left + right > s.length()的情况
+
+
 
 排列型回溯：
 
