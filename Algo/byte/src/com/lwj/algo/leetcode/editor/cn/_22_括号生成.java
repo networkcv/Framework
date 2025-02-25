@@ -43,7 +43,6 @@ class GenerateParentheses {
         int m;
         int n;
 
-        //在2n个位置中选择n个位置放左括号
         public List<String> generateParenthesis(int n) {
             this.n = n;
             this.m = n * 2;
@@ -51,6 +50,13 @@ class GenerateParentheses {
             return res;
         }
 
+        /**
+         * 输入视角，在2n个位置中选择n个位置放左括号
+         *
+         * @param i       判断当前位置放哪个括号
+         * @param leftNum 左括号的数量
+         * @param path    当前这一次遍历的路径
+         */
         public void dfs(int i, int leftNum, String path) {
             //总数到达最后一个时返回
             if (i == m) {
@@ -65,6 +71,13 @@ class GenerateParentheses {
             if (i - leftNum < leftNum) {
                 dfs(i + 1, leftNum, path + ")");
             }
+        }
+
+        /**
+         * TODO: 乌柏 2025/2/25  答案视角，枚举下一个左括号的位置
+         */
+        public void dfs1(int i) {
+
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

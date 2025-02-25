@@ -1,3 +1,9 @@
+package com.lwj.algo.leetcode.editor.cn;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 //<p>给定一个不含重复数字的数组 <code>nums</code> ，返回其 <em>所有可能的全排列</em> 。你可以 <strong>按任意顺序</strong> 返回答案。</p>
 //
 //<p>&nbsp;</p>
@@ -33,49 +39,43 @@
 // <li><code>nums</code> 中的所有整数 <strong>互不相同</strong></li> 
 //</ul>
 //
-//<div><div>Related Topics</div><div><li>数组</li><li>回溯</li></div></div><br><div><li>👍 2169</li><li>👎 0</li></div>
-
-package com.lwj.algo.leetcode.editor.cn;
-
-import java.util.LinkedList;
-import java.util.List;
-
+//<div><div>Related Topics</div><div><li>数组</li><li>回溯</li></div></div><br><div><li>👍 3037</li><li>👎 0</li></div>
 class Permutations {
     public static void main(String[] args) {
         Solution solution = new Permutations().new Solution();
-        System.out.println(solution.permute(new int[]{1, 2, 3}));
+        System.out.println(solution);
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-
-        List<List<Integer>> res = new LinkedList<>();
-        LinkedList<Integer> track = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        LinkedList<Integer> path = new LinkedList<>();
+        int[] nums;
 
         public List<List<Integer>> permute(int[] nums) {
-            boolean[] used = new boolean[nums.length];
-            backtrack(nums, track, used);
+            this.nums = nums;
+            dfs(0);
             return res;
         }
 
-        private void backtrack(int[] nums, LinkedList<Integer> track, boolean[] used) {
-            if (nums.length == track.size()) {
-                res.add(new LinkedList<>(track));
+        /**
+         * 答案视角
+         *
+         * @param i 当前遍历元素
+         */
+        public void dfs(int i) {
+            if (i == nums.length) {
+                res.add(new ArrayList<>(path));
                 return;
             }
-            for (int i = 0; i < nums.length; i++) {
-                if (used[i]) {
-                    continue;
+            for (int num : nums) {
+                if (!path.contains(num)) {
+                    path.add(num);
+                    dfs(i + 1);
+                    path.removeLast();
                 }
-                used[i] = true;
-                track.add(nums[i]);
-                backtrack(nums, track, used);
-                used[i] = false;
-                track.removeLast();
             }
         }
-
     }
 //leetcode submit region end(Prohibit modification and deletion)
-
 }

@@ -1,6 +1,7 @@
 回溯算法其实是一种暴力枚举的算法。可以细分为 子集型回溯、组合型回溯、排列型回溯。解题思路从输入角度看是选或者不选，从答案的角度看则是枚举选哪个。
-子集型回溯：每个元素只有两种状态，选或者不选，比如集合右两个元素，第一个元素选或者不选，第二个元素选或者不选，
+子集型回溯：每个元素只有两种状态，选或者不选，比如集合右两个元素，第一个元素选或者不选，第二个元素选或者不选。解题思路优先考虑 输入角度
 组合型回溯：相比子集型回溯，可以做一些剪枝优化
+排列型回溯：组合是不区分先后顺序的，而排列会考虑先后顺序，排列型的递归树会比组合型的递归树完整，解题思路优先考虑 答案角度
 
 回溯三问：
 1.当前操作？
@@ -53,11 +54,10 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 当判断剩余可选数字时，倒叙遍历的表达式要比正序遍历简单
 倒叙：当前遍历的元素是i，那么当前剩余可选数字也是i
 正序：当前遍历的元素是i，那么当前剩余可选数字等于 n（总数）-i（当前已遍历元素）+1
-时间复杂度=符合要求的叶子节点个数C(n,k)乘以根节点的叶子节点的路径长度k=k*C(n,k)
+时间复杂度=符合要求的叶子节点个数C(n,k) 乘以 根节点的叶子节点的路径长度k=k*C(n,k)
 空间复杂度=O(k)
 
 216. 组合总和 III
-
 
 22. 括号生成
 输入视角：n对括号的组合，可以转换为2n个位置选n个位置来设置左括号
@@ -73,4 +73,11 @@ LCP 51. 烹饪料理 https://leetcode.cn/problems/UEcfPD/
 
 
 排列型回溯：
+时间复杂度还是最底层的叶子节点个数(n!) * 根节点到叶子节点的路径长度 = O((n*n!)
+46. 全排列 https://leetcode.cn/problems/permutations/solution/hui-su-bu-hui-xie-tao-lu-zai-ci-jing-que-6hrh/
+51. N 皇后 https://leetcode.cn/problems/n-queens/solution/hui-su-tao-lu-miao-sha-nhuang-hou-shi-pi-mljv/
+52. N 皇后 II https://leetcode.cn/problems/n-queens-ii/solution/hui-su-miao-sha-nhuang-hou-yi-ge-shi-pin-l41l
 
+课后作业：
+357. 统计各位数字都不同的数字个数 https://leetcode.cn/problems/count-numbers-with-unique-digits/
+2850. 将石头分散到网格图的最少移动次数 https://leetcode.cn/problems/minimum-moves-to-spread-stones-over-grid/
