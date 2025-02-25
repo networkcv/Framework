@@ -69,7 +69,7 @@ class ValidateBinarySearchTree {
     class Solution {
 
 
-        public boolean isValidBST(TreeNode root) {
+        public boolean isValidBST2(TreeNode root) {
             long[] res = isValidBSTReturn(root);
             return res[0] == 1;
         }
@@ -92,9 +92,9 @@ class ValidateBinarySearchTree {
             return new long[]{0, 0, 0};
         }
 
-        //中序遍历
         Long pre = Long.MIN_VALUE;
 
+        //中序遍历
         public boolean isValidBST1(TreeNode root) {
             if (root == null) return true;
             if (!isValidBST1(root.left)) {
@@ -106,7 +106,7 @@ class ValidateBinarySearchTree {
         }
 
         // 先序遍历
-        public boolean isValidBST0(TreeNode root) {
+        public boolean isValidBST(TreeNode root) {
             return isValidBST0(root, Long.MIN_VALUE, Long.MAX_VALUE);
         }
 

@@ -46,7 +46,17 @@ class ShuZiXuLieZhongMouYiWeiDeShuZiLcof {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int findKthNumber(int k) {
-            return 0;
+            int digit = 1;
+            long start = 1;
+            long count = 9;
+            while (k > count) { // 1.
+                k -= count;
+                start *= 10;
+                digit += 1;
+                count = digit * start * 9;
+            }
+            long num = start + (k - 1) / digit; // 2.
+            return Long.toString(num).charAt((k - 1) % digit) - '0'; // 3.
         }
 
         //查找第k位数字，时间复杂度过高
@@ -70,6 +80,8 @@ class ShuZiXuLieZhongMouYiWeiDeShuZiLcof {
             int preN = n - lastNumCount;
             return String.valueOf(lastNum).charAt(k - preN - 1) - '0';
         }
+
+
     }
 //leetcode submit region end(Prohibit modification and deletion)
 
