@@ -36,8 +36,6 @@ dp三步：
 解法四：递推版-这里需要注意处理dp数组的初始值，可以手动将设置初始值，也可以扩大dp数组长度。时间负责度为O(N),空间复杂度为O(N)
 解法五：递推版-空间优化版，时间负责度为O(N),空间复杂度为O(1)
 
-
-
 课后作业：
 70. 爬楼梯 https://leetcode.cn/problems/climbing-stairs/
 746. 使用最小花费爬楼梯 https://leetcode.cn/problems/min-cost-climbing-stairs/
@@ -47,3 +45,38 @@ dp三步：
 740. 删除并获得点数 https://leetcode.cn/problems/delete-and-earn/
 213. 打家劫舍 II https://leetcode.cn/problems/house-robber-ii/
 64. 最小路径和 https://leetcode.cn/problems/minimum-path-sum/
+
+
+dp类型-选或不选
+子类型1: 0-1背包
+    回溯
+    记忆化搜索
+    递推
+    空间优化：两个数组
+    空间优化：一个数组
+494. 目标和 https://leetcode.cn/problems/target-sum/solution/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-s1cx/
+给nums[]的每个元素前加上+或-运算后等于target
+假设所有加+号的数的和是p，那么所有加-号的数字和等于，sum(nums)-p，
+target=正数和-负数和  target=p-[sum(nums)-p]  2p=target+sum(nums)  p=[target+sum(nums)]/2  由此判断target+sum(nums) 一定是偶数
+该问题可以转换成从nums[]中选出一些数字，使这些数组和等于target+sum(nums)
+
+
+子类型2: 完全背包
+322. 零钱兑换 https://leetcode.cn/problems/coin-change/solution/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-21m5/
+
+子类型3: 常见变形
+
+
+
+课后作业：
+2915. 和为目标值的最长子序列的长度 https://leetcode.cn/problems/length-of-the-longest-subsequence-that-sums-to-target/
+416. 分割等和子集 https://leetcode.cn/problems/partition-equal-subset-sum/
+2787. 将一个数字表示成幂的和的方案数 https://leetcode.cn/problems/ways-to-express-an-integer-as-sum-of-powers/
+518. 零钱兑换 II https://leetcode.cn/problems/coin-change-ii/
+279. 完全平方数 https://leetcode.cn/problems/perfect-squares/
+
+课后作业题解：
+2915. 和为目标值的最长子序列的长度 https://leetcode.cn/problems/length-of-the-longest-subsequence-that-sums-to-target/solution/mo-ban-qia-hao-zhuang-man-xing-0-1-bei-b-0nca/
+416. 分割等和子集 https://leetcode.cn/problems/partition-equal-subset-sum/solution/0-1-bei-bao-cong-ji-yi-hua-sou-suo-dao-d-ev76/
+518. 零钱兑换 II https://leetcode.cn/problems/coin-change-ii/solution/shi-pin-wan-quan-bei-bao-cong-ji-yi-hua-o3ew0/
+279. 完全平方数 https://leetcode.cn/problems/perfect-squares/solution/dong-tai-gui-hua-cong-ji-yi-hua-sou-suo-3kz1g/
