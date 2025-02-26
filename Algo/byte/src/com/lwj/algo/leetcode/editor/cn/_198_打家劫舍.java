@@ -71,6 +71,19 @@ class HouseRobber {
             path.removeLast();
         }
 
+        //回溯版，这里没有像之前的dfs只进行深度遍历，该dfs在递归返回的时候返回了当前问题的解
+        public int rob1(int[] nums) {
+            return dfs1(nums.length - 1, nums);
+        }
+
+        public int dfs1(int i, int[] nums) {
+            if (i < 0) {
+                return 0;
+            }
+            return Math.max(dfs1(i - 1, nums), dfs1(i - 2, nums) + nums[i]);
+        }
+
+
     }
 //leetcode submit region end(Prohibit modification and deletion)
 
