@@ -49,15 +49,13 @@ import java.util.Arrays;
 class TargetSum {
     public static void main(String[] args) {
         Solution solution = new TargetSum().new Solution();
-        System.out.println(solution.findTargetSumWays(new int[]{1, 1, 1, 1, 1}, 3));
+//        System.out.println(solution.findTargetSumWays(new int[]{1, 1, 1, 1, 1}, 3));
+        System.out.println(solution.findTargetSumWays(new int[]{1, 2, 3, 4, 5}, 7));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-        public int findTargetSumWays0(int[] nums, int target) {
-            return 1;
 
-        }
 
         public int findTargetSumWays(int[] nums, int target) {
             Integer sum = Arrays.stream(nums).boxed().reduce(Integer::sum).orElse(0);
@@ -66,7 +64,26 @@ class TargetSum {
                 return 0;
             }
 //            return dfs0(nums, nums.length - 1, target / 2);
-            return dfs1(nums, nums.length - 1, target / 2);
+//            return dfs1(nums, nums.length - 1, target / 2);
+            return dp(nums, target / 2);
+        }
+
+        // 递推版
+        public int dp(int[] nums, int target) {
+            int[][] dp = new int[nums.length + 1][target + 1];
+            dp[0][0] = 1;
+            for (int i = 0; i < nums.length; i++) {
+                for (int j = 0; j <= target; j++) {
+                    if (nums[i] > j) {
+                        //不选
+                        dp[i + 1][j] = dp[i][j];
+                    } else {
+                        //不选+选
+                        dp[i + 1][j] = dp[i][j] + dp[i][j - nums[i]];
+                    }
+                }
+            }
+            return dp[nums.length][target];
         }
 
         /**
@@ -82,7 +99,7 @@ class TargetSum {
             if (cur < 0) {
                 return target == 0 ? 1 : 0;
             }
-            //由于当前值大于target，所以一定不能选当前数字
+            //如果当前值大于target，选了target该分支下的target一定小于0，避免无效运算所以这里不选nums[cur]的值
             if (nums[cur] > target) {
                 return dfs1(nums, cur - 1, target);
             }

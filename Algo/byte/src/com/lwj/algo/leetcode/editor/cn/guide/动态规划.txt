@@ -21,7 +21,7 @@ dp三步：
 
     记忆化搜索=自顶向下算
     递推=自底向上算
-    cache[i] = Math.max(dfs2(i - 1, nums), dfs2(i - 2, nums) + nums[i]);
+    例如打家劫舍中 cache[i] = Math.max(dfs2(i - 1, nums), dfs2(i - 2, nums) + nums[i]);
     看这句话，当前子问题的解是通过里边两个dfs函数返回后才进行计算的，调用函数是递归中递的过程，函数返回是递归中归的过程。假设当前子问题i=2，
     那当前子问题可以直接由i=1的子问题和i=0的子问题+nums[2]来解决掉,那如果nums[0]和nums[1]已知，就能推出nums[2],然后通过nums[2]和nums[1]
     又能推出nums[3]，一直到推到结束，递推就是省略掉递的过程，直接从已知子问题推导出所有的未知子问题的过程
@@ -66,6 +66,14 @@ dp类型-选或不选
 target=正数和-负数和  target=p-[sum(nums)-p]  2p=target+sum(nums)  p=[target+sum(nums)]/2  由此判断target+sum(nums) 一定是偶数
 该问题可以转换成从nums[]中选出一些数字，使这些数组和等于target+sum(nums)
 解法一：回溯版-暴力回溯
+解法二：递推版
+dfs(cur,target)=dfs(cur-1,target)+dfs(cur-1,target-nums[cur])
+dfs函数转f数组 （dfs的参数好类比数组的纬度，dfs的函数返回值类比数组中存放的元素，相当于用数组把整个函数的调用给缓存起来，然后根据边界条件推导出整个数组）
+f[cur][target]=f[cur-1][target]+f[cur-1][target-nums[cur]]
+由于上边的cur等于0时，cur-1为-1，会在数组取值时报错，可以整体向后延一位，变成：
+f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
+
+
 
 
 子类型2: 完全背包
