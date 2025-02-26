@@ -1,0 +1,33 @@
+动态规划
+dp三步：
+1.思考回溯要怎么写
+    a.入参和返回值
+    b.递归到哪里
+    c.递归边界和入口
+2.改成记忆化搜索
+3.1:1翻译成递推
+
+198. 打家劫舍
+回溯三问
+通过 当前操作 将 当前问题 转换为 当前子问题，然后再将当前子问题的的求解，转换成求解下一个子问题
+（这里个人再补充一个0.当前问题：从i个房子中取得最大金额和）
+1.当前操作：枚举 第i 个房子选或不选
+2.当前子问题：从 前i 个房子中获取最大金额和
+3.下一个子问题：分类讨论
+    不选：从 前i-1 个房子中获取最大金额和
+    选：从 前i-2 个房子中获取最大金额和
+解法一：回溯版-暴力回溯，时间复杂度O(N*2^N),空间复杂度O(N)
+解法二：回溯版-dfs返回当前问题解
+解法三：回溯版-增加数组缓存子问题的答案，优化后时间负责度为O(N),空间复杂度为O(N)
+
+
+
+课后作业：
+70. 爬楼梯 https://leetcode.cn/problems/climbing-stairs/
+746. 使用最小花费爬楼梯 https://leetcode.cn/problems/min-cost-climbing-stairs/
+377. 组合总和 Ⅳ https://leetcode.cn/problems/combination-sum-iv/
+2466. 统计构造好字符串的方案数 https://leetcode.cn/problems/count-ways-to-build-good-strings/
+2266. 统计打字方案数 https://leetcode.cn/problems/count-number-of-texts/
+740. 删除并获得点数 https://leetcode.cn/problems/delete-and-earn/
+213. 打家劫舍 II https://leetcode.cn/problems/house-robber-ii/
+64. 最小路径和 https://leetcode.cn/problems/minimum-path-sum/
