@@ -47,7 +47,7 @@ class HouseRobber {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int rob(int[] nums) {
-            return rob2(nums);
+            return rob4(nums);
         }
 
         //回溯版-暴力回溯
@@ -118,6 +118,22 @@ class HouseRobber {
             return dp[nums.length - 1];
         }
 
+        //递推版-扩大dp数组长度
+        public int rob4(int[] nums) {
+            int len = nums.length;
+            int[] dp = new int[len + 2];
+            for (int i = 0; i < len; i++) {
+                dp[i + 2] = Math.max(dp[i] + nums[i], dp[i + 1]);
+            }
+            return dp[dp.length - 1];
+        }
+
+//        //递推版-空间优化
+//        public int rob5(int[] nums) {
+//            cache = new int[nums.length];
+//            Arrays.fill(cache, -1);
+//            return dfs2(nums.length - 1, nums);
+//        }
 
     }
 //leetcode submit region end(Prohibit modification and deletion)
