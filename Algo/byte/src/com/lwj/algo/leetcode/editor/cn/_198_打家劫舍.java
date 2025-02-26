@@ -71,7 +71,7 @@ class HouseRobber {
             path.removeLast();
         }
 
-        //回溯版，这里没有像之前的dfs只进行深度遍历，该dfs在递归返回的时候返回了当前问题的解
+        //回溯版，这里没有像之前的dfs只进行深度遍历，该dfs在递归返回的时候返回了当前问题的解,优化了空间复杂度O(1)
         public int rob1(int[] nums) {
             return dfs1(nums.length - 1, nums);
         }
@@ -82,6 +82,7 @@ class HouseRobber {
             }
             return Math.max(dfs1(i - 1, nums), dfs1(i - 2, nums) + nums[i]);
         }
+
         //回溯版-增加数组缓存子问题的答案，优化时间负责度为O(N),空间复杂度为O(N)
         int[] cache;
 
@@ -101,6 +102,20 @@ class HouseRobber {
             int max = Math.max(dfs2(i - 1, nums), dfs2(i - 2, nums) + nums[i]);
             cache[i] = max;
             return max;
+        }
+
+        //递推版-手动设置初始值
+        public int rob3(int[] nums) {
+            if (nums == null || nums.length == 0) return 0;
+            if (nums.length == 1) return nums[0];
+            if (nums.length == 2) return Math.max(nums[0], nums[1]);
+            int[] dp = new int[nums.length];
+            dp[0] = nums[0];
+            dp[1] = Math.max(nums[1], nums[0]);
+            for (int i = 2; i < nums.length; i++) {
+                dp[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+            }
+            return dp[nums.length - 1];
         }
 
 
