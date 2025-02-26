@@ -82,6 +82,26 @@ class HouseRobber {
             }
             return Math.max(dfs1(i - 1, nums), dfs1(i - 2, nums) + nums[i]);
         }
+        //回溯版-增加数组缓存子问题的答案，优化时间负责度为O(N),空间复杂度为O(N)
+        int[] cache;
+
+        public int rob2(int[] nums) {
+            cache = new int[nums.length];
+            Arrays.fill(cache, -1);
+            return dfs2(nums.length - 1, nums);
+        }
+
+        public int dfs2(int i, int[] nums) {
+            if (i < 0) {
+                return 0;
+            }
+            if (cache[i] != -1) {
+                return cache[i];
+            }
+            int max = Math.max(dfs2(i - 1, nums), dfs2(i - 2, nums) + nums[i]);
+            cache[i] = max;
+            return max;
+        }
 
 
     }
