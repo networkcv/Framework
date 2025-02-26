@@ -128,12 +128,17 @@ class HouseRobber {
             return dp[dp.length - 1];
         }
 
-//        //递推版-空间优化
-//        public int rob5(int[] nums) {
-//            cache = new int[nums.length];
-//            Arrays.fill(cache, -1);
-//            return dfs2(nums.length - 1, nums);
-//        }
+        //递推版-空间优化
+        public int rob5(int[] nums) {
+            int f0 = 0;
+            int f1 = 0;
+            for (int x : nums) {
+                int newF = Math.max(f1, f0 + x);
+                f0 = f1;
+                f1 = newF;
+            }
+            return f1;
+        }
 
     }
 //leetcode submit region end(Prohibit modification and deletion)
