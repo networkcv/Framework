@@ -1,5 +1,11 @@
 动态规划
 https://www.bilibili.com/video/BV1Xj411K7oF/?vd_source=1c3ddffa7c4adab111124a27aaa320a6&spm_id_from=333.788.videopod.sections
+db分为多种类型：
+    dp类型-选或不选
+        子类型1: 0-1背包
+        子类型2: 完全背包
+        子类型3: 常见变形
+
 dp三步：
 1.思考回溯要怎么写
     a.入参和返回值
@@ -59,6 +65,7 @@ dp类型-选或不选
 假设所有加+号的数的和是p，那么所有加-号的数字和等于，sum(nums)-p，
 target=正数和-负数和  target=p-[sum(nums)-p]  2p=target+sum(nums)  p=[target+sum(nums)]/2  由此判断target+sum(nums) 一定是偶数
 该问题可以转换成从nums[]中选出一些数字，使这些数组和等于target+sum(nums)
+解法一：回溯版-暴力回溯
 
 
 子类型2: 完全背包

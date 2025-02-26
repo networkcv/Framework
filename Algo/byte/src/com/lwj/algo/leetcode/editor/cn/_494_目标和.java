@@ -54,17 +54,39 @@ class TargetSum {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-        public int findTargetSumWays(int[] nums, int target) {
+        public int findTargetSumWays0(int[] nums, int target) {
+            return 1;
 
         }
 
-        public int findTargetSumWays0(int[] nums, int target) {
+        public int findTargetSumWays(int[] nums, int target) {
             Integer sum = Arrays.stream(nums).boxed().reduce(Integer::sum).orElse(0);
             target += sum;
             if (target < 0 || target % 2 == 1) {
                 return 0;
             }
-            return dfs0(nums, nums.length - 1, target / 2);
+//            return dfs0(nums, nums.length - 1, target / 2);
+            return dfs1(nums, nums.length - 1, target / 2);
+        }
+
+        /**
+         * 回溯版-暴力回溯-剪枝优化
+         * <p>
+         * 从nums中cur前的数字中选一部分数等于target，返回多少种选法
+         *
+         * @param cur    当前遍历值
+         * @param target target
+         * @return 选择种类数
+         */
+        public int dfs1(int[] nums, int cur, int target) {
+            if (cur < 0) {
+                return target == 0 ? 1 : 0;
+            }
+            //由于当前值大于target，所以一定不能选当前数字
+            if (nums[cur] > target) {
+                return dfs1(nums, cur - 1, target);
+            }
+            return dfs1(nums, cur - 1, target) + dfs1(nums, cur - 1, target - nums[cur]);
         }
 
         /**
