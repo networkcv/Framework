@@ -65,7 +65,26 @@ class TargetSum {
             }
 //            return dfs0(nums, nums.length - 1, target / 2);
 //            return dfs1(nums, nums.length - 1, target / 2);
-            return dp(nums, target / 2);
+//            return dp(nums, target / 2);
+            return dp1(nums, target / 2);
+        }
+
+        //递推版-空间优化 只有2行的二维数组
+        public int dp1(int[] nums, int target) {
+            int[][] dp = new int[2][target + 1];
+            dp[0][0] = 1;
+            for (int i = 0; i < nums.length; i++) {
+                for (int j = 0; j <= target; j++) {
+                    if (nums[i] > j) {
+                        //不选
+                        dp[(i + 1) % 2][j] = dp[i % 2][j];
+                    } else {
+                        //不选+选
+                        dp[(i + 1) % 2][j] = dp[i % 2][j] + dp[i % 2][j - nums[i]];
+                    }
+                }
+            }
+            return dp[nums.length % 2][target];
         }
 
         // 递推版

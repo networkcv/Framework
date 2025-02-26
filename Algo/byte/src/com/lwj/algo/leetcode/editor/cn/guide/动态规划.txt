@@ -66,12 +66,16 @@ dp类型-选或不选
 target=正数和-负数和  target=p-[sum(nums)-p]  2p=target+sum(nums)  p=[target+sum(nums)]/2  由此判断target+sum(nums) 一定是偶数
 该问题可以转换成从nums[]中选出一些数字，使这些数组和等于target+sum(nums)
 解法一：回溯版-暴力回溯
-解法二：递推版
+解法二：递推版-二维数组
 dfs(cur,target)=dfs(cur-1,target)+dfs(cur-1,target-nums[cur])
 dfs函数转f数组 （dfs的参数好类比数组的纬度，dfs的函数返回值类比数组中存放的元素，相当于用数组把整个函数的调用给缓存起来，然后根据边界条件推导出整个数组）
 f[cur][target]=f[cur-1][target]+f[cur-1][target-nums[cur]]
 由于上边的cur等于0时，cur-1为-1，会在数组取值时报错，可以整体向后延一位，变成：
 f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
+解法三：递推版-空间优化 只有2行的二维数组
+可以参考打家劫舍中，整个数组每次只用到了 i-1 和 i-2的元素下标，把这两个单独定义成变量，就可以避免使用整个长度N的数组
+目标和也一样，二维数组中，其实每次只用到了df[i][]和dp[i-1][]这两行，可以把这多行的二维数组优化成只有两行的二维数组
+解法四：递推版-空间优化 1个一维数组
 
 
 
