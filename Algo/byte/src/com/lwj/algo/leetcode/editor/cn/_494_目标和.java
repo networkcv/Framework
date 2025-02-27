@@ -72,7 +72,24 @@ class TargetSum {
 
         //递推版-空间优化 1个一维数组
         public int dp2(int[] nums, int target) {
-            return -1;
+            int s = 0;
+            for (int x : nums) {
+                s += x;
+            }
+            s -= Math.abs(target);
+            if (s < 0 || s % 2 == 1) {
+                return 0;
+            }
+            int m = s / 2; // 背包容量
+
+            int[] f = new int[m + 1];
+            f[0] = 1;
+            for (int x : nums) {
+                for (int c = m; c >= x; c--) {
+                    f[c] += f[c - x];
+                }
+            }
+            return f[m];
         }
 
         //递推版-空间优化 只有2行的二维数组
