@@ -18,7 +18,7 @@ import java.util.Arrays;
 //
 //<pre>
 //<strong>输入：</strong>nums = [1,1,1,1,1], target = 3
-//<strong>输出：</strong>5
+//<strong>输出：</strong>5430143
 //<strong>解释：</strong>一共有 5 种方法让最终目标和为 3 。
 //-1 + 1 + 1 + 1 + 1 = 3
 //+1 - 1 + 1 + 1 + 1 = 3
@@ -65,8 +65,14 @@ class TargetSum {
             }
 //            return dfs0(nums, nums.length - 1, target / 2);
 //            return dfs1(nums, nums.length - 1, target / 2);
-//            return dp(nums, target / 2);
-            return dp1(nums, target / 2);
+            return dp(nums, target / 2);
+//            return dp1(nums, target / 2);
+//            return dp2(nums, target / 2);
+        }
+
+        //递推版-空间优化 1个一维数组
+        public int dp2(int[] nums, int target) {
+            return -1;
         }
 
         //递推版-空间优化 只有2行的二维数组
@@ -89,6 +95,9 @@ class TargetSum {
 
         // 递推版
         public int dp(int[] nums, int target) {
+            //dp[i][j]表示从右往左遍历至nums[i-1]，当target等于j时的满足方案个数
+            //dp[0][0]是边界条件，
+            //target+1是因为下标0为边界条件，最终要返回满足target,所以二维数组的长度是[target+1]
             int[][] dp = new int[nums.length + 1][target + 1];
             dp[0][0] = 1;
             for (int i = 0; i < nums.length; i++) {
