@@ -66,9 +66,30 @@ class CoinChange {
 //            }
 //            int minNum = dfs1(coins.length - 1, amount);
 //
-            int minNum = dp0(coins, amount);
+//            int minNum = dp0(coins, amount);
+            int minNum = dp1(coins, amount);
 
             return minNum == Integer.MAX_VALUE / 2 ? -1 : minNum;
+        }
+
+        //递推版-只有两行的二维数组
+        public int dp1(int[] coins, int amount) {
+            int len = coins.length;
+            int[][] dp = new int[2][amount + 1];
+            for (int[] ints : dp) {
+                Arrays.fill(ints, Integer.MAX_VALUE / 2);
+            }
+            dp[0][0] = 0;
+            for (int i = 0; i < len; i++) {
+                for (int j = 0; j <= amount; j++) {
+                    if (coins[i] > j) {
+                        dp[(i + 1) % 2][j] = dp[i % 2][j];
+                        continue;
+                    }
+                    dp[(i + 1) % 2][j] = Math.min(dp[i % 2][j], dp[(i + 1) % 2][j - coins[i]] + 1);
+                }
+            }
+            return dp[len % 2][amount];
         }
 
         //递推版-二维数组
