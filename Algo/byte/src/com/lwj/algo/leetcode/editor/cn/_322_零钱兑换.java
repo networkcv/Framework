@@ -45,7 +45,8 @@ class CoinChange {
     public static void main(String[] args) {
         Solution solution = new CoinChange().new Solution();
 //        System.out.println(solution.coinChange(new int[]{2}, 3));
-        System.out.println(solution.coinChange(new int[]{411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422}, 9864));
+//        System.out.println(solution.coinChange(new int[]{411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422}, 9864));
+        System.out.println(solution.coinChange(new int[]{1, 2, 5}, 11));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -58,15 +59,37 @@ class CoinChange {
         public int coinChange(int[] coins, int amount) {
             this.coins = coins;
 //            int minNum = dfs0(coins.length - 1, amount);
-            this.cache = new int[coins.length][amount + 1];
-            for (int[] ints : cache) {
-                Arrays.fill(ints, -1);
-            }
-            int minNum = dfs1(coins.length - 1, amount);
+
+//            this.cache = new int[coins.length][amount + 1];
+//            for (int[] ints : cache) {
+//                Arrays.fill(ints, -1);
+//            }
+//            int minNum = dfs1(coins.length - 1, amount);
+//
+            int minNum = dp0(coins, amount);
 
             return minNum == Integer.MAX_VALUE / 2 ? -1 : minNum;
         }
 
+        //递推版-二维数组
+        public int dp0(int[] coins, int amount) {
+            int len = coins.length;
+            int[][] dp = new int[len + 1][amount + 1];
+            for (int[] ints : dp) {
+                Arrays.fill(ints, Integer.MAX_VALUE / 2);
+            }
+            dp[0][0] = 0;
+            for (int i = 0; i < len; i++) {
+                for (int j = 0; j <= amount; j++) {
+                    if (coins[i] > j) {
+                        dp[i + 1][j] = dp[i][j];
+                        continue;
+                    }
+                    dp[i + 1][j] = Math.min(dp[i][j], dp[i + 1][j - coins[i]] + 1);
+                }
+            }
+            return dp[len][amount];
+        }
 
         //回溯版-记忆化搜索
         public int dfs1(int cur, int amount) {
