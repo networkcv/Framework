@@ -75,7 +75,7 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 解法三：递推版-空间优化 只有2行的二维数组
 可以参考打家劫舍中，整个数组每次只用到了 i-1 和 i-2的元素下标，把这两个单独定义成变量，就可以避免使用整个长度N的数组
 目标和也一样，二维数组中，其实每次只用到了df[i][]和dp[i-1][]这两行，可以把这多行的二维数组优化成只有两行的二维数组
-解法四：递推版-空间优化 1个一维数组 todo
+解法四：递推版-空间优化 1个一维数组
 
 
 
@@ -99,3 +99,27 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 416. 分割等和子集 https://leetcode.cn/problems/partition-equal-subset-sum/solution/0-1-bei-bao-cong-ji-yi-hua-sou-suo-dao-d-ev76/
 518. 零钱兑换 II https://leetcode.cn/problems/coin-change-ii/solution/shi-pin-wan-quan-bei-bao-cong-ji-yi-hua-o3ew0/
 279. 完全平方数 https://leetcode.cn/problems/perfect-squares/solution/dong-tai-gui-hua-cong-ji-yi-hua-sou-suo-3kz1g/
+
+
+线性dp
+1143. 最长公共子序列 https://leetcode.cn/problems/longest-common-subsequence/solutions/2133188/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-lbz5/
+子串,子数组是连续的，子序列不一定是连续的,公共子序列是两个字符串都有的子序列。
+当s1[cur1]==s2[cur2]的时候，两个cur都往后减就行，不会出现dfs(cur1 - 1, cur2) 比 dfs(cur1, cur2)+1 还大的情况，最多也就是相等，例如“add”和“ad”
+当s1[cur1]!=s2[cur2]的时候，只需要比较 Math.max(dfs1(cur1 - 1, cur2), dfs1(cur1, cur2 - 1))即可，不需要比较 dfs1(cur1 - 1, cur2 - 1)
+是因为进入dfs1(cur1 - 1, cur2)后，如果不选cur1，选cur2的话会走 dfs1(cur1, cur2 - 1) 这一分支，这样就相当于 dfs1(cur1 - 1, cur2 - 1)了
+递推版-一维数组:在二维数组中用到了 上方元素(cur1-1,cur2)，左边元素(cur1,cur2-1)，左上方元素(cur1-1,cur2-1)，如果二维变一维需要考虑元素覆盖问题
+
+72. 编辑距离 https://leetcode.cn/problems/edit-distance/solutions/2133222/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-uo5q/
+
+课后作业：
+583. 两个字符串的删除操作 https://leetcode.cn/problems/delete-operation-for-two-strings/
+712. 两个字符串的最小ASCII删除和 https://leetcode.cn/problems/minimum-ascii-delete-sum-for-two-strings/
+97. 交错字符串 https://leetcode.cn/problems/interleaving-string/
+1458. 两个子序列的最大点积 https://leetcode.cn/problems/max-dot-product-of-two-subsequences/
+1092. 最短公共超序列 https://leetcode.cn/problems/shortest-common-supersequence/
+
+力扣最全 DP 题单：
+https://leetcode.cn/circle/discuss/tXLS3i/
+
+【基础算法精讲】题目+题解汇总：
+https://github.com/EndlessCheng/codeforces-go/blob/master/leetcode/README.md

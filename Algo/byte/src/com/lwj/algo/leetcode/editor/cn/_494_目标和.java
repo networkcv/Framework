@@ -86,7 +86,7 @@ class TargetSum {
             f[0] = 1;
             for (int x : nums) {
                 for (int c = m; c >= x; c--) {
-                    f[c] += f[c - x];
+                    f[c] = f[c] + f[c - x];
                 }
             }
             return f[m];
