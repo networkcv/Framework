@@ -110,6 +110,7 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 递推版-一维数组:在二维数组中用到了 上方元素(cur1-1,cur2)，左边元素(cur1,cur2-1)，左上方元素(cur1-1,cur2-1)，如果二维变一维需要考虑元素覆盖问题
 
 72. 编辑距离 https://leetcode.cn/problems/edit-distance/solutions/2133222/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-uo5q/
+这个需要注意边界条件的判断
 
 课后作业：
 583. 两个字符串的删除操作 https://leetcode.cn/problems/delete-operation-for-two-strings/
