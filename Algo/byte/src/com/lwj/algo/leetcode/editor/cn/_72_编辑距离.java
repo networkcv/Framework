@@ -49,7 +49,7 @@ package com.lwj.algo.leetcode.editor.cn;
 class EditDistance {
     public static void main(String[] args) {
         Solution solution = new EditDistance().new Solution();
-        System.out.println(solution);
+        System.out.println(solution.minDistance("horse", "ros"));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -63,8 +63,39 @@ class EditDistance {
             this.word2 = word2;
 //            return dfs0(word1.length() - 1, word2.length() - 1);
 
-            cache = new int[word1.length() + 1][word2.length() + 1];
-            return dfs1(word1.length() - 1, word2.length() - 1);
+//            cache = new int[word1.length() + 1][word2.length() + 1];
+//            return dfs1(word1.length() - 1, word2.length() - 1);
+
+            return dp0(word1, word2);
+        }
+
+        //递推版
+        public int dp0(String word1, String word2) {
+            char[] s = word1.toCharArray();
+            char[] t = word2.toCharArray();
+            int len1 = word1.length();
+            int len2 = word2.length();
+            int[][] dp = new int[len1 + 1][len2 + 1];
+            //行为word1的下标，列为word2的下标，当两个都为0的时候，
+            dp[0][0] = 0;
+            //当行不为0且列为0的时候，word1还没处理完，word2已经为空了，这时候需要把word1全部删掉才和word2一样
+            for (int i = 1; i <= len1; i++) {
+                dp[i][0] = i;
+            }
+            //同上
+            for (int j = 1; j <= len2; j++) {
+                dp[0][j] = j;
+            }
+            for (int i = 0; i < len1; i++) {
+                for (int j = 0; j < len2; j++) {
+                    if (s[i] == t[j]) {
+                        dp[i + 1][j + 1] = dp[i][j];
+                    } else {
+                        dp[i + 1][j + 1] = Math.min(Math.min(dp[i][j + 1], dp[i + 1][j]), dp[i][j]) + 1;
+                    }
+                }
+            }
+            return dp[len1][len2];
         }
 
         //回溯版-记忆化搜索
