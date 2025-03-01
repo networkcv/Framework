@@ -66,7 +66,34 @@ class EditDistance {
 //            cache = new int[word1.length() + 1][word2.length() + 1];
 //            return dfs1(word1.length() - 1, word2.length() - 1);
 
-            return dp0(word1, word2);
+//            return dp0(word1, word2);
+            return dp1(word1, word2);
+        }
+
+
+        //递推版-只有两行的二维数组
+        public int dp1(String word1, String word2) {
+            char[] s = word1.toCharArray();
+            char[] t = word2.toCharArray();
+            int len1 = word1.length();
+            int len2 = word2.length();
+            int[][] dp = new int[2][len2 + 1];
+            //行为word1的下标，列为word2的下标，当两个都为0的时候，
+            dp[0][0] = 0;
+            for (int j = 1; j <= len2; j++) {
+                dp[0][j] = j;
+            }
+            for (int i = 0; i < len1; i++) {
+                dp[(i + 1) % 2][0] = i + 1;
+                for (int j = 0; j < len2; j++) {
+                    if (s[i] == t[j]) {
+                        dp[(i + 1) % 2][j + 1] = dp[i % 2][j];
+                    } else {
+                        dp[(i + 1) % 2][j + 1] = Math.min(Math.min(dp[i % 2][j + 1], dp[(i + 1) % 2][j]), dp[i % 2][j]) + 1;
+                    }
+                }
+            }
+            return dp[len1 % 2][len2];
         }
 
         //递推版
