@@ -1,6 +1,8 @@
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 //<p>给你一个整数数组 <code>nums</code> ，找到其中最长严格递增子序列的长度。</p>
 //
@@ -60,11 +62,36 @@ class LongestIncreasingSubsequence {
         int[] sortNums;
         int[][] caches;
 
+        //贪心+二分查找
         public int lengthOfLIS(int[] nums) {
-            return dp0(nums);
+            //g[i]表示长度为i+1的LIS的末尾元素最小值
+            List<Integer> g = new ArrayList<>();
+            for (int num : nums) {
+                int i = lowerBound(g, num);
+                if (i == g.size()) {
+                    g.add(num);
+                } else {
+                    g.set(i, num);
+                }
+            }
+            return g.size();
         }
 
-        //递推版
+        public int lowerBound(List<Integer> nums, int target) {
+            int l = 0;
+            int r = nums.size() - 1;
+            while (l <= r) {
+                int mid = (l + r) / 2;
+                if (nums.get(mid) < target) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            }
+            return l;
+        }
+
+        //递推版 时间复杂度O(N^2)
         public int dp0(int[] nums) {
             int len = nums.length;
             int[] dp = new int[len];

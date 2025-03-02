@@ -96,7 +96,7 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 
 
 ## 线性dp
-1143. 最长公共子序列 https://leetcode.cn/problems/longest-common-subsequence/solutions/2133188/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-lbz5/
+1143. 最长公共子序列 LCS https://leetcode.cn/problems/longest-common-subsequence/solutions/2133188/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-lbz5/
 子串,子数组是连续的，子序列不一定是连续的,公共子序列是两个字符串都有的子序列。
 当s1[cur1]==s2[cur2]的时候，两个cur都往后减就行，不会出现dfs(cur1 - 1, cur2) 比 dfs(cur1, cur2)+1 还大的情况，最多也就是相等，例如“add”和“ad”
 当s1[cur1]!=s2[cur2]的时候，只需要比较 Math.max(dfs1(cur1 - 1, cur2), dfs1(cur1, cur2 - 1))即可，不需要比较 dfs1(cur1 - 1, cur2 - 1)
@@ -118,9 +118,15 @@ https://github.com/EndlessCheng/codeforces-go/blob/master/leetcode/README.md
 
 300. 最长递增子序列 https://leetcode.cn/problems/longest-increasing-subsequence/solution/jiao-ni-yi-bu-bu-si-kao-dpfu-o1-kong-jia-4zma/
 思路一：回溯+递推+空间优化，需要注意的是递推公式不能简单的理解成dfs(i)=max(dfs(i-1))+1，例如这种情况[4,10,4,9]，当i=3时，前边的4的最大递增子序列是[4,10]，
-长度是2，整个数组的最大递增子序列也是2
-定义dfs(i)表示以nums[i]结尾的LIS长度。 dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
-思路二：将原序列排序后去重，这样这个序列的任意子序列都是递增子序列，然后用排序去重后的序列跟原序列求最长公共子序列，这样获取的子序列也是最长递增子序列了
+长度是2，整个数组的最大递增子序列也是2,所以定义dfs(i)表示以nums[i]结尾的LIS长度，然后遍历数组取最大的LIS长度即为整个数组的最大LIS。
+dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
+思路二：将原序列排序后去重，这样这个序列的任意子序列都是递增子序列，然后用排序去重后的序列跟原序列求最长公共子序列，这样获取的子序列也是最长递增子序列了。
+思路三：交换状态与状态值,之前f[i]表示**末尾元素**为nums[i]的LIS的**长度**。
+交互状态与状态值,g[i]表示**长度**为i+1的IS的**末尾元素**最小值。这样最终结果返回len(g[])就是LIS的长度。
+
+递推公式的定义：
+什么时候要把状态定义成【前 i 个元素】中的最优值，什么时候要把状态定义成【以第 i 个元素结束】的最优值？如果是 01 背包或者最长公共子序列 LCS 那种，
+用【选或不选】思考的题目，要定义成【前 i 个元素】；如果是本节课讲的最长递增子序列 LIS 这种，用【枚举选哪个】思考的题目，要定义成【以第 i 个元素结束】。
 
 课后作业：
 2826. 将三个组排序 https://leetcode.cn/problems/sorting-three-groups/
