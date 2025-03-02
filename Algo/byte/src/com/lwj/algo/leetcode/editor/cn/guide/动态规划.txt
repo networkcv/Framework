@@ -26,7 +26,6 @@ dp三步：
     那当前子问题可以直接由i=1的子问题和i=0的子问题+nums[2]来解决掉,那如果nums[0]和nums[1]已知，就能推出nums[2],然后通过nums[2]和nums[1]
     又能推出nums[3]，一直到推到结束，递推就是省略掉递的过程，直接从已知子问题推导出所有的未知子问题的过程
 
-
 198. 打家劫舍
 回溯三问
 通过 当前操作 将 当前问题 转换为 当前子问题，然后再将当前子问题的的求解，转换成求解下一个子问题
@@ -53,7 +52,7 @@ dp三步：
 64. 最小路径和 https://leetcode.cn/problems/minimum-path-sum/
 
 
-dp类型-选或不选
+## dp类型-选或不选
 子类型1: 0-1背包
     回溯
     记忆化搜索
@@ -77,15 +76,10 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 目标和也一样，二维数组中，其实每次只用到了df[i][]和dp[i-1][]这两行，可以把这多行的二维数组优化成只有两行的二维数组
 解法四：递推版-空间优化 1个一维数组
 
-
-
-
 子类型2: 完全背包
 322. 零钱兑换 https://leetcode.cn/problems/coin-change/solution/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-21m5/
 
 子类型3: 常见变形
-
-
 
 课后作业：
 2915. 和为目标值的最长子序列的长度 https://leetcode.cn/problems/length-of-the-longest-subsequence-that-sums-to-target/
@@ -101,7 +95,7 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 279. 完全平方数 https://leetcode.cn/problems/perfect-squares/solution/dong-tai-gui-hua-cong-ji-yi-hua-sou-suo-3kz1g/
 
 
-线性dp
+## 线性dp
 1143. 最长公共子序列 https://leetcode.cn/problems/longest-common-subsequence/solutions/2133188/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-lbz5/
 子串,子数组是连续的，子序列不一定是连续的,公共子序列是两个字符串都有的子序列。
 当s1[cur1]==s2[cur2]的时候，两个cur都往后减就行，不会出现dfs(cur1 - 1, cur2) 比 dfs(cur1, cur2)+1 还大的情况，最多也就是相等，例如“add”和“ad”
@@ -119,8 +113,34 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 1458. 两个子序列的最大点积 https://leetcode.cn/problems/max-dot-product-of-two-subsequences/
 1092. 最短公共超序列 https://leetcode.cn/problems/shortest-common-supersequence/
 
-力扣最全 DP 题单：
-https://leetcode.cn/circle/discuss/tXLS3i/
-
 【基础算法精讲】题目+题解汇总：
 https://github.com/EndlessCheng/codeforces-go/blob/master/leetcode/README.md
+
+300. 最长递增子序列 https://leetcode.cn/problems/longest-increasing-subsequence/solution/jiao-ni-yi-bu-bu-si-kao-dpfu-o1-kong-jia-4zma/
+思路一：回溯+递推+空间优化，需要注意的是递推公式不能简单的理解成dfs(i)=max(dfs(i-1))+1，例如这种情况[4,10,4,9]，当i=3时，前边的4的最大递增子序列是[4,10]，
+长度是2，整个数组的最大递增子序列也是2
+定义dfs(i)表示以nums[i]结尾的LIS长度。 dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
+思路二：将原序列排序后去重，这样这个序列的任意子序列都是递增子序列，然后用排序去重后的序列跟原序列求最长公共子序列，这样获取的子序列也是最长递增子序列了
+
+课后作业：
+2826. 将三个组排序 https://leetcode.cn/problems/sorting-three-groups/
+1671. 得到山形数组的最少删除次数 https://leetcode.cn/problems/minimum-number-of-removals-to-make-mountain-array/
+1964. 找出到每个位置为止最长的有效障碍赛跑路线 https://leetcode.cn/problems/find-the-longest-valid-obstacle-course-at-each-position/
+673. 最长递增子序列的个数 https://leetcode.cn/problems/number-of-longest-increasing-subsequence/
+1626. 无矛盾的最佳球队 https://leetcode.cn/problems/best-team-with-no-conflicts/
+354. 俄罗斯套娃信封问题 https://leetcode.cn/problems/russian-doll-envelopes/
+1187. 使数组严格递增 https://leetcode.cn/problems/make-array-strictly-increasing/
+
+
+## 状态机dp
+122. 买卖股票的最佳时机 II https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-o3y4/
+309. 最佳买卖股票时机含冷冻期 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-0k0l/
+188. 买卖股票的最佳时机 IV https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-kksg/
+
+课后作业：
+121. 买卖股票的最佳时机 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/
+123. 买卖股票的最佳时机 III https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/
+714. 买卖股票的最佳时机含手续费 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/
+2826. 将三个组排序 https://leetcode.cn/problems/sorting-three-groups/
+2786. 访问数组中的位置使分数最大 https://leetcode.cn/problems/visit-array-positions-to-maximize-score/
+1911. 最大子序列交替和 https://leetcode.cn/problems/maximum-alternating-subsequence-sum/
