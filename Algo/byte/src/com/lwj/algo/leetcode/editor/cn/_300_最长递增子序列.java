@@ -57,8 +57,35 @@ class LongestIncreasingSubsequence {
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         int[] nums;
+        int[] sortNums;
+        int[][] caches;
 
+
+        //思路二 去重排序后求最大公共子序列
         public int lengthOfLIS(int[] nums) {
+            int[] sortNums = Arrays.stream(nums).distinct().sorted().toArray();
+            this.nums = nums;
+            this.sortNums = sortNums;
+            caches = new int[nums.length + 1][sortNums.length + 1];
+            for (int[] cach : caches) {
+                Arrays.fill(cach, -1);
+            }
+            return dfs(nums.length - 1, sortNums.length - 1);
+        }
+
+        //求两个数组的最大公共子序列
+        public int dfs(int cur1, int cur2) {
+            if (cur1 < 0 || cur2 < 0) return 0;
+            if (caches[cur1][cur2] != -1) {
+                return caches[cur1][cur2];
+            }
+            if (nums[cur1] == sortNums[cur2]) {
+                return dfs(cur1 - 1, cur2 - 1) + 1;
+            }
+            return caches[cur1][cur2] = Math.max(dfs(cur1 - 1, cur2), dfs(cur1, cur2 - 1));
+        }
+
+        public int lengthOfLIS0(int[] nums) {
             this.nums = nums;
             int res = 0;
             cache = new int[nums.length];
