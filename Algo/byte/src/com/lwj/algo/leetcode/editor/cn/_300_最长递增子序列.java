@@ -60,9 +60,29 @@ class LongestIncreasingSubsequence {
         int[] sortNums;
         int[][] caches;
 
+        public int lengthOfLIS(int[] nums) {
+            return dp0(nums);
+        }
+
+        //递推版
+        public int dp0(int[] nums) {
+            int len = nums.length;
+            int[] dp = new int[len];
+            dp[0] = 0;
+            for (int i = 0; i < len; i++) {
+                int res = 0;
+                for (int j = 0; j < i; j++) {
+                    if (nums[i] > nums[j]) {
+                        res = Math.max(res, dp[j]);
+                    }
+                }
+                dp[i] = res + 1;
+            }
+            return Arrays.stream(dp).max().getAsInt();
+        }
 
         //思路二 去重排序后求最大公共子序列
-        public int lengthOfLIS(int[] nums) {
+        public int lengthOfLIS1(int[] nums) {
             int[] sortNums = Arrays.stream(nums).distinct().sorted().toArray();
             this.nums = nums;
             this.sortNums = sortNums;
