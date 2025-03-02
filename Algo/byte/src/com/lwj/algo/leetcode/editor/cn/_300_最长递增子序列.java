@@ -1,5 +1,7 @@
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.Arrays;
+
 //<p>给你一个整数数组 <code>nums</code> ，找到其中最长严格递增子序列的长度。</p>
 //
 //<p><strong>子序列&nbsp;</strong>是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，<code>[3,6,2,7]</code> 是数组 <code>[0,3,1,6,2,2,7]</code> 的<span data-keyword="subsequence-array">子序列</span>。</p> &nbsp;
@@ -59,18 +61,38 @@ class LongestIncreasingSubsequence {
         public int lengthOfLIS(int[] nums) {
             this.nums = nums;
             int res = 0;
+            cache = new int[nums.length];
+            Arrays.fill(cache, -1);
             for (int i = nums.length - 1; i >= 0; i--) {
-                res = Math.max(res, dfs(i));
+//                res = Math.max(res, dfs0(i));
+                res = Math.max(res, dfs1(i));
             }
             return res;
         }
 
-        //回溯版-答案视角-暴力回溯
-        public int dfs(int i) {
+
+        int[] cache;
+
+        //回溯版-记忆化搜索
+        public int dfs1(int i) {
+            if (cache[i] != -1) {
+                return cache[i];
+            }
             int res = 0;
             for (int j = 0; j < i; j++) {
                 if (nums[j] < nums[i]) {
-                    res = Math.max(res, dfs(j));
+                    res = Math.max(res, dfs1(j));
+                }
+            }
+            return cache[i] = res + 1;
+        }
+
+        //回溯版-答案视角-暴力回溯
+        public int dfs0(int i) {
+            int res = 0;
+            for (int j = 0; j < i; j++) {
+                if (nums[j] < nums[i]) {
+                    res = Math.max(res, dfs0(j));
                 }
             }
             return res + 1;
