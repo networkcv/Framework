@@ -45,8 +45,8 @@ dp三步：
 解法五：递推版-空间优化版，时间负责度为O(N),空间复杂度为O(1)
 
 课后作业：
-70. 爬楼梯 https://leetcode.cn/problems/climbing-stairs/
-
+70. 爬楼梯
+118. 杨辉三角
 746. 使用最小花费爬楼梯 https://leetcode.cn/problems/min-cost-climbing-stairs/
 377. 组合总和 Ⅳ https://leetcode.cn/problems/combination-sum-iv/
 2466. 统计构造好字符串的方案数 https://leetcode.cn/problems/count-ways-to-build-good-strings/
