@@ -62,7 +62,7 @@ class BestTimeToBuyAndSellStockIi {
 
         //递推版-空间优化
         public int maxProfit(int[] prices) {
-            //边界值，f0表示当天结束时不持有股票的最大收益，
+            //边界值，f0表示当天结束时不持有股票的最收益，
             //f1表示当天结束时持有股票的最大收益，持有的时候可能是买入，所以收益可能是负数，所以初始化的默认值为MIN_VALUE
             int f0 = 0;
             int f1 = Integer.MIN_VALUE;
@@ -111,7 +111,6 @@ class BestTimeToBuyAndSellStockIi {
             }
             //持有股票
             if (hold) {
-                //什么都不做
                 return cache[i][1] = Math.max(dfs0(i - 1, true), dfs0(i - 1, false) - prices[i]);
             }
             //没有股票
