@@ -47,15 +47,31 @@ import java.util.Arrays;
 class BestTimeToBuyAndSellStockIi {
     public static void main(String[] args) {
         Solution solution = new BestTimeToBuyAndSellStockIi().new Solution();
-        System.out.println(solution.maxProfit(new int[]{7, 1, 5, 3, 6, 4}));
+//        System.out.println(solution.maxProfit(new int[]{7, 1, 5, 3, 6, 4}));
+        System.out.println(solution.maxProfit(new int[]{1, 2, 3, 4, 5}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+
+
         int[] prices;
         int[][] cache;
 
+        int[][] dp;
+
+        //递推版
         public int maxProfit(int[] prices) {
+            dp = new int[prices.length + 1][2];
+            dp[0][1] = Integer.MIN_VALUE;
+            for (int i = 0; i < prices.length; i++) {
+                dp[i + 1][1] = Math.max(dp[i][1], dp[i][0] - prices[i]);
+                dp[i + 1][0] = Math.max(dp[i][0], dp[i][1] + prices[i]);
+            }
+            return dp[prices.length][0];
+        }
+
+        public int maxProfit0(int[] prices) {
             this.prices = prices;
             cache = new int[prices.length][2];
             for (int[] ints : cache) {
@@ -67,7 +83,6 @@ class BestTimeToBuyAndSellStockIi {
         //回溯版-记忆化搜索
         //dfs定义第i天结束时,hold股票时的最大利润，i是索引下标
         public int dfs0(int i, boolean hold) {
-
             if (i < 0) {
                 if (hold) {
                     //这里是最小值的原因是，假设第一天买入了股票，[7,1,5,3,6,4]那么当天的利润应该是-7,如果这里也返回0，则当天的利润就是0了
@@ -78,7 +93,6 @@ class BestTimeToBuyAndSellStockIi {
             }
             if (cache[i][hold ? 1 : 0] != Integer.MIN_VALUE) {
                 return cache[i][hold ? 1 : 0];
-
             }
             //持有股票
             if (hold) {
