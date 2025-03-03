@@ -57,7 +57,20 @@ class BestTimeToBuyAndSellStockWithCooldown {
                 Arrays.fill(ints, Integer.MIN_VALUE);
             }
 //            return dfs0(prices.length - 1, false);
-            return dp0();
+//            return dp0();
+            return dp1();
+        }
+
+        //递推版-空间优化
+        public int dp1() {
+            int p0 = 0, f0 = 0, f1 = Integer.MIN_VALUE;
+            for (int price : prices) {
+                int tmp_f1 = Math.max(f1, p0 - price);
+                p0 = f0;
+                f0 = Math.max(f0, f1 + price);
+                f1 = tmp_f1;
+            }
+            return f0;
         }
 
         //递推版
