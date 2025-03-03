@@ -49,8 +49,36 @@ class BestTimeToBuyAndSellStockIv {
         int[] prices;
         int[][][] cache;
 
-        //最大利润一定是在卖出的时候，买入的话利润会减少，所以只需考虑最多卖出k次的情况，不用考虑最多买入k次
+        int[][][] dp;
+
+        //递推版
         public int maxProfit(int k, int[] prices) {
+            //操作k次,假设k=3，需要存5个状态 [越界,0,1,2,3],在定义数组时建议将是否持有放在最后dp[prices][k][hold]
+            dp = new int[prices.length + 1][2][k + 2];
+            //处理边界条件，也就是数组初始值,先全部置为无效，再选择部分置为0
+            for (int[][] ints : dp) {
+                for (int[] anInt : ints) {
+                    Arrays.fill(anInt, Integer.MIN_VALUE);
+                }
+            }
+            //当i越界时且hold为0时置为0
+//            if (i < 0) {
+//                return hold ? Integer.MIN_VALUE : 0;
+//            }
+            for (int j = 0; j < k + 2; j++) {
+                dp[0][0][j] = 0;
+            }
+            for (int i = 0; i < prices.length; i++) {
+                for (int j = 1; j < k + 2; j++) {
+                    dp[i + 1][1][j] = Math.max(dp[i][1][j], dp[i][0][j] - prices[i]);
+                    dp[i + 1][0][j] = Math.max(dp[i][0][j], dp[i][1][j - 1] + prices[i]);
+                }
+            }
+            return dp[prices.length][0][k + 1];
+        }
+
+        //最大利润一定是在卖出的时候，买入的话利润会减少，所以只需考虑最多卖出k次的情况，不用考虑最多买入k次
+        public int maxProfit0(int k, int[] prices) {
             this.prices = prices;
             cache = new int[prices.length + 1][2][k + 1];
             for (int[][] ints : cache) {
