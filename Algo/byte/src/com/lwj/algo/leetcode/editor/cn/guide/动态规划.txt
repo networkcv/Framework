@@ -4,7 +4,9 @@ db分为多种类型：
     dp类型-选或不选
         子类型1: 0-1背包
         子类型2: 完全背包
-        子类型3: 常见变形
+    dp类型：线性dp
+    dp类型：状态机dp
+    dp类型：树形dp
 
 dp三步：
 1.思考回溯要怎么写
@@ -18,7 +20,6 @@ dp三步：
     a.dfs->f数组
     b.递归->循环
     c.递归边界->数组初始值
-
     记忆化搜索=自顶向下算
     递推=自底向上算
     例如打家劫舍中 cache[i] = Math.max(dfs2(i - 1, nums), dfs2(i - 2, nums) + nums[i]);
@@ -26,6 +27,8 @@ dp三步：
     那当前子问题可以直接由i=1的子问题和i=0的子问题+nums[2]来解决掉,那如果nums[0]和nums[1]已知，就能推出nums[2],然后通过nums[2]和nums[1]
     又能推出nums[3]，一直到推到结束，递推就是省略掉递的过程，直接从已知子问题推导出所有的未知子问题的过程
 
+
+经典示例：
 198. 打家劫舍
 回溯三问
 通过 当前操作 将 当前问题 转换为 当前子问题，然后再将当前子问题的的求解，转换成求解下一个子问题
@@ -43,6 +46,7 @@ dp三步：
 
 课后作业：
 70. 爬楼梯 https://leetcode.cn/problems/climbing-stairs/
+
 746. 使用最小花费爬楼梯 https://leetcode.cn/problems/min-cost-climbing-stairs/
 377. 组合总和 Ⅳ https://leetcode.cn/problems/combination-sum-iv/
 2466. 统计构造好字符串的方案数 https://leetcode.cn/problems/count-ways-to-build-good-strings/
@@ -53,13 +57,14 @@ dp三步：
 
 
 ## dp类型-选或不选
-子类型1: 0-1背包
     回溯
     记忆化搜索
     递推
     空间优化：两个数组
     空间优化：一个数组
-494. 目标和 https://leetcode.cn/problems/target-sum/solution/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-s1cx/
+
+### 子类型1: 0-1背包
+494. 目标和
 给nums[]的每个元素前加上+或-运算后等于target
 假设所有加+号的数的和是p，那么所有加-号的数字和等于，sum(nums)-p，
 target=正数和-负数和  target=p-[sum(nums)-p]  2p=target+sum(nums)  p=[target+sum(nums)]/2  由此判断target+sum(nums) 一定是偶数
@@ -76,10 +81,8 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 目标和也一样，二维数组中，其实每次只用到了df[i][]和dp[i-1][]这两行，可以把这多行的二维数组优化成只有两行的二维数组
 解法四：递推版-空间优化 1个一维数组
 
-子类型2: 完全背包
-322. 零钱兑换 https://leetcode.cn/problems/coin-change/solution/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-21m5/
-
-子类型3: 常见变形
+### 子类型2: 完全背包
+322. 零钱兑换
 
 课后作业：
 2915. 和为目标值的最长子序列的长度 https://leetcode.cn/problems/length-of-the-longest-subsequence-that-sums-to-target/
@@ -88,22 +91,20 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 518. 零钱兑换 II https://leetcode.cn/problems/coin-change-ii/
 279. 完全平方数 https://leetcode.cn/problems/perfect-squares/
 
-课后作业题解：
-2915. 和为目标值的最长子序列的长度 https://leetcode.cn/problems/length-of-the-longest-subsequence-that-sums-to-target/solution/mo-ban-qia-hao-zhuang-man-xing-0-1-bei-b-0nca/
-416. 分割等和子集 https://leetcode.cn/problems/partition-equal-subset-sum/solution/0-1-bei-bao-cong-ji-yi-hua-sou-suo-dao-d-ev76/
-518. 零钱兑换 II https://leetcode.cn/problems/coin-change-ii/solution/shi-pin-wan-quan-bei-bao-cong-ji-yi-hua-o3ew0/
-279. 完全平方数 https://leetcode.cn/problems/perfect-squares/solution/dong-tai-gui-hua-cong-ji-yi-hua-sou-suo-3kz1g/
 
+## dp类型-线性dp
+递推公式的定义：
+什么时候要把状态定义成【前 i 个元素】中的最优值，什么时候要把状态定义成【以第 i 个元素结束】的最优值？如果是 01 背包或者最长公共子序列 LCS 那种，
+用【选或不选】思考的题目，要定义成【前 i 个元素】；如果是本节课讲的最长递增子序列 LIS 这种，用【枚举选哪个】思考的题目，要定义成【以第 i 个元素结束】。
 
-## 线性dp
-1143. 最长公共子序列 LCS https://leetcode.cn/problems/longest-common-subsequence/solutions/2133188/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-lbz5/
+1143. 最长公共子序列 LCS
 子串,子数组是连续的，子序列不一定是连续的,公共子序列是两个字符串都有的子序列。
 当s1[cur1]==s2[cur2]的时候，两个cur都往后减就行，不会出现dfs(cur1 - 1, cur2) 比 dfs(cur1, cur2)+1 还大的情况，最多也就是相等，例如“add”和“ad”
 当s1[cur1]!=s2[cur2]的时候，只需要比较 Math.max(dfs1(cur1 - 1, cur2), dfs1(cur1, cur2 - 1))即可，不需要比较 dfs1(cur1 - 1, cur2 - 1)
 是因为进入dfs1(cur1 - 1, cur2)后，如果不选cur1，选cur2的话会走 dfs1(cur1, cur2 - 1) 这一分支，这样就相当于 dfs1(cur1 - 1, cur2 - 1)了
 递推版-一维数组:在二维数组中用到了 上方元素(cur1-1,cur2)，左边元素(cur1,cur2-1)，左上方元素(cur1-1,cur2-1)，如果二维变一维需要考虑元素覆盖问题
 
-72. 编辑距离 https://leetcode.cn/problems/edit-distance/solutions/2133222/jiao-ni-yi-bu-bu-si-kao-dong-tai-gui-hua-uo5q/
+72. 编辑距离
 这个需要注意边界条件的判断
 
 课后作业：
@@ -113,9 +114,6 @@ f[cur+1][target]=f[cur][target]+f[cur][target-nums[cur]]
 1458. 两个子序列的最大点积 https://leetcode.cn/problems/max-dot-product-of-two-subsequences/
 1092. 最短公共超序列 https://leetcode.cn/problems/shortest-common-supersequence/
 
-【基础算法精讲】题目+题解汇总：
-https://github.com/EndlessCheng/codeforces-go/blob/master/leetcode/README.md
-
 300. 最长递增子序列 https://leetcode.cn/problems/longest-increasing-subsequence/solution/jiao-ni-yi-bu-bu-si-kao-dpfu-o1-kong-jia-4zma/
 思路一：回溯+递推+空间优化，需要注意的是递推公式不能简单的理解成dfs(i)=max(dfs(i-1))+1，例如这种情况[4,10,4,9]，当i=3时，前边的4的最大递增子序列是[4,10]，
 长度是2，整个数组的最大递增子序列也是2,所以定义dfs(i)表示以nums[i]结尾的LIS长度，然后遍历数组取最大的LIS长度即为整个数组的最大LIS。
@@ -123,10 +121,6 @@ dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
 思路二：将原序列排序后去重，这样这个序列的任意子序列都是递增子序列，然后用排序去重后的序列跟原序列求最长公共子序列，这样获取的子序列也是最长递增子序列了。
 思路三：交换状态与状态值,之前f[i]表示**末尾元素**为nums[i]的LIS的**长度**。
 交互状态与状态值,g[i]表示**长度**为i+1的IS的**末尾元素**最小值。这样最终结果返回len(g[])就是LIS的长度。
-
-递推公式的定义：
-什么时候要把状态定义成【前 i 个元素】中的最优值，什么时候要把状态定义成【以第 i 个元素结束】的最优值？如果是 01 背包或者最长公共子序列 LCS 那种，
-用【选或不选】思考的题目，要定义成【前 i 个元素】；如果是本节课讲的最长递增子序列 LIS 这种，用【枚举选哪个】思考的题目，要定义成【以第 i 个元素结束】。
 
 课后作业：
 2826. 将三个组排序 https://leetcode.cn/problems/sorting-three-groups/
@@ -138,20 +132,19 @@ dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
 1187. 使数组严格递增 https://leetcode.cn/problems/make-array-strictly-increasing/
 
 
-## 状态机dp
+## dp类型-状态机dp
 买卖股票的最佳时机(不限制交易次数)
-122. 买卖股票的最佳时机 II https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-o3y4/
-309. 最佳买卖股票时机含冷冻期 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-0k0l/
+122. 买卖股票的最佳时机
+309. 最佳买卖股票时机含冷冻期
 
 买卖股票的最佳时机（限制交易次数）
-121. 买卖股票的最佳时机 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/
+121. 买卖股票的最佳时机
 最多能交易一次
 思路一：枚举记录最小价格和最大收益
-123. 买卖股票的最佳时机 III https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/
+123. 买卖股票的最佳时机 III
 最多能交易两次
-188. 买卖股票的最佳时机 IV https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-kksg/
+188. 买卖股票的最佳时机 IV
 最多能交易n次
-
 
 课后作业：
 
