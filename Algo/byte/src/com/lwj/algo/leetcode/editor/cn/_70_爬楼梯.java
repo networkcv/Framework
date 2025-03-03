@@ -47,6 +47,17 @@ class ClimbingStairs {
     class Solution {
         int[] cache;
 
+        //递推版-空间优化
+        public int climbStairs(int n) {
+            if (n <= 2) return n;
+            int f1 = 1, f2 = 2;
+            for (int i = 3; i <= n; i++) {
+                int f3 = f1 + f2;
+                f1 = f2;
+                f2 = f3;
+            }
+            return f2;
+        }
 
         //递推版
         public int climbStairs1(int n) {
