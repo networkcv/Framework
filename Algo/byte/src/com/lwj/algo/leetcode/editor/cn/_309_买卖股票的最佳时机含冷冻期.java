@@ -56,7 +56,21 @@ class BestTimeToBuyAndSellStockWithCooldown {
             for (int[] ints : cache) {
                 Arrays.fill(ints, Integer.MIN_VALUE);
             }
-            return dfs0(prices.length - 1, false);
+//            return dfs0(prices.length - 1, false);
+            return dp0();
+        }
+
+        //递推版
+        public int dp0() {
+            //d[i][1],表示第i-2天结束时，持有股票的最大收益
+            int[][] dp = new int[prices.length + 2][2];
+            //将i=0带入计算一下，用dp[2][1]则表示第0天结束时持有股票的最大收益，收益是负的prices[0]，所以dp[1][1]应该为MIN_VALUE
+            dp[1][1] = Integer.MIN_VALUE;
+            for (int i = 0; i < prices.length; i++) {
+                dp[i + 2][1] = Math.max(dp[i + 1][1], dp[i][0] - prices[i]);
+                dp[i + 2][0] = Math.max(dp[i + 1][0], dp[i + 1][1] + prices[i]);
+            }
+            return dp[prices.length + 1][0];
         }
 
         //回溯版-记忆化搜索
