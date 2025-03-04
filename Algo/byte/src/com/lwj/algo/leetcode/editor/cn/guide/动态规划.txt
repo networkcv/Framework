@@ -6,6 +6,7 @@ db分为多种类型：
         子类型2: 完全背包
     dp类型：线性dp
     dp类型：状态机dp
+    dp类型：区间dp
     dp类型：树形dp
 
 dp三步：
@@ -152,3 +153,18 @@ dfs(i)=max{dfs(j)}+1 且j<i and nums[j]<nums[i]
 2826. 将三个组排序 https://leetcode.cn/problems/sorting-three-groups/
 2786. 访问数组中的位置使分数最大 https://leetcode.cn/problems/visit-array-positions-to-maximize-score/
 1911. 最大子序列交替和 https://leetcode.cn/problems/maximum-alternating-subsequence-sum/
+
+
+## dp类型：区间dp
+516. 最长回文子序列 https://leetcode.cn/problems/longest-palindromic-subsequence/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-kgkg/
+1039. 多边形三角剖分的最低得分 https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-aty6/
+
+课后作业：
+375. 猜数字大小 II https://leetcode.cn/problems/guess-number-higher-or-lower-ii/
+132. 分割回文串 II https://leetcode.cn/problems/palindrome-partitioning-ii/
+3040. 相同分数的最大操作数目 II https://leetcode.cn/problems/maximum-number-of-operations-with-the-same-score-ii/
+1312. 让字符串成为回文串的最少插入次数 https://leetcode.cn/problems/minimum-insertion-steps-to-make-a-string-palindrome/
+1770. 执行乘法运算的最大分数 https://leetcode.cn/problems/maximum-score-from-performing-multiplication-operations/
+1771. 由子序列构造的最长回文串的长度 https://leetcode.cn/problems/maximize-palindrome-length-from-subsequences/
+1547. 切棍子的最小成本 https://leetcode.cn/problems/minimum-cost-to-cut-a-stick/
+1000. 合并石头的最低成本 https://leetcode.cn/problems/minimum-cost-to-merge-stones/
