@@ -1,7 +1,5 @@
 package com.lwj.algo.leetcode.editor.cn;
 
-import java.util.Arrays;
-
 //<p>给你一个字符串 <code>s</code> ，找出其中最长的回文子序列，并返回该序列的长度。</p>
 //
 //<p>子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。</p>
@@ -46,12 +44,31 @@ class LongestPalindromicSubsequence {
         int[][] cache;
 
         public int longestPalindromeSubseq(String s) {
-            this.cache = new int[s.length()][s.length()];
-            for (int[] ints : cache) {
-                Arrays.fill(ints, -1);
+//            this.cache = new int[s.length()][s.length()];
+//            for (int[] ints : cache) {
+//                Arrays.fill(ints, -1);
+//            }
+//            this.s = s;
+//            return dfs(0, s.length() - 1);
+            return dp0(s);
+        }
+
+        //递推版
+        public int dp0(String s) {
+            int[][] dp = new int[s.length()][s.length()];
+            //因为用到了i+1
+            for (int i = s.length() - 1; i >= 0; i--) {
+                dp[i][i] = 1;
+                //if (i > j) return 0; 这个条件要求i要大于j
+                for (int j = i + 1; j < s.length(); j++) {
+                    if (s.charAt(i) == s.charAt(j)) {
+                        dp[i][j] = dp[i + 1][j - 1] + 2;
+                    } else {
+                        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                    }
+                }
             }
-            this.s = s;
-            return dfs(0, s.length() - 1);
+            return dp[0][s.length() - 1];
         }
 
         //回溯版-记忆化搜索

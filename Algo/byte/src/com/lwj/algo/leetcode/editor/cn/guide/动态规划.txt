@@ -161,6 +161,7 @@ dfs(i,j)=i从头j从尾相向遍历，像求最长公共子序列一样，如果
 边界条件是i==j，表示到同一个元素了，返回长度1，i>j，则表示不存在，返回0
 还要注意的是求dfs(i)的时候用到了dfs(i+1),求dfs(j)的时候用到了dfs(j-1),所以在用数组递推的时候i要倒着遍历，j要正着遍历，
 这里的数组初始值可以通过模拟dfs参数代入的方式，看看哪些情况数组的二维表中元素值为1
+递归入口是 dfs(0,n-1)，所以最终dp数组推出的结果也是 dp[0][n-1]
 
 1039. 多边形三角剖分的最低得分 https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/solution/shi-pin-jiao-ni-yi-bu-bu-si-kao-dong-tai-aty6/
 
