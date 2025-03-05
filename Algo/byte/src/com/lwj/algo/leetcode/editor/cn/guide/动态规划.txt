@@ -174,3 +174,17 @@ dfs(i,j)=i从头j从尾相向遍历，像求最长公共子序列一样，如果
 1771. 由子序列构造的最长回文串的长度 https://leetcode.cn/problems/maximize-palindrome-length-from-subsequences/
 1547. 切棍子的最小成本 https://leetcode.cn/problems/minimum-cost-to-cut-a-stick/
 1000. 合并石头的最低成本 https://leetcode.cn/problems/minimum-cost-to-merge-stones/
+
+
+## dp类型：树形dp
+543. 二叉树的直径
+dfs(root)返回root左右子树的最大深度，如果root是叶子节点，那么没有左右子树，应该返回0，所以边界值root=null时应该返回-1
+在向下深度遍历的过程中，记录结果值
+124. 二叉树中的最大路径和 https://leetcode.cn/problems/binary-tree-maximum-path-sum/solution/shi-pin-che-di-zhang-wo-zhi-jing-dpcong-n9s91/
+2246. 相邻字符不同的最长路径 https://leetcode.cn/problems/longest-path-with-different-adjacent-characters/solution/by-endlesscheng-92fw/
+
+课后作业：
+687. 最长同值路径 https://leetcode.cn/problems/longest-univalue-path/
+3203. 合并两棵树后的最小直径 https://leetcode.cn/problems/find-minimum-diameter-after-merging-two-trees/
+1617. 统计子树中城市之间最大距离 https://leetcode.cn/problems/count-subtrees-with-max-distance-between-cities/
+2538. 最大价值和与最小价值和的差值 https://leetcode.cn/problems/difference-between-maximum-and-minimum-price-sum/
