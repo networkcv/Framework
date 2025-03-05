@@ -78,6 +78,14 @@ class DiameterOfBinaryTree {
             res = Math.max(res, l + r + 2);
             return Math.max(l, r) + 1;
         }
+
+        public int dfs0(TreeNode root) {
+            if (root == null) return -1;
+            int l = dfs0(root.left) + 1;
+            int r = dfs0(root.right) + 1;
+            res = Math.max(res, l + r);
+            return Math.max(l, r);
+        }
     }
 //leetcode submit region end(Prohibit modification and deletion)
 
