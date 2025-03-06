@@ -188,3 +188,14 @@ dfs(root)返回root左右子树的最大深度，如果root是叶子节点，那
 3203. 合并两棵树后的最小直径 https://leetcode.cn/problems/find-minimum-diameter-after-merging-two-trees/
 1617. 统计子树中城市之间最大距离 https://leetcode.cn/problems/count-subtrees-with-max-distance-between-cities/
 2538. 最大价值和与最小价值和的差值 https://leetcode.cn/problems/difference-between-maximum-and-minimum-price-sum/
+
+
+337. 打家劫舍 III https://leetcode.cn/problems/house-robber-iii/solution/shi-pin-ru-he-si-kao-shu-xing-dppythonja-a7t1/
+
+课后作业：
+没有上司的舞会 https://www.luogu.com.cn/problem/P1352
+1377. T 秒后青蛙的位置 https://leetcode.cn/problems/frog-position-after-t-seconds/
+1377 思考题：如果有多个目标位置呢？
+2646. 最小化旅行的价格总和 https://leetcode.cn/problems/minimize-the-total-price-of-the-trips/
+（会员题）https://leetcode.cn/problems/choose-edges-to-maximize-score-in-a-tree/
+https://codeforces.com/problemset/problem/1689/C
