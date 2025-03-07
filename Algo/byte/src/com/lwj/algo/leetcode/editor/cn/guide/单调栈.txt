@@ -1,0 +1,23 @@
+
+739. 每日温度 https://leetcode.cn/problems/daily-temperatures/solution/shi-pin-jiang-qing-chu-wei-shi-yao-yao-y-k0ks/
+42. 接雨水 https://leetcode.cn/problems/trapping-rain-water/solution/zuo-liao-nbian-huan-bu-hui-yi-ge-shi-pin-ukwm/
+
+课后作业：
+496. 下一个更大元素 I https://leetcode.cn/problems/next-greater-element-i/
+503. 下一个更大元素 II https://leetcode.cn/problems/next-greater-element-ii/
+1475. 商品折扣后的最终价格 https://leetcode.cn/problems/final-prices-with-a-special-discount-in-a-shop/
+901. 股票价格跨度 https://leetcode.cn/problems/online-stock-span/
+1019. 链表中的下一个更大节点 https://leetcode.cn/problems/next-greater-node-in-linked-list/
+1944. 队列中可以看到的人数 https://leetcode.cn/problems/number-of-visible-people-in-a-queue/
+84. 柱状图中最大的矩形 https://leetcode.cn/problems/largest-rectangle-in-histogram/
+1793. 好子数组的最大分数 https://leetcode.cn/problems/maximum-score-of-a-good-subarray/
+85. 最大矩形 https://leetcode.cn/problems/maximal-rectangle/
+
+课后作业题解：
+496. 下一个更大元素 I https://leetcode.cn/problems/next-greater-element-i/solution/shi-pin-dan-diao-zhan-de-liang-chong-xie-ri0i/
+503. 下一个更大元素 II https://leetcode.cn/problems/next-greater-element-ii/solution/shi-pin-dan-diao-zhan-de-liang-chong-xie-k236/
+901. 股票价格跨度 https://leetcode.cn/problems/online-stock-span/solution/shi-pin-yi-ge-shi-pin-jiang-tou-dan-diao-cuk7/
+1019. 链表中的下一个更大节点 https://leetcode.cn/problems/next-greater-node-in-linked-list/solution/tu-jie-dan-diao-zhan-liang-chong-fang-fa-v9ab/
+1944. 队列中可以看到的人数 https://leetcode.cn/problems/number-of-visible-people-in-a-queue/solution/dan-diao-zhan-de-ben-zhi-ji-shi-qu-diao-8tp3s/
+84. 柱状图中最大的矩形 https://leetcode.cn/problems/largest-rectangle-in-histogram/solution/dan-diao-zhan-fu-ti-dan-pythonjavacgojsr-89s7/
+1793. 好子数组的最大分数 https://leetcode.cn/problems/maximum-score-of-a-good-subarray/solution/liang-chong-fang-fa-dan-diao-zhan-shuang-24zl/
