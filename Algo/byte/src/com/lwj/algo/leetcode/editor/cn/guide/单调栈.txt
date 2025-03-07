@@ -14,7 +14,10 @@
 课后作业：
 496. 下一个更大元素 I
 每日温度这道题的基础上，通过map记录元素值与索引下标的关系
-503. 下一个更大元素 II https://leetcode.cn/problems/next-greater-element-ii/
+503. 下一个更大元素 II
+方法一：可以通过将数组复制一份然后拼接在原数组的后面，然后求出每个元素的下一个更大元素，再截取前半部分答案
+方法二：可以通过取模的方式避免物理复制数组
+
 1475. 商品折扣后的最终价格 https://leetcode.cn/problems/final-prices-with-a-special-discount-in-a-shop/
 901. 股票价格跨度 https://leetcode.cn/problems/online-stock-span/
 1019. 链表中的下一个更大节点 https://leetcode.cn/problems/next-greater-node-in-linked-list/
