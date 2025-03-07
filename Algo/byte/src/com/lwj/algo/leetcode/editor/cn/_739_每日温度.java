@@ -48,9 +48,22 @@ class DailyTemperatures {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+        //单调栈 从左向右遍历 当前元素大于栈顶元素则栈顶元素出栈，表示出栈的栈顶元素找到了下一个升温点，记录索引下标相减，直至当前元素小于等于栈顶元素,当前元素入栈
+        //遍历结束后，当栈顶还有元素时，表示这些元素没有找到下一个升温点
+        public int[] dailyTemperatures(int[] temperatures) {
+            int[] res = new int[temperatures.length];
+            Deque<Integer> stack = new LinkedList<>();
+            for (int i = 0; i < temperatures.length; i++) {
+                while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
+                    Integer p = stack.pop();
+                    res[p] = i - p;
+                }
+                stack.push(i);
+            }
+            return res;
+        }
 
-
-        //单调栈 从右向左遍历
+        //单调栈 从右向左遍历 当前元素大于栈顶元素则栈顶元素出栈，直至当前元素小于栈顶元素，此时找到当前元素的下一个升温点，索引想减返回下标，将当前元素入栈
         public int[] dailyTemperatures0(int[] temperatures) {
             int[] res = new int[temperatures.length];
             Deque<Integer> stack = new LinkedList<>();
