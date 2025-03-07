@@ -7,10 +7,13 @@
 
 42. 接雨水
 找上一个更大元素，在找的过程中填坑，横着接雨水
-相向双指针是竖着接雨水
+相向双指针是竖着接雨水,保持单调栈中元素自底向上是逐渐递增的
+当前元素cur大于栈顶元素top的是就可以横着计算雨水面积了，此时还需要栈顶元素下面的元素pre，也就是数组中栈顶元素左边的元素pre，
+左边元素pre一定是大于栈顶元素top的，此时p和cur之间的距离就是雨水面积的长，Math.min(pre,cur)-top就是雨水面积的宽，乘积就是top位置的接水面积
 
 课后作业：
-496. 下一个更大元素 I https://leetcode.cn/problems/next-greater-element-i/
+496. 下一个更大元素 I
+每日温度这道题的基础上，通过map记录元素值与索引下标的关系
 503. 下一个更大元素 II https://leetcode.cn/problems/next-greater-element-ii/
 1475. 商品折扣后的最终价格 https://leetcode.cn/problems/final-prices-with-a-special-discount-in-a-shop/
 901. 股票价格跨度 https://leetcode.cn/problems/online-stock-span/
