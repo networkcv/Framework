@@ -1,6 +1,13 @@
+单调栈：
+栈中存储的元素都是有序的
 
-739. 每日温度 https://leetcode.cn/problems/daily-temperatures/solution/shi-pin-jiang-qing-chu-wei-shi-yao-yao-y-k0ks/
-42. 接雨水 https://leetcode.cn/problems/trapping-rain-water/solution/zuo-liao-nbian-huan-bu-hui-yi-ge-shi-pin-ukwm/
+739. 每日温度
+思路一：从左向右遍历 当前元素大于栈顶元素则栈顶元素出栈，表示出栈的栈顶元素找到了下一个升温点，记录索引下标相减，直至当前元素小于等于栈顶元素,当前元素入栈
+思路二：从右向左遍历 当前元素大于栈顶元素则栈顶元素出栈，直至当前元素小于栈顶元素，此时找到当前元素的下一个升温点，索引想减返回下标，将当前元素入栈
+
+42. 接雨水
+找上一个更大元素，在找的过程中填坑，横着接雨水
+相向双指针是竖着接雨水
 
 课后作业：
 496. 下一个更大元素 I https://leetcode.cn/problems/next-greater-element-i/

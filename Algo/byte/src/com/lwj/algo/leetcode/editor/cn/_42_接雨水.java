@@ -1,5 +1,8 @@
 package com.lwj.algo.leetcode.editor.cn;
 
+import java.util.Deque;
+import java.util.LinkedList;
+
 /**
  * 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
  * <p>
@@ -44,8 +47,29 @@ class TrappingRainWater {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+        //单调栈，横着接雨水
+        //保持单调栈中元素自底向上是逐渐递增的
+        public int trap(int[] heights) {
+            int res = 0;
+            Deque<Integer> stack = new LinkedList<>();
+            for (int i = 0; i < heights.length; i++) {
+                //当前元素cur大于栈顶元素top的是就可以横着计算雨水面积了，此时还需要栈顶元素下面的元素pre，也就是数组中栈顶元素左边的元素pre，
+                //左边元素pre一定是大于栈顶元素top的，此时p和cur之间的距离就是雨水面积的长，Math.min(pre,cur)-top就是雨水面积的宽，乘积就是top位置的接水面积
+                while (!stack.isEmpty() && heights[i] > heights[stack.peek()]) {
+                    Integer top = stack.pop();
+                    if (stack.isEmpty()) break;
+                    Integer pre = stack.peek();
+                    int height = Math.min(heights[pre], heights[i]) - heights[top];
+                    int weight = i - pre - 1;
+                    res += height * weight;
+                }
+                stack.push(i);
+            }
+            return res;
+        }
+
         //时间复杂度O(n) 空间负责度O(1)
-        public int trap(int[] height) {
+        public int trap1(int[] height) {
             //左边最大高度
             int preMax = height[0];
             //右边最大高度
@@ -67,7 +91,7 @@ class TrappingRainWater {
         }
 
         //时间复杂度O(n) 空间负责度O(n)
-        public int trap1(int[] height) {
+        public int trap0(int[] height) {
             int[] preMax = new int[height.length];
             preMax[0] = height[0];
             for (int i = 1; i < height.length; i++) {
