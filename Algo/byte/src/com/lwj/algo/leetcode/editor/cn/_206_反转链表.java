@@ -22,6 +22,18 @@ class ReverseLinkedList {
      * }
      */
     class Solution {
+        // 2025/3/9
+        public ListNode reverseList(ListNode head) {
+            ListNode pre = null;
+            ListNode cur = head;
+            while (cur != null) {
+                ListNode next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            return pre;
+        }
 
 
         // 2025/2/13  递归版 1 2 3
@@ -37,7 +49,7 @@ class ReverseLinkedList {
         }
 
         // 2025/2/11  遍历版
-        public ListNode reverseList(ListNode head) {
+        public ListNode reverseList0(ListNode head) {
             ListNode pre = null;
             ListNode next;
             ListNode cur = head;

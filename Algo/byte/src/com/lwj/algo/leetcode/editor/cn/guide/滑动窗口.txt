@@ -2,8 +2,9 @@
 快慢指针，先用快指针向右遍历到达i位置满足target条件的位置，然后慢指针向右遍历到达j位置不满足target时，i-j+1就是以i为右端点下的最长子数组长度
 
 3. 无重复字符的最长子串 https://leetcode.cn/problems/longest-substring-without-repeating-characters/solution/xia-biao-zong-suan-cuo-qing-kan-zhe-by-e-iaks/
-定义一个hashMap存放已出现元素的次数，快指针每遍历一次，将当前遍历元素在map中的计数加一，判断这次累加是否有效（统计map中当前元素
+思路一：定义一个hashMap存放已出现元素的次数，快指针每遍历一次，将当前遍历元素在map中的计数加一，判断这次累加是否有效（统计map中当前元素
 出现的总次数是否大于一，如果大于一的话表示有重复，从慢指针遍历并将遍历的值在map中的次数依次减一，直至快指针所指元素的出现次数等于一）,比较更新最大值
+思路二：这个map也可以替换成一个长度为128的int数组，因为字符'a'对应的数字是97，字符'z'对应的数字是122,而且int数组默认元素都是0，还不用初始化
 
 713. 乘积小于 K 的子数组 https://leetcode.cn/problems/subarray-product-less-than-k/solution/xia-biao-zong-suan-cuo-qing-kan-zhe-by-e-jebq/
 

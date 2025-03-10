@@ -1,4 +1,8 @@
-239. 滑动窗口最大值 https://leetcode.cn/problems/sliding-window-maximum/solution/shi-pin-yi-ge-shi-pin-miao-dong-dan-diao-ezj6/
+239. 滑动窗口最大值
+及时去掉无用数据， 保证双端队列有序。
+当前数字 ≥队尾，弹出队尾 （和单调栈一样） 弹出队首不在窗口内的元素
+
+
 
 课后作业：
 1438. 绝对差不超过限制的最长连续子数组 https://leetcode.cn/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/

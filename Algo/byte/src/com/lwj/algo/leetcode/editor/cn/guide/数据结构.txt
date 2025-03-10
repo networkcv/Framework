@@ -1,0 +1,19 @@
+# 常见缓存淘汰策略:
+先进先出策略FIFO（First In，First Out）：先进入缓存的最先被淘汰。
+最少使用策略LFU（Least Frenquently Used）：最近没有被访问的先被淘汰。
+最近最少使用策略LRU（Least Recently Used）：最近访问最少的先被淘汰。
+
+LRU:
+_146_LRU 缓存.java
+链表实现：该数据结构主要包含四种操作，put get remove 以及私有的 insertHead方法，通过定义头尾两个双向双向链表，再结合map存放key对应的节点
+
+LFU:
+460. LFU 缓存
+
+
+# 堆
+大顶堆和小顶堆
+大顶堆：用树来表示的话，当前节点大于左右节点，整个堆最大的节点是根节点。
+小顶堆：当前节点小于左右节点，整个堆最小的节点是根节点。
+使用优先级队列自定义堆的比较逻辑，(a,b)->a-b 是升序，(a,b)->b-a 是倒序
+PriorityQueue<Integer> heap = new PriorityQueue<>((a, b) -> {return map.get(a) - map.get(b);});
