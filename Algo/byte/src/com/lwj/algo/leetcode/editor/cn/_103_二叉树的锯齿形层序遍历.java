@@ -1,6 +1,7 @@
 package com.lwj.algo.leetcode.editor.cn;
 
 import com.lwj.algo.leetcode.editor.cn.utils.TreeNode;
+import com.lwj.algo.leetcode.editor.cn.utils.TreeNodeUtil;
 
 import java.util.*;
 
@@ -42,7 +43,7 @@ import java.util.*;
 class BinaryTreeZigzagLevelOrderTraversal {
     public static void main(String[] args) {
         Solution solution = new BinaryTreeZigzagLevelOrderTraversal().new Solution();
-        System.out.println(solution);
+        System.out.println(solution.zigzagLevelOrder(TreeNodeUtil.constructTree(1)));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
@@ -70,8 +71,35 @@ class BinaryTreeZigzagLevelOrderTraversal {
         public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
             if (root == null) return res;
             queue.add(root);
-            zigzagLevelOrder0();
+//            zigzagLevelOrder0();
+            zigzagLexvelOrder1();
             return res;
+        }
+
+        private void zigzagLexvelOrder1() {
+            if (queue.isEmpty()) return;
+            ArrayList<Integer> subResList = new ArrayList<>();
+            int size = queue.size();
+            while (size-- > 0) {
+                TreeNode cur = queue.poll();
+                if (cur == null) {
+                    continue;
+                }
+                queue.add(cur.left);
+                queue.add(cur.right);
+                subResList.add(cur.val);
+            }
+
+            if (!subResList.isEmpty()) {
+                if (isOdd) {
+                    res.add(subResList);
+                } else {
+                    Collections.reverse(subResList);
+                    res.add(subResList);
+                }
+            }
+            isOdd = !isOdd;
+            zigzagLexvelOrder1();
         }
 
         public void zigzagLevelOrder0() {
