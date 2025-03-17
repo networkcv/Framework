@@ -63,7 +63,7 @@ class LongestIncreasingSubsequence {
         int[][] caches;
 
         //贪心+二分查找
-        public int lengthOfLIS(int[] nums) {
+        public int lengthOfLIS2(int[] nums) {
             //g[i]表示长度为i+1的LIS的末尾元素最小值
             List<Integer> g = new ArrayList<>();
             for (int num : nums) {
@@ -132,7 +132,7 @@ class LongestIncreasingSubsequence {
             return caches[cur1][cur2] = Math.max(dfs(cur1 - 1, cur2), dfs(cur1, cur2 - 1));
         }
 
-        public int lengthOfLIS0(int[] nums) {
+        public int lengthOfLIS(int[] nums) {
             this.nums = nums;
             int res = 0;
             cache = new int[nums.length];
@@ -161,7 +161,8 @@ class LongestIncreasingSubsequence {
             return cache[i] = res + 1;
         }
 
-        //回溯版-答案视角-暴力回溯
+        //回溯版-答案视角-暴力回溯 以i结尾的最长递增子序列
+        //遍历i前边的所有元素的最长递增子序列取最大值，dfs(i)=max{dfs(j)}+1 其中j<i 且nums[j]<nums[i]
         public int dfs0(int i) {
             int res = 0;
             for (int j = 0; j < i; j++) {
