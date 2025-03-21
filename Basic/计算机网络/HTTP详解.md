@@ -185,7 +185,15 @@ HTTP/1.1 版本的默认连接都是持久连接，但为了兼容老版本的 H
 
 `Connection: keep-alive`
 
-一个可以复用的 TCP 连接就建立了，直到客户端或服务器主动关闭连接。但是，这不是标准字段。
+一个可以复用的 TCP 连接就建立了，直到客户端或服务器主动关闭连接。或者超时
+
+`Connection：close` 则每次都创建新连接
+
+在HTTP/1.0里，为了实现client到web-server能支持长连接，必须在HTTP请求头里显示指定 Connection:keep-alive 
+
+在HTTP/1.1里，就默认是开启了keep-alive，要关闭keep-alive需要在HTTP请求头里显示指定 Connection:close 
+
+
 
 ### ***Content-Type 字段***
 

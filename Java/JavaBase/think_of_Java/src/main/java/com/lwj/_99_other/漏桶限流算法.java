@@ -19,6 +19,7 @@ public class 漏桶限流算法 {
     private static int capacity = 6;
     //剩余的水量
     private static AtomicInteger water = new AtomicInteger(0);
+
     //返回值说明：
     // false 没有被限制到
     // true 被限流

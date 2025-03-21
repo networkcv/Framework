@@ -1580,7 +1580,7 @@ Redis脚本本身就是事务性的，原子化的执行并且不受其它命令
 
 简单总结，基于 Redis 使用分布锁的注意点：
 
-1、使用 SET $lock_key $unique_val EX $second NX 命令保证加锁原子性，并为锁设置过期时间
+1、使用 SET \$lock_key \$unique_val EX $second NX 命令保证加锁原子性，并为锁设置过期时间
 
 2、锁的过期时间要提前评估好，要大于操作共享资源的时间
 

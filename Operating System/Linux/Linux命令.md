@@ -709,9 +709,35 @@ Linux 查看端口占用情况可以使用 **lsof** 和 **netstat** 命令。
 
 lsof(list open files)是一个列出当前系统打开文件的工具。
 
+### 查看在端口号上的连接
+
 ```bash
 lsof -i:端口号
 ```
+
+示例：
+
+![image-20250320152052856](img/Linux命令/image-20250320152052856.png)
+
+|     列名     | 介绍                                                         |
+| :----------: | :----------------------------------------------------------- |
+| **COMMAND**  | 进程名称，表示使用该端口的程序名称。                         |
+|   **PID**    | 进程ID，标识运行程序的唯一进程号。                           |
+|   **USER**   | 运行该进程的用户名称。                                       |
+|    **FD**    | 文件描述符，表示进程打开的文件或网络连接。对于网络连接，通常以数字加字母组合表示，如 `22u`，其中 `u` 表示该文件描述符是可读写的。 |
+|   **TYPE**   | 文件类型，对于网络连接，通常是 `IPv4` 或 `IPv6`，表示使用的协议版本。 |
+|  **DEVICE**  | 设备号，对于网络连接，是一个十六进制的设备标识符，用于内部标识网络连接。 |
+| **SIZE/OFF** | 文件大小或偏移量，对于网络连接，通常显示为 `0t0`，表示没有数据传输或偏移量为0。 |
+|   **NODE**   | 节点号，对于网络连接，通常显示为 `TCP` 或 `UDP`，表示协议类型。 |
+|   **NAME**   | 连接的详细信息，包括本地地址和远程地址，以及连接状态（如 `ESTABLISHED` 或 `LISTEN`）。`http-alt` 是 8080 端口的别名 |
+
+例如：`10.201.104.4:50590->10.11.2.40:http-alt (ESTABLISHED)`，表示本地地址 `10.201.104.4` 的端口 `50590` 与远程地址 `10.11.2.40` 的端口 `8080`之间建立了 TCP 连接，且连接状态为 `ESTABLISHED`（已建立）。
+
+`*:http-alt (LISTEN)`，表示 Java 应用程序正在监听所有网络接口的 `8080` 端口，等待客户端连接。`*` 表示监听所有网络接口，`LISTEN` 表示该端口处于监听状态，等待建立连接。
+
+**SOCKET网络连接状态**
+
+
 
 查看正在监听的端口和进程
 
@@ -726,40 +752,8 @@ lsof -nP -p 43176  | grep LISTEN
 ```
 
 ```sh
-❯ lsof -h
-lsof 4.91
- latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
- latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
- latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
- usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
- [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
- [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
-Defaults in parentheses; comma-separated set (s) items; dash-separated ranges.
-  -?|-h list help          -a AND selections (OR)     -b avoid kernel blocks
-  -c c  cmd c ^c /c/[bix]  +c w  COMMAND width (9)    +d s  dir s files
-  -d s  select by FD set   +D D  dir D tree *SLOW?*   -i select IPv[46] files
-  -l list UID numbers      -n no host names           -N select NFS files
-  -o list file offset      -O no overhead *RISKY*     -P no port names(不展示端口号)
-  -R list paRent PID       -s list file size          -t terse listing
-  -T disable TCP/TPI info  -U select Unix socket      -v list version info
-  -V verbose search        +|-w  Warnings (+)         -X file descriptor table only
-  -- end option scan
-  +f|-f  +filesystem or -file names     +|-f[cgG] Ct flaGs
-  -F [f] select fields; -F? for help
-  +|-L [l] list (+) suppress (-) link counts < l (0 = all; default = 0)
-  +|-M   portMap registration (-)       -o o   o 0t offset digits (8)
-  -p s   exclude(^)|select PIDs         -S [t] t second stat timeout (15)
-  -T fqs TCP/TPI Fl,Q,St (s) info
-  -g [s] exclude(^)|select and print process group IDs
-  -i i   select by IPv[46] address: [46][proto][@host|addr][:svc_list|port_list]
-  +|-r [t[m<fmt>]] repeat every t seconds (15);  + until no files, - forever.
-       An optional suffix to t is m<fmt>; m must separate t from <fmt> and
-      <fmt> is an strftime(3) format for the marker line.
-  -s p:s  exclude(^)|select protocol (p = TCP|UDP) states by name(s).
-  -u s   exclude(^)|select login|UID set s
-  -x [fl] cross over +d|+D File systems or symbolic Links
-  names  select named files or files on named file systems
-Anyone can list all files; /dev warnings disabled; kernel ID check disabled.
+#查看帮助
+lsof -h 
 ```
 
 
@@ -830,7 +824,34 @@ mkdir -p /a/b 可以创建多级文件夹
 
 ## netstat 网络端口查询工具
 
+>  lsof 也可以查询端口号上的连接
 
+```shell
+netstat -an | grep 80
+```
+
+```
+-a：显示所有网络连接和监听端口。
+-n：以数字形式显示地址和端口号。而不是尝试解析它们为域名或服务名称。这样可以加快命令的执行速度，避免 DNS 解析的延迟
+```
+
+![image-20250320201556943](img/Linux命令/image-20250320201556943.png)
+
+第二行：tcp6       0      0  ::1.8080               ::1.51278              ESTABLISHED
+
+- **`tcp6`**：表示这是一个 IPv6 的 TCP 连接。
+- **`0      0`**：表示发送和接收队列的大小，这里都是 0，表示没有数据积压。
+- **`::1.8080`**：本地地址和端口，`::1` 是 IPv6 的本地回环地址（类似于 IPv4 的 `127.0.0.1`），端口是 8080。
+- **`::1.51278`**：远程地址和端口，同样是本地回环地址，端口是 51278。
+- **`ESTABLISHED`**：表示这个连接已经建立，正在通信。
+
+第四行：tcp46      0      0  *.8080                 \*.\*                    LISTEN
+
+- **`tcp46`**：表示这是一个同时支持 IPv4 和 IPv6 的 TCP 连接。
+- **`0      0`**：表示发送队列和接收队列的大小，这里都是 0。
+- **`*.8080`**：表示该端口正在监听所有网络接口的 8080 端口。
+- **`*.*`**：表示该端口可以接受来自任何地址的连接。
+- **`LISTEN`**：表示该端口处于监听状态，等待客户端的连接请求。
 
 
 

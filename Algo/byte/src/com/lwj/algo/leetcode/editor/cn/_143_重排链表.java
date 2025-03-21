@@ -51,8 +51,8 @@ import com.lwj.algo.leetcode.editor.cn.utils.ListNodeUtils;
 class ReorderList {
     public static void main(String[] args) {
         ReorderList.Solution solution = new ReorderList().new Solution();
-//        ListNode head = ListNodeUtils.build(12345);
-        ListNode head = ListNodeUtils.build(123456);
+        ListNode head = ListNodeUtils.build(12345);
+//        ListNode head = ListNodeUtils.build(123456);
         System.out.println(head);
         solution.reorderList(head);
         System.out.println(head);
@@ -73,6 +73,42 @@ class ReorderList {
      */
     class Solution {
         public void reorderList(ListNode head) {
+            //1234 偶数节点慢指针在中间靠后
+            //15243 奇数节点慢指针在中间
+            //找到中间
+            ListNode q = head;
+            ListNode s = head;
+            while (q != null && q.next != null) {
+                q = q.next.next;
+                s = s.next;
+            }
+            //反转链表
+            //1->2-> 3<-4
+            //1->2->3<-4<-5
+            ListNode pre = null;
+            ListNode cur = s;
+            while (cur != null) {
+                ListNode next = cur.next;
+                cur.next = pre;
+                pre = cur;
+                cur = next;
+            }
+            ListNode head1 = head;
+            ListNode head2 = pre;
+            if (head2 == null) return;
+            //head1的长度永远大于等于head2
+            while (head2.next != null) {
+                ListNode next1 = head1.next;
+                ListNode next2 = head2.next;
+                head1.next = head2;
+                head2.next = next1;
+                head1 = next1;
+                head2 = next2;
+            }
+
+        }
+
+        public void reorderList0(ListNode head) {
             ListNode q = head;
             ListNode s = head;
             while (q != null && q.next != null) {
@@ -97,9 +133,8 @@ class ReorderList {
                 head = next;
                 head2 = next2;
             }
-//        head1ui 1->2->3->4
+//        head1是 1->2->3->4
 //        head2是 6->5->4
-
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)
