@@ -47,9 +47,27 @@ class TrappingRainWater {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+        public int trap(int[] heights) {
+            int lmax = heights[0];
+            int rmax = heights[heights.length - 1];
+            int l = 0;
+            int r = heights.length - 1;
+            int res = 0;
+            while (l <= r) {
+                lmax = Math.max(lmax, heights[l]);
+                rmax = Math.max(rmax, heights[r]);
+                if (lmax < rmax) {
+                    res += lmax - heights[l++];
+                } else {
+                    res += rmax - heights[r--];
+                }
+            }
+            return res;
+        }
+
         //单调栈，横着接雨水
         //保持单调栈中元素自底向上是逐渐递增的
-        public int trap(int[] heights) {
+        public int trap2(int[] heights) {
             int res = 0;
             Deque<Integer> stack = new LinkedList<>();
             for (int i = 0; i < heights.length; i++) {

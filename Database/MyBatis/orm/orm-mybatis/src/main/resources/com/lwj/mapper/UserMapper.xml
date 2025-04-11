@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lwj.mapper.UserMapper">
+
+<!--    <select id="findAll" resultType="com.lwj.pojo.User">-->
+<!--        select *-->
+<!--        from User-->
+<!--    </select>-->
+
+<!--    <resultMap id="UserRoleList" type="com.lwj.pojo.User">-->
+<!--        <result column="id" property="id"/>-->
+<!--        <result column="username" property="username"/>-->
+<!--        <collection property="roleList" ofType="com.lwj.pojo.Role">-->
+<!--            <result column="rid" property="id"></result>-->
+<!--            <result column="desc" property="desc"></result>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+<!--    <select id="selectAllUserRoleList" resultMap="UserRoleList">-->
+<!--        SELECT * from user u LEFT JOIN user_role ur on u.id=ur.uid LEFT JOIN role r on ur.rid= r.id-->
+<!--    </select>-->
+
+</mapper>
