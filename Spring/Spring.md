@@ -1592,7 +1592,154 @@ https://xie.infoq.cn/article/9456ec818707cd6e44950019c
 
 **适配器模式** : Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配`Controller`。
 
-# 七、常见接口和类
+# 七、常见扩展点
+
+https://mp.weixin.qq.com/s/FMNL7es6t_6UsPt0grSjXw?clicktime=1744789802&enterid=1744789802&scene=90&subscene=236&xtrack=1
+
+![图片](img/Spring/640)
+
+## ApplicationContextInitializer
+
+org.springframework.context.ApplicationContextInitializer
+
+这是整个spring容器在刷新之前初始化`ConfigurableApplicationContext`的回调接口，简单来说，就是在容器刷新之前调用此类的`initialize`方法。这个点允许被用户自己扩展。用户可以在整个spring容器还没被初始化之前做一些事情。
+
+可以想到的场景可能为，在最开始激活一些配置，或者利用这时候class还没被类加载器加载的时机，进行动态字节码注入等操作。
+
+```java
+public class TestApplicationContextInitializer implements ApplicationContextInitializer {
+    @Override
+    public void initialize(ConfigurableApplicationContext applicationContext) {
+        System.out.println("[ApplicationContextInitializer]");
+    }
+}
+```
+
+因为这时候spring容器还没被初始化，所以想要自己的扩展的生效，有以下三种方式：
+
+- 在启动类中用`springApplication.addInitializers(new TestApplicationContextInitializer())`语句加入
+- 配置文件配置`context.initializer.classes=com.example.demo.TestApplicationContextInitializer`
+- Spring SPI扩展，在spring.factories中加入`org.springframework.context.ApplicationContextInitializer=com.example.demo.TestApplicationContextInitializer`
+
+## BeanDefinitionRegistryPostProcessor
+
+org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
+
+这个接口在读取项目中的`beanDefinition`之后执行，提供一个补充的扩展点
+
+使用场景：你可以在这里动态注册自己的`beanDefinition`，可以加载classpath之外的bean
+
+```java
+public class TestBeanDefinitionRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        System.out.println("[BeanDefinitionRegistryPostProcessor] postProcessBeanDefinitionRegistry");
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        System.out.println("[BeanDefinitionRegistryPostProcessor] postProcessBeanFactory");
+    }
+}
+```
+
+## BeanFactoryPostProcessor
+
+org.springframework.beans.factory.config.BeanFactoryPostProcessor
+
+这个接口是`beanFactory`的扩展接口，调用时机在spring在读取`beanDefinition`信息之后，实例化bean之前。
+
+在这个时机，用户可以通过实现这个扩展接口来自行处理一些东西，比如修改已经注册的`beanDefinition`的元信息。
+
+```java
+public class TestBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        System.out.println("[BeanFactoryPostProcessor]");
+    }
+}
+```
+
+## InstantiationAwareBeanPostProcessor
+
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor
+
+该接口继承了`BeanPostProcess`接口，区别如下：
+
+**`BeanPostProcess`接口只在bean的初始化阶段进行扩展（注入spring上下文前后），而`InstantiationAwareBeanPostProcessor`接口在此基础上增加了3个方法，把可扩展的范围增加了实例化阶段和属性注入阶段。**
+
+该类主要的扩展点有以下5个方法，主要在bean生命周期的两大阶段：**实例化阶段**和**初始化阶段**，下面一起进行说明，按调用顺序为：
+
+- `postProcessBeforeInstantiation`：实例化bean之前，相当于new这个bean之前
+- `postProcessAfterInstantiation`：实例化bean之后，相当于new这个bean之后
+- `postProcessPropertyValues`：bean已经实例化完成，在属性注入时阶段触发，`@Autowired`,`@Resource`等注解原理基于此方法实现
+- `postProcessBeforeInitialization`：初始化bean之前，相当于把bean注入spring上下文之前
+- `postProcessAfterInitialization`：初始化bean之后，相当于把bean注入spring上下文之后
+
+使用场景：这个扩展点非常有用 ，无论是写中间件和业务中，都能利用这个特性。比如对实现了某一类接口的bean在各个生命期间进行收集，或者对某个类型的bean进行统一的设值等等。
+
+扩展方式为：
+
+```java
+public class TestInstantiationAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("[TestInstantiationAwareBeanPostProcessor] before initialization " + beanName);
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("[TestInstantiationAwareBeanPostProcessor] after initialization " + beanName);
+        return bean;
+    }
+
+    @Override
+    public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
+        System.out.println("[TestInstantiationAwareBeanPostProcessor] before instantiation " + beanName);
+        returnnull;
+    }
+
+    @Override
+    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        System.out.println("[TestInstantiationAwareBeanPostProcessor] after instantiation " + beanName);
+        returntrue;
+    }
+
+    @Override
+    public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+        System.out.println("[TestInstantiationAwareBeanPostProcessor] postProcessPropertyValues " + beanName);
+        return pvs;
+    }
+```
+
+## BeanFactoryAware
+
+org.springframework.beans.factory.BeanFactoryAware
+
+这个类只有一个触发点，发生在bean的实例化之后，注入属性之前，也就是Setter之前。这个类的扩展点方法为`setBeanFactory`，可以拿到`BeanFactory`这个属性。
+
+使用场景为，你可以在bean实例化之后，但还未初始化之前，拿到 `BeanFactory`，在这个时候，可以对每个bean作特殊化的定制。也或者可以把`BeanFactory`拿到进行缓存，日后使用。
+
+扩展方式为：
+
+```java
+public class TestBeanFactoryAware implements BeanFactoryAware {
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        System.out.println("[TestBeanFactoryAware] " + beanFactory.getBean(TestBeanFactoryAware.class).getClass().getSimpleName());
+    }
+}
+```
+
+
+
+
+
+
+
+# 八、常见接口和类
 
 ## Order 和 PriorityOrder 
 
@@ -1848,7 +1995,7 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 
 
 
-# 八、工具类
+# 九、工具类
 
 ## 解析property文件
 

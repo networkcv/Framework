@@ -208,3 +208,59 @@ ts=2018-11-28 19:22:35; [cost=29.969732ms] result=@ArrayList[
 
 
 ### options 查看配置
+
+
+
+### profiler 查看火焰图
+
+https://arthas.aliyun.com/doc/profiler.html
+
+通过抽样统计CPU当前的执行函数栈来分析软件的性能瓶颈，除了CPU还支持别的指标。
+
+```bash
+  cpu
+  alloc
+  lock
+  wall
+  itimer
+  ctimer
+```
+
+profiler 默认的采集间隔是10ms，那么每秒采集的量100次，频率也就是 100Hz，如果100次都返回同一个函数名，那就说明 CPU 这一秒钟都在执行同一个函数，可能存在性能问题。以上是单核的情况，多核还需要乘上对应核数。
+
+启动
+
+```sh
+profiler start 
+```
+
+查看采样数
+
+```sh
+profiler getSamples  
+profiler start --duration 300
+```
+
+ 查看profiling状态
+
+```sh
+profiler status
+```
+
+结束
+
+```sh
+profiler stop 
+```
+
+结束后会生成SVG可交互的火焰图。
+
+示例：https://zcy-distribute.oss-cn-hangzhou.aliyuncs.com/zdebug/a.html
+
+![9576794f-6a58-4ef3-b7ad-601fe376ad95](img/Arthas/9576794f-6a58-4ef3-b7ad-601fe376ad95.png)
+
+y 轴表示调用栈，每一层都是一个函数。调用栈越深，火焰就越高，顶部就是正在执行的函数，下方都是它的父函数。
+
+x 轴表示抽样数，如果一个函数在 x 轴占据的宽度越宽，就表示它被抽到的次数多，即执行的时间长。注意，x 轴不代表时间，而是所有的调用栈合并后，按字母顺序排列的。
+
+**火焰图就是看顶层的哪个函数占据的宽度最大。只要有"平顶"（plateaus），就表示该函数可能存在性能问题。**
