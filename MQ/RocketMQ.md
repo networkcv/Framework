@@ -97,7 +97,7 @@ CommitLog#asyncPutMessages 完成真正的消息保存，大概步骤如下：
 
 > CommitLog 是RocketMQ 最核心的数据存储，它是一个顺序写的文件，用于存储 Producer 发送的消息和 Consumer 消费的消息，也就是全部通过消息中间件传递的消息。每一个写入 commitLog 的消息都会被分配一个唯一的 offset （偏移量），用于标识该条消息在 commitLog 中的位置。 commitLog 中消息的存储格式包括消息长度、消息属性（如是否压缩、是否顺序消费、是否是事务消息等）、消息体等信息。DLedgerCommitLog 是 RocketMQ 用作持久化存储的一种实现方式，它基于Apache DistributedLog (DLedger) 实现了高可靠、高性能的分布式日志存储，也正是它，使得 CommitLog 拥有了选举复制的能力。
 
-1.根据topic_队列%32加分段锁。
+1.根据topic_队列取模32加分段锁。
 
 ```java
 topicQueueLock.lock(topicQueueKey);// MY_TOPIC-3
@@ -114,6 +114,18 @@ PutMessageResult encodeResult = putMessageThreadLocal.getEncoder().encode(msg);
 
 - 一个broker将所有的消息都追加到同一个逻辑CommitLog日志文件中，因此需要通过获取putMessageLock锁来控制并发。有两种锁，一种是ReentrantLock可重入锁，另一种spin则是CAS锁。根据StoreConfig的useReentrantLockWhenPutMessage决定是否使用可重入锁，默认为true，使用可重入锁。
 - 从mappedFileQueue中的mappedFiles集合中获取最后一个MappedFile。如果最新mappedFile为null，或者mappedFile满了，那么会新建mappedFile。
+- 通过mappedFile调用appendMessage方法追加消息，这里仅仅是追加消息到byteBuffer的内存中。如果是writeBuffer则表示消息写入了堆外内存中，如果是mappedByteBuffer，则表示消息写入了page chache中。总之，都是存储在内存之中。writeBuffer是RocketMQ的内存映射增强方案，mappedByteBuffer是Java提供的原生内存映射(mmap)
+- 追加成功之后解锁。如果是剩余空间不足，则会重新初始化一个MappedFile并再次尝试追加。
+
+4.如果存在写满的MappedFile并且启用了文件内存预热，那么这里调用unlockMappedFile对MappedFile执行解锁。
+
+5.更新消息统计信息。随后调用submitFlushRequest方法提交刷盘请求，将会根据刷盘策略进行刷盘。随后调用submitReplicaRequest方法提交副本请求，用于主从同步。
+
+
+
+至此，我们已经知道了RocketMQ根据配置的不同，可能会使用来自TransientStorePool的writeBuffer或者MappedByteBuffer来存储数据，接下来，我们就来看一看存储数据的过程是如何实现的。
+
+MappedFile提交实际上是将writeBuffer中的数据，传入FileChannel，所以只有在transientStorePoolEnable为true时才有实际作用：„
 
 
 
@@ -215,3 +227,37 @@ MessageQueue 也是写队列，每个分区对应一个写队列。
 
 
 
+#### MappedFileQueue
+
+RocketMQ中在存储方面有很多思路值得我们学习，比如通过使用内存映射文件来提高IO访问性能，无论是CommitLog、 ConsumeQueue还是IndexFile，单个文件都被设计为固定长度，如果一个文件写满以后再创建一个新文件，文件名就为该文件第一条消息对应的全局物理偏移量。例如CommitLog的[文件组织方式](https://zhida.zhihu.com/search?content_id=168332024&content_type=Article&match_order=1&q=文件组织方式&zhida_source=entity)如下图所示。
+
+![img](img/RocketMQ/v2-ea2e3f74156c7643e8394249457f001f_1440w.jpg)
+
+RocketMQ使用 MappedFile、 MappedFileQueue来封装存储文件。以commitLog为例，其中MappedFileQueue 封装的是commitLog所在的目录，里边维护了MappedFile才是对于commitLog真正的映射。
+
+![img](img/RocketMQ/v2-bccf447de40dda88d8310d59a48a73b1_1440w.jpg)
+
+MappedFile 中其实包含了两种实现，一种是Java提供原生的MappedByteBuffer内存映射方案，另外一种是RocketMQ的内存映射增强方案，增强方案中会对MappedByteBuffer再进行一次封装。根据 transientStorePoolEnable这个配置决定是否要开启。
+
+```java
+public class DefaultMappedFile extends AbstractMappedFile {
+  ...
+// 堆外内存ByteBuffer，如果不为空，数据首先将存储在该Buffer中，然后提交到MappedFile对应的内存映射文件Buffer。transientStorePoolEnable为true时不为空。
+    protected ByteBuffer writeBuffer = null;
+    // 堆外内存池，transientStorePoolEnable为true时启用。
+    protected TransientStorePool transientStorePool = null;
+		...
+    // 物理文件对应的内存映射Buffer，真正使用的是其子类 DirectByteBuffer
+    protected MappedByteBuffer mappedByteBuffer;
+}
+...
+public AppendMessageResult appendMessagesInner(final MessageExt messageExt, final AppendMessageCallback cb) {
+  ...
+   //在真正追加消息写入的时候，优先会使用writeBuffer，也就是内存映射增强的方式
+   ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
+  ....
+}
+
+```
+
+这里简单补充一下内存映射的相关知识，它和传统的read/write有什么区别。

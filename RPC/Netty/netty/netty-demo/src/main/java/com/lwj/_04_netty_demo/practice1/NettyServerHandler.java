@@ -1,4 +1,4 @@
-package com.lwj._04_netty_demo;
+package com.lwj._04_netty_demo.practice1;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -13,17 +13,23 @@ import io.netty.util.CharsetUtil;
  *
  * @author liuWangjie
  */
-public class NettyClientHandler implements ChannelInboundHandler {
+public class NettyServerHandler implements ChannelInboundHandler {
+    @Override
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+        ByteBuf byteBuf = (ByteBuf) o;
+        System.out.println(byteBuf.toString(CharsetUtil.UTF_8));
+    }
+
 
     @Override
-    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
-        channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer("this is a client msg", CharsetUtil.UTF_8));
+    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
+        channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer("this is a server msg ", CharsetUtil.UTF_8));
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
-        ByteBuf byteBuf= (ByteBuf) o;
-        System.out.println(byteBuf.toString(CharsetUtil.UTF_8));
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
+        throwable.printStackTrace();
+        channelHandlerContext.close();
     }
 
     @Override
@@ -36,17 +42,16 @@ public class NettyClientHandler implements ChannelInboundHandler {
 
     }
 
+    @Override
+    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
 
     @Override
     public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
 
     }
 
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
-
-    }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
@@ -68,8 +73,5 @@ public class NettyClientHandler implements ChannelInboundHandler {
 
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
 
-    }
 }

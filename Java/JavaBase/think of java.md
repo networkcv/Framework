@@ -953,6 +953,10 @@ Set 接口的实现类其实是借助对应的Map类实现来其功能的，Set 
 
 对于上述四种Map类型的类，要求映射中的key是不可变对象。不可变对象是该对象在创建后它的哈希值不会被改变。如果对象的哈希值发生变化，Map对象很可能就定位不到映射的位置了。而String类的不可变性 ，以及其缓存了hash值，因此我们通常使用String作为容器存放的key。
 
+## Queue
+
+[think of Java：Queue](./md/think of Java：Queue.md)
+
 ## Conlections
 
 该类为集合的工具类。为我们提供了一些便于操作集合的方法。

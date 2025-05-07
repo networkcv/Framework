@@ -104,6 +104,129 @@ Selector类中总共包含以下10个方法：
 - `wakeup()`:调用该方法会时，阻塞在`select()`处的线程会立马返回；(ps：下面一句划重点)即使当前不存在线程阻塞在`select()`处，那么下一个执行`select()`方法的线程也会立即返回结果，相当于执行了一次`selectNow()`方法
 - `close()`: 用完`Selector`后调用其`close()`方法会关闭该Selector，且使注册到该`Selector`上的所有`SelectionKey`实例无效。channel本身并不会关闭。
 
+## Channel
+
+## Pipeline
+
+Client端的SocketChannel 和 Server端的SocketChannel 在创建之初，会维护一个pipeline管道，这是维护handler的双向链表。
+
+![pipeline](img/Netty源码学习/pipeline.jpeg)
+
+这个双向链表中的每个元素都是 ChannelHandler 的子类，其中可以细分为 ChannelInboundHandler 和 ChannelOutboundHandler 分别表示入站和出站。无论是客户端还是服务端 读数据都是入站操作，写数据都是出站操作。入站操作会经过所有的 InboundHandler，同理出站操作会经过所有的outboundHandler。
+
+![image-20250506141218934](img/Netty源码学习/image-20250506141218934.png)
+
+## eventLoop
+
+翻译过来是事件循环，其实指的是一直在循环中监听处理事件，如accept注册事件、读写事件等。
+
+```java
+while(true){
+	selector.select();
+  selector.selectedKeys();
+  //处理事件
+}
+```
+
+执行事件循环的线程是eventLoopThread，一组这样的线程就叫作 eventLoopGroup。
+
+通常会定义两个group，分别是 BoosEventLoopGroup 和 WorkerEventLoopGroup，前者负责处理客户端连接，后者负责处理读写事件。
+
+## bootstrap
+
+netty的核心启动类，负责组装上边的这些组件。根据服务端和客户端区分为 ServceBootStrap 和 BootStrap，在下边的示例中，ServceBootStrap 管理了 BoosEventLoopGroup 和 WorkerEventLoopGroup，设置了服务端Channel的类型为 NioServerSocketChannel，并且对每个连接到服务端的 socketChannel 都做了handler的初始化，具体的动作是向 SocketChannel 的 pipeline添加了两个 handler 处理器。（所以serverBootStrap的叫做 childHandler，BootStrap 的就直接叫做 handler）
+
+最后将当前的 serverChannel 绑定到了9999端口上，并且添加了一个监听器打印绑定结果。
+
+```java
+//NettyServer
+public class NettyServer {
+    public static void main(String[] args) {
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        NioEventLoopGroup workerGroup = new NioEventLoopGroup(2);
+        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) {
+                        ByteBuf delimiter = Unpooled.buffer();
+                        delimiter.writeBytes("#$#".getBytes());
+                        ch.pipeline()
+                            //netty提供的按行解析器，一定要放在字符串解码器前，先分割字节数组再将字节数组转化为字符串
+                                //.addLast(new LineBasedFrameDecoder(1024))
+                                //基于分隔符的数据帧解析器
+                                .addLast(new DelimiterBasedFrameDecoder(1024, true, true, delimiter))
+                                .addLast(new StringEncoder())
+                                .addLast(new StringDecoder())
+                                .addLast(new SimpleChannelInboundHandler<String>() {
+                                    @Override
+                                    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+                                        System.out.println(msg);
+                        //调用ctx的writeAndFlush后，msg不再经历后续的handler，会从当前handler直接向前遍历返回
+                                        //ctx.writeAndFlush()
+                                        ctx.channel().writeAndFlush(msg + " word" + "#$#");
+                                        //多handler的时候通过调用该方法才会把读事件向后传递下去，不调用表示直接返回
+                                        ctx.fireChannelRead(msg);
+                                    }
+                                });
+                    }
+                });
+        ChannelFuture bindFuture = serverBootstrap.bind(9999);
+        bindFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                System.out.println("服务端启动成功");
+            } else {
+                System.out.println("服务端启动失败");
+            }
+        });
+    }
+}
+```
+
+```java
+//NettyClient
+public class NettyClient {
+    public static void main(String[] args) {
+        Bootstrap bootstrap = new Bootstrap()
+                .group(new NioEventLoopGroup())
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
+
+                    @Override
+                    protected void initChannel(SocketChannel ch) {
+                        ByteBuf delimiter = Unpooled.buffer();
+                        delimiter.writeBytes("#$#".getBytes());
+                        ch.pipeline()
+//                                .addLast(new LineBasedFrameDecoder(1024))
+                                .addLast(new DelimiterBasedFrameDecoder(1024, true, true, delimiter))
+                                .addLast(new StringEncoder())
+                                .addLast(new StringDecoder())
+                                .addLast(new SimpleChannelInboundHandler<String>() {
+                                    @Override
+                                    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+                                        System.out.println(msg);
+                                    }
+                                });
+                    }
+                });
+        ChannelFuture connectFuture = bootstrap.connect("localhost", 9999);
+        connectFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                System.out.println("客户端连接成功");
+                connectFuture.channel().eventLoop().scheduleAtFixedRate(() -> {
+//                    connectFuture.channel().writeAndFlush("hello " + System.currentTimeMillis() + "\n" + "hello " + System.currentTimeMillis() + "\n");
+                    connectFuture.channel().writeAndFlush("hello " + System.currentTimeMillis() + "#$#" + "hello " + System.currentTimeMillis() + "#$#");
+                }, 0, 1, TimeUnit.SECONDS);
+            } else {
+                System.out.println("客户端连接失败");
+            }
+        });
+    }
+}
+
+```
+
 
 
 #  Netty组件对比

@@ -1,4 +1,4 @@
-package com.lwj._04_netty_demo;
+package com.lwj._04_netty_demo.practice1;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
