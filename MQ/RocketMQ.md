@@ -143,9 +143,64 @@ MappedFile提交实际上是将writeBuffer中的数据，传入FileChannel，所
 
 
 
+### 顺序消息
+
+同一个消费者组Group内的不同消费者实例（机器）**不会同时消费同一个队列**。队列是消息存储的的最小单元，每个队列在同一时刻只能被一个消费者线程处理。
+
+即使消费者实例启动了多个线程，每个线程仅处理**不同的队列**。一个队列的消息始终由**同一个消费者线程顺序处理**，避免多线程并发导致乱序。
+
+这里的队列指的是消息队列MessageQueue，每个Topic可以配置多个消息队列，RocketMQ默认是4个MessageQueue。
 
 
-### **二、特殊场景下的写入行为**
+
+**生产方**
+
+生产方线程通过实现**`MessageQueueSelector`** 接口，通过对分片键取模的方式，保证相同ID的商品变更消息会投放到同一个MessageQueue中。
+
+在业务层面上我们通过分布式锁的方式保证一个商品的变更消息是顺序的，注意该消息的发送方式也必须要是同步发送才行。
+
+**消息存储**
+
+Broker，会将所有消息按到达顺序追加到CommitLog文件，确保物理存储顺序与发送顺序一致。
+
+**消费方**
+
+RocketMQ对提供了两种消费模式，一种是并发的消费方式 **MessageListenerConcurrently** ，和有序消费模式 **MessageListenerOrderly**，
+
+要确保消费者注册的时候使用后者，每个消费者的消费端都是通过线程池的方式来消费消息的，只不过采用有序消费模式后，会分布式锁和本地锁来保证消息的有序消费。**确保同时只有一个消费者线程去消费一个消息队列中的消息。**
+
+**即顺序消费模式使用3把锁来保证消费的顺序性：**
+
+1.**broker端的分布式锁：**
+
+- 在负载均衡的处理新分配队列的updateProcessQueueTableInRebalance方法，以及ConsumeMessageOrderlyService服务启动时的start方法中，都会尝试向broker申请当前消费者客户端分配到的messageQueue的分布式锁。
+- broker端的分布式锁存储结构为ConcurrentMap<String/* group */, ConcurrentHashMap<MessageQueue, LockEntry>>，**该分布式锁保证同一个消费组consumerGroup下同一个消息队列messageQueue只会被分配给一个消费者客户端consumerClient。**
+- 如果拿不到这个锁，则不会创建对应的ProcessQueue，同样也不会发送对应的消费请求。
+- 获取到的broker端的分布式锁，在client端的表现形式为processQueue. locked属性为true，且该分布式锁在broker端默认60s过期，而在client端默认30s过期，因此ConsumeMessageOrderlyService#start会启动一个定时任务，每过20s向broker申请分布式锁，刷新过期时间。而负载均衡服务也是每20s进行一次负载均衡。
+
+2.**messageQueue的本地synchronized锁：**
+
+- 在执行消费任务的开头，便会获取该messageQueue的本地锁对象objLock，它是一个Object对象，然后通过synchronized实现锁定。
+- 这个锁的锁对象存储在MessageQueueLock.mqLockTable属性中，结构为ConcurrentMap<MessageQueue, Object>，所以说，一个MessageQueue对应一个锁，不同的MessageQueue有不同的锁。
+- 因为顺序消费也是通过线程池消费的，所以这个**synchronized锁用来当前这个消费者客户端中，保证同一时刻对于同一个队列只有一个消费线程去消费它。**
+
+3.**ProcessQueue的本地consumeLock：**
+
+- ProcessQueue ，它是一个队列消费快照，消息拉取的时候，会将实际消息体、拉取相关的操作存放在其中。还有消费状态处理、offset提交等功能层面都是由ProcessQueue提供。
+
+- 在获取到前两把锁后，每次在执行真正的消息消费的逻辑messageListener#consumeMessage之前，会获取ProcessQueue的consumeLock，这把本地锁是一个ReentrantLock。**它的作用是防止消息被其他消费者客户端重复消费。**
+- 因为在发生负载均衡的时候，消息队列可以会分配给新的消费者，那么当前客户端消费者需要对该队列进行释放，调用removeUnnecessaryMessageQueue方法请求broker端分布式锁的解锁。而在请求broker分布式锁解锁的时候，一个重要的操作就是首先尝试获取这个messageQueue对应的ProcessQueue的本地consumeLock。只有获取了这个锁，才能尝试请求broker端对该messageQueue的分布式锁解锁。
+- 因为消费线程会拉取一批消息，在每次消费前都会加consumeLock，消费结束后释放consumeLock。如在消费过程中，消费了但还没提交消费位点，此时如果别的消费者客户端重新获取了当前消息队列，那么它也能拉到当前线程消费的消息，所以可能会导致消息重复消费。
+
+参考：https://blog.csdn.net/weixin_43767015/article/details/121028059
+
+
+
+
+
+
+
+#### **二、特殊场景下的写入行为**
 
 #### **1. 主从自动切换（DLedger 模式）**
 

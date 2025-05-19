@@ -1439,6 +1439,16 @@ Mycat 这种 proxy 层方案的**缺点在于需要部署**，自己运维一套
 
 ## 你们具体是如何对数据库如何进行垂直拆分或水平拆分的
 
+
+
+
+
+
+
+
+
+# TODO
+
 # 数据库连接池
 
 ​	定义
@@ -1533,7 +1543,7 @@ Mycat 这种 proxy 层方案的**缺点在于需要部署**，自己运维一套
 
 
 
-# TODO
+# 
 
 1. 为什么用<font style="background-color:yellow;">B+树</font>，不用<font style="background-color:yellow;">B树</font>或者<font style="background-color:yellow;">AVL</font>（优点）/<font style="background-color:yellow;">哈希表</font>
 

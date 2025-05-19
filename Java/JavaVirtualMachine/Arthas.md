@@ -52,11 +52,6 @@ java.home              /Library/Java/JavaVir
 
 ### thread 获取线程堆栈
 
-```sh
-thread 1 | grep 'main('
-    at demo.MathGame.main(MathGame.java:17)
-```
-
 
 
 ###  jad 反编译 Class
@@ -146,7 +141,11 @@ public List<Integer> primeFactors(int number) {
     return result;
 }
 ```
-### Watch 查看函数运行时数据
+### Watch 查看函数运行时入参返回和异常
+
+[watch 官方文档](https://arthas.aliyun.com/doc/watch.html)
+
+[Arthas watch 的一些特殊用法文档说明](https://github.com/alibaba/arthas/issues/71)
 
 |            参数名称 | 参数说明                                                     |
 | ------------------: | :----------------------------------------------------------- |
@@ -201,13 +200,86 @@ ts=2018-11-28 19:22:35; [cost=29.969732ms] result=@ArrayList[
 
 ```
 
+
+
+### vmtool 实现查询内存对象
+
+**根据类名获取实例**
+
+```sh
+[arthas@22015]$ vmtool  --action getInstances --className 
+com.gov.zcy.operate.pilot.core.server.infrastructure.config.apollo.ApolloConfig --limit 5 -x 1
+
+@ApolloConfig[][    @ApolloConfig[com.gov.zcy.operate.pilot.core.server.infrastructure.config.apollo.ApolloConfig@3a9af0cf],
+]
+```
+
+**指定返回结果展开层数**
+
+`getInstances` action 返回结果绑定到`instances`变量上，它是数组。
+
+通过 `-x`/`--expand` 参数可以指定结果的展开层次，默认值是 1。
+
+```bash
+vmtool --action getInstances -c 19469ea2 --className org.springframework.context.ApplicationContext -x 2
+```
+
+**根据类名获取实例字段**
+
+`getInstances` action 返回结果绑定到`instances`变量上，它是数组。可以通过`--express`参数执行指定的表达式。
+
+```sh
+[arthas@22015]$ vmtool  --action getInstances --className com.gov.zcy.operate.pilot.core.server.infrastructure.config.apollo.ApolloConfig --limit 5 -x 1  --express 'instances[0].modelFilter'
+
+@LinkedHashSet[
+    @String[测试],
+    @String[测试型号],
+]
+```
+
+**强制GC**
+
+```sh
+vmtool --action forceGc
+```
+
+- 可以结合 [`vmoption`](https://arthas.aliyun.com/doc/vmoption.html) 命令动态打开`PrintGC`开关。
+
+
+
+### trace 统计方法内调用路径和耗时
+
+`trace` 命令能主动搜索 `class-pattern`／`method-pattern` 对应的方法调用路径，渲染和统计整个调用链路上的所有性能开销和追踪调用链路。
+
+```sh
+[arthas@22015]$ trace com.gov.zcy.operate.pilot.core.server.infrastructure.repository.shopitem.ShopItemRepositoryImpl queryShopItemById  -n 5 --skipJDKMethod true
+```
+
+![image-20250516173445976](img/Arthas/image-20250516173445976.png)
+
+**trace 多个类或者多个函数**
+
+trace 命令只会 trace 匹配到的函数里的子调用，并不会向下 trace 多层。因为 trace 是代价比较贵的，多层 trace 可能会导致最终要 trace 的类和函数非常多。
+
+可以用正则表匹配路径上的多个类和函数（例如父子函数嵌套）一定程度上达到多层 trace 的效果。
+
+```sh
+trace -E com.test.ClassA|org.test.ClassB method1|method2|method3
+```
+
+```sh
+trace -E com.gov.zcy.operate.pilot.core.server.application.shopitem.query.ShopItemQueryService|com.gov.zcy.operate.pilot.core.server.infrastructure.repository.shopitem.ShopItemRepositoryImpl queryShopItemById -n 5  --skipJDKMethod true 
+```
+
+![image-20250516174907562](img/Arthas/image-20250516174907562.png)
+
+
+
+
+
 ### tt 方法执行数据的时空隧道
 
 记录下指定方法每次调用的入参和返回信息，并能对这些不同的时间下调用进行观测
-
-
-
-### options 查看配置
 
 
 
