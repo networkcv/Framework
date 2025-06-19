@@ -106,6 +106,31 @@ TCP协议是 **面向连接的**、 **可靠的**、**基于字节流的**、**�
 
 **全连接**：是指TCP三次握手完成后，客户端和服务器之间的连接完全建立，处于ESTABLISHED状态。此时，连接被存储在全连接队列（accept队列）中，等待应用程序通过`accept`函数将其取出。
 
+
+
+[五分钟带你读懂 TCP全连接队列（图文并茂）](https://cloud.tencent.com/developer/article/1699886)
+
+总结：
+
+- 1、TCP三次握手时，Linux维护了全连接和半连接两个队列
+
+- 2、在全连接队列满的时候丢弃策略根据tcp_abort_on_overflow的配置执行
+
+  > - 当tcp_abort_on_overflow=0，服务accept 队列满了，客户端发来ack,服务端直接丢弃该ACK，此时服务端处于【syn_rcvd】的状态，客户端处于【established】的状态。在该状态下会有一个定时器重传服务端 SYN/ACK 给客户端（不超过 /proc/sys/net/ipv4/tcp_synack_retries 指定的次数，Linux下默认5）。超过后，服务器不在重传，后续也不会有任何动作。如果此时客户端发送数据过来，服务端会返回RST。（这也就是我们的异常原因了）
+  > - 当tcp_abort_on_overflow=1，服务端accept队列满了，客户端发来ack，服务端直接返回RST通知client，表示废掉这个握手过程和这个连接，client会报connection reset by peer。
+
+- 3、全连接队列大小会取Linux系统配置和应用配置中的最小值
+
+- 4、Linux 中的backlog 就是我们所说的全连接队列大小
+
+- 5、应用部署时记得检查全连接队列是否正确配置
+
+backlog配置
+
+- Tomcat AbstractEndpoint默认参数是100，如果使用独立Tomcat配置了 server.xml，其实 connector 中 acceptCount 最终是 backlog的值。而使用Spring Boot内置Tomcat记得配置server.tomcat.accept-count参数，否则默认值就是
+- Nginx 配置 server{ listen 8080  default_server backlog=512}
+- [Redis](https://cloud.tencent.com/product/crs?from_column=20065&from=20065) 配置redis.conf文件 tcp-backlog 511参数
+
 ## TCP 协议是可靠的
 
 IP 是一种无连接、不可靠的协议：它尽最大可能将数据报从发送者传输给接收者，但并不保证包到达的顺序会与它们被传输的顺序一致，也不保证包是否重复，甚至都不保证包是否会达到接收者。

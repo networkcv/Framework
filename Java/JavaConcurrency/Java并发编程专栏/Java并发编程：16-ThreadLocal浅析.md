@@ -334,7 +334,7 @@ class MRunnable implements Runnable {
 
 ## 九、最后
 
-由于项目和时间的缘故，本次分享就到此为止。感谢大家的参与，也感谢 @永恺 给我的这次分享机会。
+由于项目和时间的缘故，本次分享就到此为止。感谢大家的参与。
 
 ThreadLocal 中还有很多设计巧妙的地方，例如：
 
@@ -352,3 +352,13 @@ ThreadLocal 中还有很多设计巧妙的地方，例如：
 - http://www.jasongj.com/java/threadlocal/
 - https://www.cnblogs.com/-beyond/p/13093032.html
 - https://segmentfault.com/a/1190000022663697
+
+
+
+
+
+ThreadLocal 内部有一个静态内部类 ThreadLocalMap 这个Map的key是ThreadLocal对象，Value是我们要存储的值。
+
+这里的key和value会包装成一个Entry对象，这个Entry是ThreadLocalMap的静态内部类，同时继承自 WeakReferene 。表示Entry的key 存放的ThreadLocal对象是弱引用的。
+
+每个线程 Thread内部都会持有一个ThreadLocalMap对象threadLocals，这个对象是每条线程用来存储当前线程对应的threadlocal变量信息的，后续通过threadlocal.get()的时候，也是先拿到当前线程的threadLocals对象，然后再根据 threadLocal 获取 value。

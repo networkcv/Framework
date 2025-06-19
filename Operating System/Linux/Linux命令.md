@@ -99,6 +99,8 @@ brew search lsof
 
 ```sh
 brew install lsof 
+
+brew install draftbrew/tap/hping 安装过期的包
 ```
 
 **直接下载brew包含的多版本**
@@ -314,6 +316,24 @@ curl https://www.baidu.com
 > ```bash
 > $ curl -H 'User-Agent: php/1.0' https://google.com
 > ```
+
+```sh
+curl 'https://sc.test.zcygov.cn/api/supply-chain/pilot-back/shopitem/queryShopItemDetail?timestamp=1748333679&shopItemId=1001000000046701' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: zh-CN,zh;q=0.9' \
+  -H 'Connection: keep-alive' \
+  -b 'districtCode=339900; SESSION=ZWJiMDk1YWItMjBlZS00NzNjLWIxYjItMTYwNDUwMDA3NTZh;' \
+  -H 'Referer: https://sc.test.zcygov.cn/supply-chain-seller-index/goods/edit?categoryId=790&instanceCode=supplyItem&&supplyItemId=2424441548734731&shopItemId=1001000000046701&warehouseType=1' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'sec-ch-ua: "Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'system-id: supply-workbench'
+```
 
 **-b**
 
@@ -901,6 +921,8 @@ mkdir -p /a/b 可以创建多级文件夹
 
 ## netstat 网络端口查询工具
 
+>  支持linux 和 mac 但是在mac上功能比较少
+>
 >  lsof 也可以查询端口号上的连接
 
 ```shell
@@ -929,6 +951,20 @@ netstat -an | grep 80
 - **`*.8080`**：表示该端口正在监听所有网络接口的 8080 端口。
 - **`*.*`**：表示该端口可以接受来自任何地址的连接。
 - **`LISTEN`**：表示该端口处于监听状态，等待客户端的连接请求。
+
+**查看TCP 全连接队列使用情况**
+
+```sh
+ss -lnt | grep 8080
+```
+
+**查看TCP全连接队列是否有溢出**
+
+没有返回则说明没有溢出
+
+```sh
+netstat -s | grep overflowed
+```
 
 
 
@@ -1076,6 +1112,32 @@ lls
 ```
 
 
+
+## ss 网络查询命令
+
+linux 上 用于替代 netstat
+
+linux 上安装 ss
+
+```sh
+yum install iproute
+```
+
+```sh
+ss -lnt
+```
+
+![img](img/Linux命令/5.jpg)
+
+Recv-Q：当前全连接队列的大小，也就是当前已完成三次握手并等待服务端 accept（）的TCP 连接；
+
+Send-Q：当前全连接最大队列长度，上面的输出结果说明监听 8088端口的 TCP服务，最大全连接长度为 128；
+
+![img](img/Linux命令/6.jpg)
+
+Recv-Q：已收到但未被应用进程读取的字节数；
+
+Send-Q：已发送但未收到确认的字节数；
 
 ## sudo 管理员权限
 
@@ -1249,6 +1311,12 @@ CPU指标信息：
 
 ## uname 输出系统信息
 
+>  linux下可用
+>
+> ```sh
+> cat /proc/version
+> ```
+
 ```sh
 uname -a
 ```
@@ -1394,6 +1462,56 @@ $ wc testfile.txt           # testfile文件的统计信息
 
 ❯ wc -c testfile.txt | awk '{print $1}'
 598
+```
+
+
+
+## wrk 网络压测工具
+
+使用1并发1连接来压测10s
+
+```sh
+wrk -c 1 -t 1 -d 10s http://localhost:8080/test
+```
+
+```sh
+wrk -c 30000 -t 8 -d 60s  --script=./bin/demo.lua  --latency  -H 'system-id: supply-workbench' https://10.11.19.48:8080/api/supply-chain/pilot-back/shopitem/queryShopItemDetail\?timestamp\=1748333679\&shopItemId\=1001000000046701
+```
+
+详细参数：
+
+```sh
+-c, --connections: total number of HTTP connections to keep open with
+                   each thread handling N = connections/threads
+                   总连接数，保持打开的HTTP连接总数，每个线程处理 N =连接/线程
+                   与服务器建立并保持的TCP连接数，其实就是并发数
+
+-d, --duration:    持续时间, 例：2s, 2m, 2h 压测的持续时间（单位为秒），默认为 10s
+
+-t, --threads:     压测的线程数。正常设置为cpu核心线程数的2-4倍即可。如果线程数过多，会因线程上下文切换频繁，影响压测效果
+
+-s, --script:      可以通过Lua脚本实现复杂请求，如压测POST请求、需要自定义请求头和请求体或者响应处理逻辑等场景。
+
+-H, --header:      添加 HTTP header 到请求, 例： "User-Agent: wrk"
+
+    --latency:     压测结束后，打印响应时间统计消息 
+
+    --timeout:     请求未收到响应的超时时间
+
+```
+
+**设置cookie**：
+
+```sh
+wrk -t2 -c10 -d5 --script=/bin/demo.lua --latency https://sc.test.zcygov.cn/api/supply-chain/pilot-back/shopitem/queryShopItemDetail\?timestamp\=1748333679\&shopItemId\=1001000000046701
+```
+
+编写 demo.lua
+
+```sh
+wrk.method = "GET"
+wrk.headers["Content-Type"] = "application/x-www-form-urlencoded"
+wrk.headers["cookie"] = "auth_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NDY5MjA2MzQsImV4cCI6MTYzODc3MzQ3OSwiZXhwX3YyIjoxNjM4NzczNDc5LCJkZXZpY2UiOiIiLCJ1c2VybmFtZSI6IndlY2hhdF8zM2g0b3ZuNCIsImlzX3N0YWZmIjoxLCJzZXNzaW9uX2lkIjoiOGY4ZjJiNGE0ZTg0MTFlYzlhZWIxYTYxOGMyYjRlY2EifQ.CrcSmVmJd6TDypsuA43RUxzURaaNgzZKA5pF0K-FMH4"
 ```
 
 
