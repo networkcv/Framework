@@ -1,8 +1,11 @@
 1. 两数之和 数组有序
 思路一：暴力枚举，双层循环嵌套
 思路二：相向双指针方法，可以缩减搜索空间，每次遍历能获取更多信息，如2，3，4，6 targe=5 遍历2和6的时候，判断大于5，能排除掉所有6的组合,相当于减少了n次比较
+例题：167. 两数之和 II - 输入有序数组
 
 2. 三数之和，采用 枚举 + 相向双指针法，后两个数 之和 等于 第一个枚举数，是第一题的target变种版，相当于target我自己找，但是还是枚举
+例题：15. 三数之和
+
 3. 优化1：比如三个最小值都比target大，说明有序情况下，后面怎么枚举都会更大，结束
 4. 优化2：x 和 最大两个数之和都比target小，说明x过小，考虑将x变大（跳过本轮的枚举）
 5. 统计和小于目标的下标对，因为是统计数对数量，所以排序不影响结果，在双指针使用同时，结果的计算很关键，比如x + y 小于target
@@ -14,8 +17,8 @@
 10. 接雨水：每个位置能接的雨水量取决于前后的最大高度，根据短板效应用短的那个减去柱子的高度，就是当前位置的接水量。
 
 
-167. 两数之和 II - 输入有序数组 https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/solution/san-shu-zhi-he-bu-hui-xie-xiang-xiang-sh-6wbq/
-15. 三数之和 https://leetcode.cn/problems/3sum/solution/shuang-zhi-zhen-xiang-bu-ming-bai-yi-ge-pno55/
+
+
 
 课后作业：
 2824. 统计和小于目标的下标对数目 https://leetcode.cn/problems/count-pairs-whose-sum-is-less-than-target/

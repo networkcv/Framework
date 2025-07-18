@@ -57,6 +57,8 @@ class TwoSumIiInputArrayIsSorted {
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
+
+        // 时间复杂度O(N) 空间复杂度O(1)
         public int[] twoSum(int[] numbers, int target) {
             int l = 0, r = numbers.length - 1;
             while (l < r) {

@@ -62,13 +62,50 @@ import java.util.List;
 class ThreeSum {
     public static void main(String[] args) {
         Solution solution = new ThreeSum().new Solution();
-//        System.out.println(solution.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));
-        System.out.println(solution.threeSum(new int[]{-1, 0, 1}));
+        System.out.println(solution.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));
+//        System.out.println(solution.threeSum(new int[]{-1, 0, 0, 1, 1}));
+//        System.out.println(solution.threeSum(new int[]{-1, 0, 1}));
     }
 
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public List<List<Integer>> threeSum(int[] nums) {
+            int len = nums.length;
+            Arrays.sort(nums);
+            List<List<Integer>> res = new ArrayList<>();
+            //只遍历到倒数第三个数字
+            for (int i = 0; i < len - 2; i++) {
+                int l = i + 1;
+                int r = len - 1;
+                //确保最外层数字不会重复遍历
+                if (i > 0 && nums[i] == nums[i - 1]) {
+                    continue;
+                }
+                //可进行的优化点1 最小的三个数都大于0，那后边的数肯定加起来都大于0，这里可以直接退出循环
+                //可进行的优化点2 当前数加上最大的两个数都小于0，那说明当前nums[i]不存在满足条件三元组
+                while (l < r) {
+                    if (nums[i] + nums[l] + nums[r] == 0) {
+                        res.add(Arrays.asList(nums[i], nums[l], nums[r]));
+                        //考虑到这种情况 [-1, 0, 0, 1, 1] 会将 [-1，0，1],这个结果添加两次，所以这里需要将下标移动到不等于当前值的位置
+                        int curL = nums[l];
+                        int curR = nums[r];
+                        while (l < r && curL == nums[l]) {
+                            l++;
+                        }
+                        while (l < r && curR == nums[r]) {
+                            r--;
+                        }
+                    } else if (nums[i] + nums[l] + nums[r] > 0) {
+                        r--;
+                    } else {
+                        l++;
+                    }
+                }
+            }
+            return res;
+        }
+
+        public List<List<Integer>> threeSum1(int[] nums) {
             //a+b+c=target
             Arrays.sort(nums);
             List<List<Integer>> res = new ArrayList<>();
