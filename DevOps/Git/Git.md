@@ -30,9 +30,10 @@ loccal global system 对应git中从小到大3个域，分别对应 本地 | 全
 
 ## 配置Git基本信息
 
-> git config \-\-global user.name 'networkcavalry ' 
->
-> git config -\-global user.email 'networkcavalry@gmail.com'  
+```shell
+git config --global user.name 'networkcavalry ' 
+git config --global user.email 'networkcavalry@gmail.com'  
+```
 
 ## Git工作原理
 
