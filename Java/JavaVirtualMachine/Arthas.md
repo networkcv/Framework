@@ -3,8 +3,7 @@
 ### 启动 arthas
 
 ```sh
-curl -O https://arthas.aliyun.com/arthas-boot.jar
-java -jar arthas-boot.jar
+curl -O https://arthas.aliyun.com/arthas-boot.jar && java -jar arthas-boot.jar
 ```
 
 ### dashboard 查看进程信息和内存概要信息

@@ -8,11 +8,11 @@ t1 = ('aa', 'bb', 'cc', 'bb')
 # print(t1.index('bbb'))
 
 # 3. count()
-# print(t1.count('aa'))
-# print(t1.count('aaa'))
+print(t1.count('aa'))
+print(t1.count('aaa'))
 
 # 4. len()
-print(len(t1))
+# print(len(t1))
 
 
 

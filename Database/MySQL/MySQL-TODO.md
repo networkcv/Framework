@@ -1251,7 +1251,7 @@ FROM Table1 RIGHT JOIN Table2 ON Table1.id = Table2.id;
 
 ### FULL JOIN（全连接）
 
-mysql 是不支持的
+mysql 是不支持的  可以使用 union 来实现
 
 返回两个表中所有行的组合，如果某一侧没有匹配，则结果中该侧的列会包含 NULL。
 
